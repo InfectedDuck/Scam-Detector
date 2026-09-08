@@ -20,7 +20,8 @@
       "text_kind": "message",
       "pii_flags": [],
       "needs_scrub": false,
-      "scrub_applied": [],
+      "scrub_applied": true,
+      "scrub_placeholders": [],
       "text_hash": "5f526d85c1d01e35",
       "collected_at": "2026-09-08T05:48:24+00:00",
       "notes": "Prize/lottery lure quoted as an example SMS."
@@ -43,7 +44,8 @@
       "text_kind": "message",
       "pii_flags": [],
       "needs_scrub": false,
-      "scrub_applied": [],
+      "scrub_applied": true,
+      "scrub_placeholders": [],
       "text_hash": "72292445fe5c1bad",
       "collected_at": "2026-09-08T05:48:24+00:00",
       "notes": "Account-compromise phishing lure quoted as an example SMS."
@@ -66,7 +68,8 @@
       "text_kind": "message",
       "pii_flags": [],
       "needs_scrub": false,
-      "scrub_applied": [],
+      "scrub_applied": true,
+      "scrub_placeholders": [],
       "text_hash": "adca188b490d9d5e",
       "collected_at": "2026-09-08T05:48:24+00:00",
       "notes": "Mistaken-transfer refund scam quoted as an example message."
@@ -89,7 +92,8 @@
       "text_kind": "message",
       "pii_flags": [],
       "needs_scrub": false,
-      "scrub_applied": [],
+      "scrub_applied": true,
+      "scrub_placeholders": [],
       "text_hash": "be078cb38956b344",
       "collected_at": "2026-09-08T05:48:24+00:00",
       "notes": "Recovery-room / advance-fee pitch distributed under the name of the Minister of Internal Affairs."
@@ -112,7 +116,8 @@
       "text_kind": "phrase_fragment",
       "pii_flags": [],
       "needs_scrub": false,
-      "scrub_applied": [],
+      "scrub_applied": true,
+      "scrub_placeholders": [],
       "text_hash": "af4b8decc09d71c3",
       "collected_at": "2026-09-08T05:48:24+00:00",
       "notes": "Cue phrase, not a full message."
@@ -135,7 +140,8 @@
       "text_kind": "phrase_fragment",
       "pii_flags": [],
       "needs_scrub": false,
-      "scrub_applied": [],
+      "scrub_applied": true,
+      "scrub_placeholders": [],
       "text_hash": "8a7e50dc1bf8029d",
       "collected_at": "2026-09-08T05:48:24+00:00",
       "notes": "Cue phrase, not a full message."
@@ -158,7 +164,8 @@
       "text_kind": "phrase_fragment",
       "pii_flags": [],
       "needs_scrub": false,
-      "scrub_applied": [],
+      "scrub_applied": true,
+      "scrub_placeholders": [],
       "text_hash": "21cd4bdba60be234",
       "collected_at": "2026-09-08T05:48:24+00:00",
       "notes": "Cue phrase, not a full message."
@@ -181,7 +188,8 @@
       "text_kind": "phrase_fragment",
       "pii_flags": [],
       "needs_scrub": false,
-      "scrub_applied": [],
+      "scrub_applied": true,
+      "scrub_placeholders": [],
       "text_hash": "64173d82fae963de",
       "collected_at": "2026-09-08T05:48:24+00:00",
       "notes": "Fake-sorcery / fear pretext targeting parents. Reprinted verbatim on elordainfo.kz and dalanews.kz the same day."
@@ -204,7 +212,8 @@
       "text_kind": "phrase_fragment",
       "pii_flags": [],
       "needs_scrub": false,
-      "scrub_applied": [],
+      "scrub_applied": true,
+      "scrub_placeholders": [],
       "text_hash": "9bfdc600cacde0bd",
       "collected_at": "2026-09-08T05:48:24+00:00",
       "notes": "Payment demand following the sorcery pretext."
@@ -227,7 +236,8 @@
       "text_kind": "phrase_fragment",
       "pii_flags": [],
       "needs_scrub": false,
-      "scrub_applied": [],
+      "scrub_applied": true,
+      "scrub_placeholders": [],
       "text_hash": "f98e8fc075b64ba8",
       "collected_at": "2026-09-08T05:48:24+00:00",
       "notes": "Cue phrase, bank-impersonation family."
@@ -250,7 +260,8 @@
       "text_kind": "phrase_fragment",
       "pii_flags": [],
       "needs_scrub": false,
-      "scrub_applied": [],
+      "scrub_applied": true,
+      "scrub_placeholders": [],
       "text_hash": "54689f9cd9f377e1",
       "collected_at": "2026-09-08T05:48:24+00:00",
       "notes": "Cue phrase, bank-impersonation family."
@@ -273,7 +284,8 @@
       "text_kind": "phrase_fragment",
       "pii_flags": [],
       "needs_scrub": false,
-      "scrub_applied": [],
+      "scrub_applied": true,
+      "scrub_placeholders": [],
       "text_hash": "5edd5272ae86fe1d",
       "collected_at": "2026-09-08T05:48:24+00:00",
       "notes": "Urgency cue phrase."
@@ -296,7 +308,8 @@
       "text_kind": "phrase_fragment",
       "pii_flags": [],
       "needs_scrub": false,
-      "scrub_applied": [],
+      "scrub_applied": true,
+      "scrub_placeholders": [],
       "text_hash": "dbae06d7b2716012",
       "collected_at": "2026-09-08T05:48:24+00:00",
       "notes": "Scarcity cue phrase, marketplace family."
@@ -319,7 +332,8 @@
       "text_kind": "phrase_fragment",
       "pii_flags": [],
       "needs_scrub": false,
-      "scrub_applied": [],
+      "scrub_applied": true,
+      "scrub_placeholders": [],
       "text_hash": "ff981168528add47",
       "collected_at": "2026-09-08T05:48:24+00:00",
       "notes": "Scarcity cue phrase, marketplace family."
@@ -342,7 +356,8 @@
       "text_kind": "phrase_fragment",
       "pii_flags": [],
       "needs_scrub": false,
-      "scrub_applied": [],
+      "scrub_applied": true,
+      "scrub_placeholders": [],
       "text_hash": "b71f164bbab1276d",
       "collected_at": "2026-09-08T05:48:24+00:00",
       "notes": "Scarcity cue phrase, marketplace family."
@@ -365,7 +380,8 @@
       "text_kind": "phrase_fragment",
       "pii_flags": [],
       "needs_scrub": false,
-      "scrub_applied": [],
+      "scrub_applied": true,
+      "scrub_placeholders": [],
       "text_hash": "103c7cf20902648b",
       "collected_at": "2026-09-08T05:48:24+00:00",
       "notes": "Cue phrase, parcel-delivery family."
@@ -388,7 +404,8 @@
       "text_kind": "phrase_fragment",
       "pii_flags": [],
       "needs_scrub": false,
-      "scrub_applied": [],
+      "scrub_applied": true,
+      "scrub_placeholders": [],
       "text_hash": "2dfb4ef6b386a662",
       "collected_at": "2026-09-08T05:48:24+00:00",
       "notes": "Cue phrase, account-lockout family."
@@ -411,7 +428,8 @@
       "text_kind": "phrase_fragment",
       "pii_flags": [],
       "needs_scrub": false,
-      "scrub_applied": [],
+      "scrub_applied": true,
+      "scrub_placeholders": [],
       "text_hash": "d24010a334703e8d",
       "collected_at": "2026-09-08T05:48:24+00:00",
       "notes": "Cue phrase, prize family."
@@ -434,7 +452,8 @@
       "text_kind": "phrase_fragment",
       "pii_flags": [],
       "needs_scrub": false,
-      "scrub_applied": [],
+      "scrub_applied": true,
+      "scrub_placeholders": [],
       "text_hash": "dea275b0cd3b25a6",
       "collected_at": "2026-09-08T05:48:24+00:00",
       "notes": "Cue phrase, fake-lender family."
@@ -457,7 +476,8 @@
       "text_kind": "phrase_fragment",
       "pii_flags": [],
       "needs_scrub": false,
-      "scrub_applied": [],
+      "scrub_applied": true,
+      "scrub_placeholders": [],
       "text_hash": "5806b1075bf3f743",
       "collected_at": "2026-09-08T05:48:24+00:00",
       "notes": "Cue phrase, fake-lender family."
@@ -480,7 +500,8 @@
       "text_kind": "phrase_fragment",
       "pii_flags": [],
       "needs_scrub": false,
-      "scrub_applied": [],
+      "scrub_applied": true,
+      "scrub_placeholders": [],
       "text_hash": "2ea88e69aaa5bb4f",
       "collected_at": "2026-09-08T05:48:24+00:00",
       "notes": "Cue phrase, advance-payment family."
