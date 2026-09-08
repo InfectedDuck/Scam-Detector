@@ -125,7 +125,14 @@ A test asserts that no Kazakh phrase fires on any Russian hard negative.
 - User identities are stored only as an HMAC digest, and the database model
   refuses anything that is not digest-shaped, even from hand-written SQL.
 - Screenshots are analysed in memory and discarded. No table has a bytes
-  column.
+  column. The order of operations is the same on the bot and the API and is
+  itself the argument: the size cap is checked on the encoded payload, the
+  payload is validated as a JPEG, PNG or WebP by its first bytes, the daily
+  check is spent, one vision call turns the bytes into a transcript, and the
+  bytes are dropped on every path out of that call. From then on the
+  transcript is the text: it is what the rules score, what the evidence
+  offsets index, and what the record stores. A test asserts the bytes reach
+  neither a row nor a log line.
 - Stored text expires after 30 days; the hash stays for deduplication.
 - A "was this right?" vote goes to a review queue. A dataset candidate is
   inserted pending and only a named reviewer can move it. Self-labelled data

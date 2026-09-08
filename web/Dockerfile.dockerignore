@@ -1,0 +1,12 @@
+# Used instead of the root .dockerignore when building web/Dockerfile from the
+# repository root. Only web/ and the two backend data directories are needed.
+*
+!web
+!src/saqbol/i18n
+!src/saqbol/playbooks/data
+
+web/node_modules
+web/.next
+web/out
+web/*.tsbuildinfo
+web/.env*
