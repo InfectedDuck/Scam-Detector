@@ -1,0 +1,88 @@
+# Brand reference for family G (links and domains).
+#
+# ⚠ TOKTAR: VERIFY EVERY `domains` ENTRY BEFORE RELEASE.
+# A wrong official domain makes the tool flag a REAL bank link as a mismatch,
+# which is a false positive on the most important negative class in the corpus.
+# Only domains verified against the institution's own site should be listed.
+# When unsure, delete the brand rather than guess: a missing brand costs recall,
+# a wrong one costs precision on legitimate messages.
+#
+# `terms`   — how the brand is written in a message, any script. Used by G5 to
+#             decide the message is talking about this institution.
+# `domains` — every registrable domain the brand legitimately sends links from.
+# `sld`     — the label compared for lookalikes. Defaults to the first domain's
+#             second-level label.
+
+brands:
+  - name: Kaspi
+    region: KZ
+    terms: [kaspi, каспи, каспий, каспи банк]
+    domains: [kaspi.kz]
+
+  - name: Halyk Bank
+    region: KZ
+    terms: [halyk, халык, халық, народный банк]
+    domains: [halykbank.kz]
+
+  - name: Kazpost
+    region: KZ
+    terms: [kazpost, казпочта, қазпошта]
+    domains: [post.kz]
+
+  - name: eGov
+    region: KZ
+    terms: [egov, егов, электронное правительство]
+    domains: [egov.kz]
+
+  - name: National Bank of Kazakhstan
+    region: KZ
+    terms: [нацбанк, национальный банк, ұлттық банк]
+    domains: [nationalbank.kz]
+
+  - name: OLX
+    region: KZ
+    terms: [olx, олх]
+    domains: [olx.kz]
+
+  - name: Beeline
+    region: KZ
+    terms: [beeline, билайн]
+    domains: [beeline.kz]
+
+  - name: Tele2
+    region: KZ
+    terms: [tele2, теле2]
+    domains: [tele2.kz]
+
+  - name: Kcell
+    region: KZ
+    terms: [kcell, кселл, activ, актив]
+    domains: [kcell.kz]
+
+  - name: WeChat
+    region: CN
+    terms: [wechat, 微信, вичат]
+    domains: [wechat.com]
+
+  - name: Alipay
+    region: CN
+    terms: [alipay, 支付宝]
+    domains: [alipay.com]
+
+# Link shorteners. Presence is a weak signal on its own; it matters because the
+# real destination is hidden until the link is followed.
+shorteners:
+  - bit.ly
+  - clck.ru
+  - tinyurl.com
+  - is.gd
+  - goo.su
+  - vk.cc
+  - cutt.ly
+  - rb.gy
+  - shorturl.at
+  - surl.li
+  - t.co
+  - ow.ly
+  - qr.ae
+  - u.to

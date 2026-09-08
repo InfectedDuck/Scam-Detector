@@ -28,8 +28,18 @@ SCAM_THRESHOLD = 50
 
 
 def analyse(text: str, metadata: dict | None = None):
+    """Run the whole deterministic layer over one message.
+
+    `qr_payloads` is lifted out of the metadata dict because a decoded QR code
+    is an entity, not channel metadata; in production the vision stage fills it.
+    """
+    meta = dict(metadata or {})
+    payloads = meta.pop("qr_payloads", None)
     norm = normalize(text)
-    ctx = build_context(norm, extract(norm.text), metadata=metadata)
+    entities = extract(norm.text)
+    if payloads:
+        entities.qr_payloads = list(payloads)
+    ctx = build_context(norm, entities, metadata=meta)
     return ctx, run_all(ctx)
 
 
@@ -77,6 +87,25 @@ POSITIVES: dict[str, tuple[str, dict | None]] = {
     "F2.apk_attachment": ("Откройте файл Kaspi_update.apk", None),
     "F3.install_instruction": ("Установите приложение по ссылке", None),
     "F4.disable_protection": ("Отключите Play Protect перед установкой", None),
+    # G — links and domains. G4 and G6 need facts the text cannot carry, so
+    # they take them through metadata exactly as family I does.
+    "G1.lookalike_domain": ("Оплата на kaspі.kz", None),
+    "G2.punycode_idn": ("Ссылка http://xn--80ak6aa92e.com/pay", None),
+    "G3.shortener": ("Перейдите: https://bit.ly/3xYzAbc", None),
+    "G4.long_redirect_chain": (
+        "Ссылка https://bit.ly/3xYzAbc",
+        {"redirect_chains": {"https://bit.ly/3xYzAbc": ["a", "b", "c", "d"]}},
+    ),
+    "G5.brand_mismatch": ("Kaspi: подтвердите вход kaspi-secure.ru", None),
+    "G6.fresh_domain": (
+        "Магазин super-shop-kz.top",
+        {"domain_ages": {"super-shop-kz.top": 4}},
+    ),
+    "G7.qr_payload_risk": (
+        "Отсканируйте код для оплаты",
+        {"qr_payloads": ["https://kaspі.kz/pay"]},
+    ),
+    "G8.ip_url": ("Оплатите здесь http://45.9.148.22/pay", None),
     # H — offers
     "H1.guaranteed_returns": ("Гарантированный доход без риска", None),
     "H2.celebrity_investment": ("С вами свяжется личный менеджер платформы", None),

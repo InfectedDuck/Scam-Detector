@@ -4,8 +4,8 @@ Importing this package registers every rule. Family modules are imported for
 their side effect, which is why they are re-exported in `__all__` rather than
 left as unused imports.
 
-Family G (links and domains) is implemented in `url_analyzer.py` and registered
-by `links.py`, which arrives with T107.
+Family G (links and domains) is registered by `links.py`; the analysis itself
+lives in `url_analyzer.py`, which keeps its one network path opt-in.
 """
 
 from __future__ import annotations
@@ -14,6 +14,7 @@ from saqbol.core.indicators import (
     authority,
     channel,
     credentials,
+    links,
     metadata,
     money,
     offers,
@@ -37,6 +38,7 @@ __all__ = [
     "build_context",
     "channel",
     "credentials",
+    "links",
     "metadata",
     "money",
     "offers",

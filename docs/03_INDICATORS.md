@@ -103,12 +103,27 @@ Implemented in `url_analyzer.py`. **All network calls sandboxed**: `HEAD` only, 
 | `G2.punycode_idn` | high | `xn--` in the host |
 | `G3.shortener` | medium | Known shortener host (`bit.ly`, `clck.ru`, `t.me/+`, `is.gd`, `vk.cc`, `goo.su`) |
 | `G4.long_redirect_chain` | medium | More than 2 hops to the final host |
-| `G5.brand_mismatch` | high | Message names a brand, the final host belongs to a different registrable domain |
-| `G6.fresh_domain` | low | WHOIS creation under 90 days. Must degrade gracefully; KazNIC WHOIS is unreliable, never let it block a verdict. |
+| `G5.brand_mismatch` | high | The **host** carries a brand's name while its registrable domain belongs to someone else, as in `kaspi-secure.ru`. `detail: {host, claims, registrable}` |
+| `G6.fresh_domain` | low | Registration under 90 days, supplied through `metadata["domain_ages"]` |
 | `G7.qr_payload_risk` | high | Decoded QR contains a URL or payment payload that trips any other G rule |
 | `G8.ip_url` | medium | Bare IP address in place of a hostname |
 
-Brand list lives in `data/brands.yaml`: Kaspi, Halyk, Jusan, Forte, Freedom, Otbasy, Kazpost, eGov, Wildberries, Ozon, OLX, Beeline, Tele2, Activ, plus WeChat, Alipay, UnionPay, and the major Chinese banks for China mode.
+Brand list lives in `src/saqbol/core/data/brands.yaml`, each entry carrying the written forms a message uses and every domain the brand legitimately sends from.
+
+**Verify every `domains` entry before release.** A wrong official domain makes G5 flag a real bank link, which is a false positive on the most important negative class in the corpus. When unsure, drop the brand: a missing brand costs recall, a wrong one costs precision on legitimate messages.
+
+Two rules in this family read facts the message text cannot carry, exactly as family I does, and stay silent when no enrichment step has supplied them:
+
+| Rule | Metadata key | Shape |
+|---|---|---|
+| `G4.long_redirect_chain` | `redirect_chains` | `{url: [hop, hop, …]}` |
+| `G6.fresh_domain` | `domain_ages` | `{registrable_domain: days}` |
+
+Live resolution is opt-in per call through `metadata["resolve_links"]`, so the default path and the `rules_only` baseline never touch the network.
+
+### G5 is keyed on the host, not on the message
+
+The catalogue's first draft fired G5 when the message named a brand and linked anywhere unofficial. That flags a genuine bank message that also links to a survey. Keying on the host instead means the rule fires on `kaspi-secure.ru` and stays quiet when a real Kaspi message links to `forms.gle`. It is the tighter rule and it catches the shape a lookalike check structurally cannot: `kaspi-secure.ru` is seven edits from `kaspi.kz`, so G1 never sees it.
 
 ---
 
