@@ -44,6 +44,8 @@ keyword_indicator(
         "разрешите установку из неизвестных источников",
         "disable play protect",
         "allow accessibility",
+        # kk
+        *kk("F4.disable_protection"),
     ],
 )
 

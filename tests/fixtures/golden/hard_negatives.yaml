@@ -139,12 +139,6 @@ cases:
     note: >-
       The same warning in the "we never ask" form. Both phrasings are real; this one
       exposes the negation-cue list.
-    xfail: >-
-      Rule gap: NEGATION_CUES has no "никогда не" / "не спрашива*" / "не запрашива*", so
-      A1, A2 and A3 fire inside a bank's own warning and, with C1 on the quoted
-      "служба безопасности банка", the message reaches the scam band. Fix: add those cues
-      (and treat text inside «...» quotation marks as reported speech).
-
   - id: zh_university_tuition_notice
     lang_hint: zh
     channel: wechat
@@ -206,11 +200,6 @@ cases:
     note: >-
       The same courier asking for the intercom code — a genuine request that uses the
       exact verb-plus-noun A1 is built on.
-    xfail: >-
-      Rule gap: A1 "скаж* код" matches "скажите код от домофона"; a critical hit on its
-      own is 0.40, exactly the suspicious threshold. Fix: exclude "код от домофона" /
-      "код от подъезда" / "код домофона" from A1 (a negative lookahead on the noun).
-
   - id: hr_onboarding_documents
     lang_hint: ru
     channel: email

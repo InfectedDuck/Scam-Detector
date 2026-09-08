@@ -52,11 +52,6 @@ cases:
     note: >-
       Pure Kazakh ad. H1 fires through the kk lexicon; H2, H4 and D1 have no Kazakh
       phrases, so a single high hit (0.25) is all the rules see.
-    xfail: >-
-      Rule gap plus retrieval gap: H2 needs Kazakh (инвестициялық платформа, жеке менеджер),
-      D1 needs "WhatsApp-қа жазыңыз", H4 needs "айына ... тг"; kz.investment_deepfake has no
-      Kazakh retrieval_phrases.
-
   - id: mixed_kk_ru_chat_same_platform
     lang_hint: kk
     channel: whatsapp

@@ -37,6 +37,8 @@ keyword_indicator(
         "закрыт* инвестиционн* клуб",
         "investment platform",
         "personal manager",
+        # kk
+        *kk("H2.celebrity_investment"),
     ],
 )
 
@@ -75,6 +77,8 @@ keyword_indicator(
         "刷单",
         "日结",
         "兼职招聘",
+        # kk
+        *kk("H4.easy_job"),
     ],
 )
 
@@ -89,5 +93,7 @@ keyword_indicator(
         "мой наставник",
         "я тебе помогу заработать",
         "let me teach you to trade",
+        # kk
+        *kk("H5.romance_to_investment"),
     ],
 )

@@ -120,5 +120,7 @@ keyword_indicator(
         "назов* цифры",
         "read me the code",
         "read out the code",
+        # kk
+        *kk("A4.code_relay"),
     ],
 )

@@ -31,6 +31,8 @@ keyword_indicator(
         # zh
         "加我微信",
         "私聊",
+        # kk
+        *kk("D1.move_to_messenger"),
     ],
 )
 
@@ -46,6 +48,8 @@ keyword_indicator(
         "оплатим напрямую",
         "переведем без олх",
         "outside the platform",
+        # kk
+        *kk("D2.leave_platform"),
     ],
 )
 

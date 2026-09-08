@@ -9,6 +9,7 @@ second opinion, not the ones that protect a code.
 
 from __future__ import annotations
 
+from saqbol.core.indicators.kk_lexicon import kk
 from saqbol.core.indicators.registry import keyword_indicator
 from saqbol.core.types import Severity
 
@@ -30,6 +31,8 @@ keyword_indicator(
         # zh
         "不要告诉家人",
         "保密",
+        # kk
+        *kk("J1.secrecy"),
     ],
 )
 
@@ -46,6 +49,8 @@ keyword_indicator(
         "нужны деньги на операцию",
         "сбил человека",
         "i had an accident",
+        # kk
+        *kk("J2.relative_in_trouble"),
     ],
 )
 
@@ -62,6 +67,8 @@ keyword_indicator(
         "срочно нужны деньги",
         "можешь одолжить",
         "can you send me money",
+        # kk
+        *kk("J3.hijacked_account_ask"),
     ],
 )
 
@@ -77,5 +84,7 @@ keyword_indicator(
         "передаю трубку",
         "переведу ваш звонок",
         "i will transfer you",
+        # kk
+        *kk("J4.script_handoff"),
     ],
 )

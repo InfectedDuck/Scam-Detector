@@ -50,11 +50,6 @@ cases:
     note: >-
       Pure Kazakh version. Only B1 "шұғыл" is in the catalogue; the accident, hospital,
       "transfer to this card" and "I'll pay you back tomorrow" phrasings are not.
-    xfail: >-
-      Rule gap: J2, J3 and E2 have no Kazakh phrases (апатқа ұшырадым, ауруханадамын, ақша
-      керек, аударып жіберші, ертең қайтарамын, мына картаға); kz.hijacked_account_relative
-      has no Kazakh retrieval_phrases.
-
   - id: mixed_ru_kk_son_accident_send_money
     lang_hint: ru
     channel: whatsapp

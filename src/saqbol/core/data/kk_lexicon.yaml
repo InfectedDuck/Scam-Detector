@@ -372,3 +372,209 @@ phrases:
     # VERIFY-kk: "жеңіп алу" is winning by competing; "ұтып алу" is winning a
     # draw or lottery, which is the scam shape. Both are listed; drop
     # "жеңіп алдыңыз*" if it reads wrong for a prize message.
+
+  # ======================================================================
+  # Second pass (9 September). Eighteen rules had no Kazakh at all after the
+  # first pass filled the 17 TODO-kk markers: the golden end-to-end fixtures
+  # (tests/fixtures/golden) showed that a fully Kazakh hijacked-relative,
+  # fake-store or mule-recruitment message scored zero on every family.
+  # Same rules as above: adjacency, four-letter suffix tolerance, positive
+  # imperatives only where a negated form is what a genuine message says.
+  # ======================================================================
+
+  # "Read me what arrived" — the relay form of the code request.
+  "A4.code_relay":
+    - "қандай код келді"        # what code arrived?
+    - "не келді айтыңыз*"       # tell me what arrived
+    - "келген кодты айтыңыз*"
+    - "келген кодты оқыңыз*"
+    - "келген смс* оқыңыз*"     # read the SMS that came
+    - "сандарды айтыңыз*"       # say the digits
+    - "не келгенін айтыңыз*"
+
+  # Police, prosecutor, investigator. "полиц*" on the Russian side already
+  # reaches "полиция" but not the inflected "полицияның"; the Kazakh forms
+  # below carry their own suffix room.
+  "C2.police_prosecutor":
+    - "полиция*"
+    - "полициясы*"              # ішкі істер полициясы
+    - "прокуратура*"
+    - "тергеу комитеті*"
+    - "полиция департаменті*"
+    - "ішкі істер министрлігі*"
+    - "тергеуші*"               # investigator — a role only a scammer claims by phone
+                                # VERIFY-kk: check that no genuine notice
+                                # (court summons, fines) uses "тергеуші" in a
+                                # way a user would paste.
+
+  "C5.embassy_immigration":
+    - "елшілік*"                # embassy
+    - "консулдық*"              # consulate
+    - "көші-қон қызметі*"       # migration service
+    - "көші-қон полициясы*"
+    - "виза* жойылды"           # visa cancelled
+    - "виза* күшін жойды"
+
+  "C7.telecom":
+    - "нөмір* өшіріледі"        # the number will be switched off
+    - "нөмір* бұғатталады"
+    - "sim карта* бұғатталады"
+    - "сим карта* бұғатталады"
+    - "нөмір* қайта тіркеу*"    # re-register the number
+    - "байланыс шарты* аяқталады"
+
+  # Channel migration: "write me on WhatsApp / Telegram". Kazakh attaches the
+  # dative suffix to the app name, with or without a hyphen.
+  "D1.move_to_messenger":
+    - "whatsapp-қа жазыңыз*"
+    - "whatsapp-қа жаз*"
+    - "ватсапқа жазыңыз*"
+    - "ватсапқа жаз*"
+    - "telegram-ға жазыңыз*"
+    - "telegram-ға жаз*"
+    - "телеграмға жазыңыз*"
+    - "телеграмға жаз*"
+    - "телеграмға өтейік*"
+    - "ватсапқа өтейік*"
+    - "маған жазыңыз*"          # write to me
+    - "менің ватсабым*"
+    - "менің whatsapp*"
+    - "менің telegram*"
+
+  "D2.leave_platform":
+    - "сайт арқылы емес"
+    - "сайттан тыс"
+    - "платформадан тыс"
+    - "олх-сыз аударамыз*"
+    - "делдалсыз тікелей"       # directly, without the intermediary
+    - "тікелей төлейміз*"
+
+  # Money to a person's card or number. The bare noun is avoided: a genuine
+  # shop does say "картаға аударыңыз", which is exactly why this is HIGH and
+  # not CRITICAL on the Russian side too.
+  "E2.transfer_to_person":
+    - "картаға аударыңыз*"
+    - "картаға аударып жібер*"  # аударып жіберші / жіберіңіз
+    - "менің картама"
+    - "мына картаға"
+    - "осы картаға"
+    - "шотқа аударыңыз*"
+    - "нөміріне аударыңыз*"     # Kaspi-ге +7 ... нөміріне аударыңыз
+    - "нөмірге аударыңыз*"
+    - "тексеру үшін аударыңыз*"
+
+  "E5.mule_recruitment":
+    - "картаңызды жалға"        # rent out your card
+    - "карта жалға"
+    - "kaspi картаңыз керек"
+    - "картаңыз керек"
+    - "сіздің kaspi керек"
+    - "карта арқылы аударым*"
+    - "картаңыз арқылы аударым*"
+    - "карта арқылы аударымдар*"     # plural: аударымдарын, аударымдарды
+    - "картаңыз арқылы аударымдар*"
+    - "аударымнан пайыз*"       # a percentage of each transfer
+    - "әр аударымнан"
+    - "дроп*"                   # the loanword is used as-is
+
+  "E6.guarantee_deposit":
+    - "кепілдік жарна*"
+    - "кепілдік төлем*"
+    - "тексеру үшін кепіл*"
+    - "кепіл салыңыз*"
+    - "депозит салыңыз*"
+
+  "E7.upfront_fee":
+    - "комиссия төлеңіз*"
+    - "комиссияны төлеңіз*"
+    - "алдын ала төлем*"        # prepayment
+    - "алдын ала төлеңіз*"
+    - "салық төлеңіз*"          # pay the tax (to release winnings)
+    - "салығын төлеңіз*"
+    - "шығару үшін төлеңіз*"    # pay to withdraw
+    - "бронь ақысы*"            # booking fee
+    - "сақтандыру төлеңіз*"
+
+  "F4.disable_protection":
+    - "play protect-ті өшіріңіз*"
+    - "play protect өшіріңіз*"
+    - "қорғанысты өшіріңіз*"
+    - "антивирусты өшіріңіз*"
+    - "белгісіз көздерден орнатуға рұқсат*"
+    - "арнайы мүмкіндіктер*"    # accessibility service — the Android permission
+                                # VERIFY-kk: the Android UI string; check the
+                                # phone's own wording in Kazakh.
+
+  "H2.celebrity_investment":
+    - "инвестициялық платформа*"
+    - "сауда платформа*"
+    - "жеке менеджер*"          # personal manager
+    - "инвестиция салуға кеңес береді"
+    - "жабық инвестициялық клуб*"
+
+  "H4.easy_job":
+    - "telegram-да жұмыс"
+    - "телеграмда жұмыс"
+    - "қашықтан қосымша табыс*"
+    - "тәжірибесіз жұмыс"
+    - "тәжірибе керек емес"
+    - "оңай табыс*"
+    - "жеңіл табыс*"
+    - "интернеттегі оңай жұмыс"
+    - "күнделікті төлем*"       # paid daily
+
+  "H5.romance_to_investment":
+    - "ақша табуды үйретемін"
+    - "бірге инвестиция саламыз"
+    - "менің брокерім"
+    - "менің тәлімгерім"        # my mentor
+    - "табуға көмектесемін"
+
+  # Secrecy. Never a bare "ешкімге айтпаңыз": a genuine one-time code says
+  # exactly that about the code. The phrases name WHAT must be kept secret —
+  # the call, the relatives, the bank's staff — which no bank writes.
+  "J1.secrecy":
+    - "тергеу құпиясы"          # secrecy of the investigation
+    - "туыстарыңызға айтпаңыз*"
+    - "туыстарға айтпаңыз*"
+    - "жақындарыңызға айтпаңыз*"
+    - "қоңырау туралы ешкімге айтпаңыз*"
+    - "банк қызметкерлеріне айтпаңыз*"
+    - "бұл арамызда қалсын"
+    - "ешкіммен талқыламаңыз*"
+    - "қатаң құпия"
+    - "анама айтпа*"            # the hijacked-relative register
+    - "әкеме айтпа*"
+    - "ата-анама айтпа*"
+
+  "J2.relative_in_trouble":
+    - "апатқа ұшырадым"
+    - "апатқа түстім"
+    - "аварияға түстім"
+    - "ауруханадамын"
+    - "ауруханада жатырмын"
+    - "мені ұстап алды"
+    - "мені ұстады"
+    - "бәле болды"
+    - "отаға ақша керек"        # money for the operation
+    - "адамды қағып кеттім"     # I hit a person (with a car)
+
+  "J3.hijacked_account_ask":
+    - "ақша жіберші*"
+    - "ақша аударып жібер*"
+    - "аударып жіберші*"
+    - "ертеңге дейін қарыз*"
+    - "ертең қайтарамын"
+    - "кейін қайтарамын"
+    - "шұғыл ақша керек"
+    - "қарыз бере аласың*"
+    - "қарызға бере аласың*"
+
+  "J4.script_handoff":
+    - "маманға қосамын"
+    - "тергеушіге қосамын"
+    - "тергеушімен байланыстырамын"
+    - "қызметкерге қосамын"
+    - "сізбен маман хабарласады"
+    - "трубканы беремін"
+    - "қоңырауыңызды аударамын"

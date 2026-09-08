@@ -161,6 +161,18 @@ HARD_NEGATIVES = {
     ),
     "olx_buyer": "Здравствуйте, товар ещё продаётся? Могу забрать завтра после обеда.",
     "kaspi_promo": "Kaspi Bonus: вам начислено 500 бонусов за покупки в июле.",
+    # A bank's own "we never ask" warning names the code, the CVV and the
+    # password in one sentence, and then quotes the scam to warn against it.
+    "bank_never_asks": (
+        "Kaspi: мы никогда не спрашиваем код из СМС, CVV или пароль от приложения. "
+        "Если вам звонят «из службы безопасности банка» и просят назвать код — это "
+        "мошенники. Положите трубку и позвоните 9999."
+    ),
+    # "Tell me the code" of a door, not of a bank.
+    "courier_intercom": (
+        "Добрый день, курьер Яндекс Еды, стою у подъезда 3. "
+        "Скажите код от домофона или спуститесь, пожалуйста."
+    ),
 }
 
 

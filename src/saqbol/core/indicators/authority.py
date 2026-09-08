@@ -51,6 +51,8 @@ keyword_indicator(
         "警官",
         "民警",
         "反诈中心",
+        # kk
+        *kk("C2.police_prosecutor"),
     ],
 )
 
@@ -100,6 +102,8 @@ keyword_indicator(
         "领事馆",
         "出入境",
         "签证注销",
+        # kk
+        *kk("C5.embassy_immigration"),
     ],
 )
 
@@ -135,5 +139,7 @@ keyword_indicator(
         "блокировка номера",
         "договор связи истекает",
         "sim карта будет заблокирована",
+        # kk
+        *kk("C7.telecom"),
     ],
 )

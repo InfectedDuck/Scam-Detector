@@ -47,15 +47,10 @@ cases:
       band_in: [scam, suspicious]
       playbook_id: kz.mule_account_rental
       must_hit_families: [E]
-      evidence_contains: ["картаңыз арқылы"]
+      evidence_contains: ["әр аударымнан"]
     note: >-
       Pure Kazakh mule recruitment aimed at students. Realistic wording; nothing in the
       catalogue matches it today.
-    xfail: >-
-      Rule gap: E5, H4 and D1 have no Kazakh phrases (картаңыз арқылы аударым, тек карта
-      керек, картаңызды жалға, оңай табыс, Telegram-ға жазыңыз) and kz.mule_account_rental
-      has no Kazakh retrieval_phrases. Scores 0 on every family.
-
   - id: mixed_kk_ru_chat_need_your_kaspi
     lang_hint: kk
     channel: whatsapp

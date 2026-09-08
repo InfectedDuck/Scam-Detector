@@ -53,11 +53,6 @@ cases:
     note: >-
       Pure Kazakh storefront reply. B1 "тез арада" is the only catalogue hit; the
       prepayment and transfer-to-number phrasings have no Kazakh entries.
-    xfail: >-
-      Rule gap: E7 has no Kazakh phrase (алдын ала төлем, алдын ала төлеңіз, бронь ақысы)
-      and E2 has none (нөміріне аударыңыз, картаға аударыңыз); kz.fake_store has no Kazakh
-      retrieval_phrases.
-
   - id: mixed_ru_kk_instagram_half_prepayment
     lang_hint: ru
     channel: instagram

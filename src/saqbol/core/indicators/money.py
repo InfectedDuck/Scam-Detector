@@ -42,6 +42,8 @@ keyword_indicator(
         "переведите на счет",
         "для проверки переведите",
         "transfer to this card",
+        # kk
+        *kk("E2.transfer_to_person"),
     ],
 )
 
@@ -76,6 +78,8 @@ keyword_indicator(
         "переводы за процент",
         "дроп",
         "дропов",
+        # kk
+        *kk("E5.mule_recruitment"),
     ],
 )
 
@@ -92,6 +96,8 @@ keyword_indicator(
         # zh
         "保证金",
         "缴纳保证金",
+        # kk
+        *kk("E6.guarantee_deposit"),
     ],
 )
 
@@ -109,6 +115,8 @@ keyword_indicator(
         "оплатите страховку",
         "advance fee",
         "pay the fee first",
+        # kk
+        *kk("E7.upfront_fee"),
     ],
 )
 

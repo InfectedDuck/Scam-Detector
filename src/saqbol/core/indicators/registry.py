@@ -180,11 +180,30 @@ NEGATION_CUES = (
     "не назыв",
     "не дикту",
     "не вводите",
+    # A bank describing what it never does: "мы никогда не спрашиваем код".
+    "никогда не",
+    "не спрашива",
+    "не запрашива",
+    "не просим",
+    "не просит",
+    "не просят",
+    # A warning quoting the request and then naming it: "просят назвать код
+    # — это мошенники". Scammers say "мошенники пытаются", never "это
+    # мошенники" about their own request, so the phrase is safe as a cue.
+    "это мошенники",
     "never share",
     "do not share",
+    "never ask",
     "请勿",
     "不要告诉",
 )
+
+#: Nouns that make a "tell me the code" request benign: the code of a door,
+#: not of a bank. Checked only in a short window after the phrase, so
+#: "скажите код от домофона" is a courier and "скажите код, домофон не
+#: работает" is still a request.
+BENIGN_OBJECT_CUES = ("домофон", "подъезд", "intercom", "есік коды", "домофонн")
+BENIGN_OBJECT_WINDOW = 24
 
 #: How far a negation cue may sit from the phrase and still govern it.
 #: Checked in both directions: genuine one-time-password messages put the
@@ -204,7 +223,10 @@ def is_negated(
     end = start if end is None else end
     prefix = haystack[max(0, start - before) : start]
     suffix = haystack[end : end + after]
-    return any(cue in prefix or cue in suffix for cue in NEGATION_CUES)
+    if any(cue in prefix or cue in suffix for cue in NEGATION_CUES):
+        return True
+    near = haystack[end : end + BENIGN_OBJECT_WINDOW]
+    return any(cue in near for cue in BENIGN_OBJECT_CUES)
 
 
 def find_phrase_spans(
