@@ -156,7 +156,9 @@ async def analyze(body: AnalysisInput, request: Request, deps: DepsDep) -> Analy
         raise ApiError(429, "rate_limited", retry_after=seconds_until_utc_midnight())
 
     started = time.perf_counter()
-    verdict = await deps.analyzer(text, locale=body.lang_hint, surface=surface)
+    verdict = await deps.analyzer(
+        text, locale=body.lang_hint, surface=surface, thread=list(body.thread)
+    )
     # The same call the pipeline makes, so the offsets in the verdict index this string.
     normalized = normalize(text, lang_hint=body.lang_hint).text
     if any(normalized[span.start : span.end] != span.text for span in verdict.evidence):

@@ -94,7 +94,12 @@ class AnalyzeFn(Protocol):
     """The shape of `saqbol.pipeline.analyze`, so a test can substitute a stub."""
 
     async def __call__(
-        self, text: str, *, locale: Lang | None = None, surface: str = "api"
+        self,
+        text: str,
+        *,
+        locale: Lang | None = None,
+        surface: str = "api",
+        thread: list[str] | None = None,
     ) -> Verdict: ...
 
 

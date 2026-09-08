@@ -207,9 +207,24 @@ def reset_default() -> None:
     loader.registry.cache_clear()
 
 
-async def analyze(text: str, *, locale: Lang | None = None, surface: str = "api") -> Verdict:
-    """The pinned seam. See the module docstring."""
-    return await default_analyzer().analyze(text, locale=locale, surface=surface)
+async def analyze(
+    text: str,
+    *,
+    locale: Lang | None = None,
+    surface: str = "api",
+    thread: list[str] | None = None,
+    metadata: dict | None = None,
+) -> Verdict:
+    """The pinned seam. See the module docstring.
+
+    `thread` is the earlier messages of a conversation, for stage detection.
+    `metadata` carries what a surface knows and the text does not, such as
+    forwarded-message provenance for indicator family I. Both are optional and
+    both are ignored by the deterministic baseline when absent.
+    """
+    return await default_analyzer().analyze(
+        text, locale=locale, surface=surface, thread=thread, metadata=metadata
+    )
 
 
 def rules_only_analyzer(playbooks: dict[str, Playbook] | None = None) -> Analyzer:
