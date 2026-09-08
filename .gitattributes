@@ -1,0 +1,7 @@
+# Normalise line endings so the repo is identical on Windows and on the
+# Hetzner box. Without this every file round-trips through CRLF locally.
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.gif binary
+*.pdf binary
