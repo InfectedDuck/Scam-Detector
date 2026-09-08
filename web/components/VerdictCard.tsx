@@ -2,6 +2,7 @@ import type { AnalyzeResult, Severity } from "@/lib/types";
 import { highlight } from "@/lib/highlight";
 import { LOCALE_TAGS, type Messages } from "@/i18n";
 import { HighlightedMessage } from "./HighlightedMessage";
+import { ShareBar } from "./ShareBar";
 
 /**
  * The answer to all four questions from docs/01_ARCHITECTURE.md section 1, in
@@ -12,8 +13,19 @@ import { HighlightedMessage } from "./HighlightedMessage";
  * browser as JavaScript. Every sentence about the verdict — band, indicator
  * labels, the advice, the hotline name — comes from the backend's own i18n and
  * playbook files through `messages`; only page chrome is authored in web/.
+ *
+ * `origin` is the absolute origin of this deployment, for the share links,
+ * which have to work once they have left the page.
  */
-export function VerdictCard({ result, messages }: { result: AnalyzeResult; messages: Messages }) {
+export function VerdictCard({
+  result,
+  messages,
+  origin,
+}: {
+  result: AnalyzeResult;
+  messages: Messages;
+  origin: string;
+}) {
   const { verdict, normalized_text } = result;
   const { locale, t, isFallback } = messages;
   const marked = highlight(normalized_text, verdict);
@@ -179,6 +191,9 @@ export function VerdictCard({ result, messages }: { result: AnalyzeResult; messa
           {hotlineLabel && <span className="text-[0.875rem] text-muted">{hotlineLabel}</span>}
         </div>
       </div>
+
+      {/* ---- warn the next person. The loop. --------------------------- */}
+      <ShareBar verdict={verdict} messages={messages} origin={origin} />
 
       {/* ---- how it was decided. Collapsed: this is for us, not them. -- */}
       <details className="border-t border-line px-5 py-3 text-[0.875rem] sm:px-6">

@@ -3,18 +3,19 @@
 import { useActionState, useState, type ReactNode } from "react";
 
 import { MAX_TEXT_CHARS } from "@/lib/types";
+import { ImageDropZone, type ImageDropZoneStrings } from "./ImageDropZone";
 
 /**
- * The only client component in the app.
+ * The paste box, the screenshot picker, and a pending state, and nothing else.
  *
- * It owns a textarea, a character counter and a pending state, and nothing
- * else. The verdict it displays is built on the server and arrives as an RSC
+ * The verdict it displays is built on the server and arrives as an RSC
  * payload, so none of the highlighting logic or the dictionaries are in this
  * bundle.
  *
  * `fallback` is the server-rendered card for a `?sample=` link, shown until the
  * action produces one of its own. Without JavaScript, the form still posts and
- * the server still answers.
+ * the server still answers: the textarea and the file input are ordinary
+ * fields, and React renders the form as a multipart POST.
  */
 export function AnalyzeForm({
   action,
@@ -33,12 +34,14 @@ export function AnalyzeForm({
     submit: string;
     submitting: string;
     counter: string;
+    image: ImageDropZoneStrings;
   };
   defaultValue?: string;
   fallback?: ReactNode;
 }) {
   const [result, formAction, pending] = useActionState<ReactNode, FormData>(action, null);
   const [length, setLength] = useState(defaultValue.length);
+  const [preparing, setPreparing] = useState(false);
 
   return (
     <>
@@ -61,19 +64,22 @@ export function AnalyzeForm({
           autoComplete="off"
         />
 
-        <div className="mt-3 flex flex-wrap items-center gap-3">
+        <div className="mt-1.5 text-right tabular-nums text-[0.8125rem] text-muted">
+          {strings.counter
+            .replace("{n}", String(length))
+            .replace("{max}", String(MAX_TEXT_CHARS))}
+        </div>
+
+        <ImageDropZone strings={strings.image} onBusy={setPreparing} />
+
+        <div className="mt-4 flex flex-wrap items-center gap-3">
           <button
             type="submit"
-            disabled={pending}
+            disabled={pending || preparing}
             className="inline-flex min-h-11 items-center rounded-xl bg-ink px-5 py-2.5 text-base font-semibold text-bg disabled:opacity-60"
           >
             {pending ? strings.submitting : strings.submit}
           </button>
-          <span className="ml-auto tabular-nums text-[0.8125rem] text-muted">
-            {strings.counter
-              .replace("{n}", String(length))
-              .replace("{max}", String(MAX_TEXT_CHARS))}
-          </span>
         </div>
       </form>
 

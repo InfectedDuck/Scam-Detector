@@ -24,7 +24,7 @@ export const USING_MOCK = !API_BASE;
 
 export class ApiError extends Error {
   constructor(
-    readonly code: "rate_limited" | "too_large" | "failed",
+    readonly code: "rate_limited" | "too_large" | "image_not_supported" | "failed",
     readonly retryAfter?: number,
   ) {
     super(code);
@@ -35,7 +35,13 @@ export class ApiError extends Error {
 export async function fetchVerdict(input: AnalysisInput): Promise<AnalyzeResult> {
   const normalized = normalize(input.text ?? "");
 
-  if (!API_BASE) return mockVerdict(normalized);
+  // The backend cannot OCR yet and the mock has no image path at all, so a
+  // screenshot gets the same answer here that the real API gives it: the 422
+  // below. The caller then falls back to the text, if any, and says so.
+  if (!API_BASE) {
+    if (input.image_b64) throw new ApiError("image_not_supported");
+    return mockVerdict(normalized);
+  }
 
   let response: Response;
   try {
@@ -54,6 +60,10 @@ export async function fetchVerdict(input: AnalysisInput): Promise<AnalyzeResult>
     throw new ApiError("rate_limited", body?.retry_after);
   }
   if (response.status === 413) throw new ApiError("too_large");
+  if (response.status === 422) {
+    const body = (await response.json().catch(() => null)) as { error?: string } | null;
+    throw new ApiError(body?.error === "image_not_supported" ? "image_not_supported" : "failed");
+  }
   if (!response.ok) throw new ApiError("failed");
 
   const verdict = (await response.json()) as Verdict & { normalized_text?: string };

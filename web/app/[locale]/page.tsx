@@ -2,9 +2,11 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { AnalyzeForm } from "@/components/AnalyzeForm";
+import { CopyLinkScript } from "@/components/ShareBar";
 import { VerdictCard } from "@/components/VerdictCard";
 import { LOCALES, LOCALE_NAMES, getMessages, isLocale } from "@/i18n";
 import { USING_MOCK, fetchVerdict } from "@/lib/api";
+import { siteOrigin } from "@/lib/site";
 import { SAMPLES, getSample } from "@/mock";
 import { analyzeAction } from "./actions";
 
@@ -32,6 +34,7 @@ export default async function HomePage({
   const messages = getMessages(locale);
   const { t } = messages;
   const initial = sample ? await fetchVerdict({ text: sample.text, surface: "web" }) : null;
+  const origin = await siteOrigin();
 
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-2xl flex-col px-4 py-6 sm:px-6 sm:py-10">
@@ -82,8 +85,20 @@ export default async function HomePage({
             submit: t("form.submit"),
             submitting: t("form.submitting"),
             counter: t("form.counter"),
+            image: {
+              label: t("form.image.label"),
+              hint: t("form.image.hint"),
+              browse: t("form.image.browse"),
+              preview: t("form.image.preview"),
+              remove: t("form.image.remove"),
+              preparing: t("form.image.preparing"),
+              tooLarge: t("form.image.too_large"),
+              wrongType: t("form.image.wrong_type"),
+            },
           }}
-          fallback={initial ? <VerdictCard result={initial} messages={messages} /> : null}
+          fallback={
+            initial ? <VerdictCard result={initial} messages={messages} origin={origin} /> : null
+          }
         />
 
         <section className="mt-10">
@@ -120,6 +135,9 @@ export default async function HomePage({
         )}
         <p className="max-w-prose">{t("footer.disclaimer")}</p>
       </footer>
+
+      {/* One delegated listener for every copy-link control, now and later. */}
+      <CopyLinkScript />
     </div>
   );
 }

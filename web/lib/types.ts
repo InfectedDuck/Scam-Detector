@@ -111,3 +111,13 @@ export interface RateLimited {
 
 /** Limits from docs/02_DATA_CONTRACTS.md §5. */
 export const MAX_TEXT_CHARS = 8000;
+
+/** Screenshot upload: the formats the form accepts and the size it refuses above. */
+export const IMAGE_TYPES = ["image/png", "image/jpeg", "image/webp"] as const;
+export type ImageType = (typeof IMAGE_TYPES)[number];
+export const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+
+/** POST /api/v1/analyze, 422 — the backend cannot read screenshots yet. */
+export interface ImageNotSupported {
+  error: "image_not_supported";
+}

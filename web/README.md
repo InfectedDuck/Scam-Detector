@@ -76,8 +76,19 @@ the field to the pydantic model is the whole fix.
 
 ## Performance budget
 
-Page-specific JavaScript is under 1 kB; first load is the React and Next
-runtime (~103 kB gzipped) and nothing else. The card, the highlighting and all
-dictionaries render on the server and arrive as HTML or RSC payload. Fonts are
-the system stack. Dark mode follows `prefers-color-scheme` with no script and no
-flash. The `?sample=` links and the form both work with JavaScript disabled.
+Page-specific JavaScript is about 2 kB; first load is the React and Next
+runtime (~108 kB gzipped) and nothing else. The card, the highlighting and all
+dictionaries render on the server and arrive as HTML or RSC payload. The only
+client component is the screenshot drop zone. Fonts are the system stack. Dark
+mode follows `prefers-color-scheme` with no script and no flash. The `?sample=`
+links and the form, including the file input, work with JavaScript disabled.
+
+## Environment
+
+| Variable | Purpose |
+|---|---|
+| `SAQBOL_API_BASE` | Base URL of the Python API. Unset means mock verdicts. |
+| `SAQBOL_SITE_URL` | Public origin, used for absolute share links and `og:image`. Falls back to request headers. |
+
+Share pages under `/[locale]/share/[playbook_id]` are prerendered at build
+time from the playbook YAML, so a new playbook needs a rebuild.

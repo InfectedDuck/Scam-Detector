@@ -216,3 +216,12 @@ body {
   outline-offset: 2px;
   border-radius: 4px;
 }
+
+/* ---- share row ----------------------------------------------------------- */
+
+/* Set by the inline copy script for two seconds after a successful copy. */
+.copy-link[data-state="copied"] {
+  border-color: var(--band-line);
+  background: var(--band-bg);
+  color: var(--band-fg);
+}
