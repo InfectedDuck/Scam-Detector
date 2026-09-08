@@ -187,10 +187,21 @@ def assert_spans_match(text: str, hits: Iterable[IndicatorHit]) -> None:
                 )
 
 
-def collect_evidence(hits: Iterable[IndicatorHit]) -> list[EvidenceSpan]:
-    """Every span, de-duplicated by position and ordered as the reader reads."""
+def collect_evidence(
+    hits: Iterable[IndicatorHit], extra: Iterable[EvidenceSpan] | None = None
+) -> list[EvidenceSpan]:
+    """Every span, de-duplicated by position and ordered as the reader reads.
+
+    `extra` carries spans that came from the model's quotes rather than from a
+    rule, so they appear in the card without adding to the rule score.
+    """
     seen: set[tuple[int, int, str]] = set()
     spans: list[EvidenceSpan] = []
+    for span in list(extra or []):
+        key = (span.start, span.end, span.indicator_id)
+        if key not in seen:
+            seen.add(key)
+            spans.append(span)
     for hit in hits:
         for span in hit.spans:
             key = (span.start, span.end, span.indicator_id)
@@ -200,6 +211,25 @@ def collect_evidence(hits: Iterable[IndicatorHit]) -> list[EvidenceSpan]:
             spans.append(span)
     spans.sort(key=lambda s: (s.start, s.end))
     return spans
+
+
+def choose_playbook(
+    judgement: LLMJudgement | None, retrieval: tuple[str, float] | None
+) -> tuple[str | None, float]:
+    """Which script the verdict names, and how strongly.
+
+    The model's choice wins when it made one, because it saw the message and
+    retrieval only saw vocabulary. Retrieval is the fallback so a rules-only or
+    refused run still names something useful.
+
+    Shared with the pipeline, which needs the same answer before fusion in
+    order to look up the advice and the hotline.
+    """
+    if judgement is not None and judgement.playbook_id:
+        return judgement.playbook_id, judgement.confidence
+    if retrieval is not None:
+        return retrieval
+    return None, 0.0
 
 
 def band_for(risk: float, thresholds: Thresholds = DEFAULT_THRESHOLDS) -> Band:
@@ -217,6 +247,7 @@ def fuse(
     retrieval: tuple[str, float] | None = None,
     judgement: LLMJudgement | None = None,
     self_consistency: float | None = None,
+    extra_evidence: Iterable[EvidenceSpan] | None = None,
     action_key: str = "",
     hotline: str = "",
     stage: Stage | None = None,
@@ -233,7 +264,13 @@ def fuse(
     absent, which is how the `rules_only` baseline runs.
     """
     hits = list(hits)
+    extra = list(extra_evidence or [])
     assert_spans_match(norm.text, hits)
+    for span in extra:
+        if norm.text[span.start : span.end] != span.text:
+            raise ValueError(
+                f"{span.indicator_id}: span [{span.start}:{span.end}] does not quote the message"
+            )
 
     rules = rule_norm(hits)
     similarity = retrieval[1] if retrieval else 0.0
@@ -261,13 +298,7 @@ def fuse(
 
     band = Band.UNSURE if abstained else band_for(risk, thresholds)
 
-    playbook_id = None
-    playbook_confidence = 0.0
-    if judgement is not None and judgement.playbook_id:
-        playbook_id = judgement.playbook_id
-        playbook_confidence = confidence
-    elif retrieval is not None:
-        playbook_id, playbook_confidence = retrieval
+    playbook_id, playbook_confidence = choose_playbook(judgement, retrieval)
 
     return Verdict(
         check_id=check_id or uuid.uuid4().hex,
@@ -277,7 +308,7 @@ def fuse(
         playbook_confidence=round(playbook_confidence, 4),
         stage=stage or (judgement.stage if judgement else None),
         indicators=hits,
-        evidence=collect_evidence(hits),
+        evidence=collect_evidence(hits, extra),
         action_key=action_key,
         hotline=hotline,
         language=norm.lang or Lang.UNKNOWN,

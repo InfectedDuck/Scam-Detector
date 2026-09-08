@@ -32,8 +32,11 @@ llm = [
     "langgraph>=0.2.50",
     "sentence-transformers>=3.3",
 ]
+# Metrics only: bootstrap confidence intervals over results.json.
+eval = ["numpy>=2.1"]
 dev = [
     "pytest>=8.3",
+    "pytest-asyncio>=0.24",
     "pytest-cov>=6.0",
     "ruff>=0.8",
 ]
