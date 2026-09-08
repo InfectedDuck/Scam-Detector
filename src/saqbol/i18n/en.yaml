@@ -1,0 +1,128 @@
+# English. Deliberately terse: it exists for the demo, the API and reviewers of
+# the dataset, not for the people the bot is built for. The key set is identical
+# to ru.yaml and a test enforces that.
+
+band:
+  scam:
+    label: "Scam"
+    title: "This looks like a scam"
+    summary: "The message carries the marks of a known scam script. Do not share codes, do not transfer money, and do not install anything they ask you to."
+  suspicious:
+    label: "Suspicious"
+    title: "Suspicious message"
+    summary: "There are warning signs, but not enough for a firm verdict. Check the sender on an official number before doing anything."
+  unsure:
+    label: "No verdict"
+    title: "Not confident enough to say"
+    summary: "The signals contradict each other, so there is no verdict. Treat the message with caution and check it yourself."
+  likely_safe:
+    label: "Nothing found"
+    title: "No scam indicators found"
+    summary: "No clear marks of a known script. That is not a guarantee: this check reads the text, not the person behind it."
+
+abstained:
+  line: "Why there is no verdict: {reason}."
+  reason:
+    disagreement: "the rules and the model disagreed too far apart to average"
+    low_self_consistency: "the model did not repeat its own answer on re-check"
+    unknown: "the check stopped before reaching a conclusion"
+
+stage:
+  now: "Now: {label} — {description}"
+  next: "Next in the script: {label} — {description}"
+  contact:
+    label: "contact"
+    description: "they have reached you for the first time."
+  hook:
+    label: "hook"
+    description: "a story is told that makes you pay attention."
+  trust:
+    label: "trust"
+    description: "the story is backed up with your name, a document, or a handover to a specialist."
+  pressure:
+    label: "pressure"
+    description: "they hurry you, frighten you, and ask you to tell no one."
+  extraction:
+    label: "extraction"
+    description: "they ask for a code, a transfer, or an app install."
+  cashout:
+    label: "cash-out"
+    description: "the money is already moving and minutes matter."
+
+evidence:
+  line: "\"{quote}\" — {label}"
+  line_no_quote: "{label}"
+  line_bare: "\"{quote}\""
+  none: "No individual indicators fired."
+  more: "…and {count} more"
+
+indicator:
+  A1.otp_request: "Asks for the one-time code from an SMS"
+  A2.card_secrets: "Asks for card details: full number, CVV or PIN"
+  A3.password_request: "Asks for a login or password"
+  A4.code_relay: "Asks you to read back a code that just arrived"
+  B1.urgency: "Manufactured time pressure"
+  B2.account_block_threat: "Threatens to block the account or card"
+  B3.criminal_threat: "Threatens prosecution or arrest"
+  B4.money_at_risk: "Claims money is being taken right now"
+  C1.bank_security: "Claims to be a bank security department"
+  C2.police_prosecutor: "Claims to be police, prosecutor or financial monitoring"
+  C3.egov_1414: "Claims to be eGov or the 1414 service"
+  C4.national_bank: "Claims to be the National Bank"
+  C5.embassy_immigration: "Claims to be an embassy or immigration office"
+  C6.courier_post: "Claims to be post, a courier or customs"
+  C7.telecom: "Claims to be a mobile operator"
+  D1.move_to_messenger: "Moves the conversation to WhatsApp or Telegram"
+  D2.leave_platform: "Suggests leaving the platform to finish the deal"
+  D3.dont_hang_up: "Asks you to stay on the line and consult no one"
+  E1.safe_account: "The safe account fiction — no bank has such an account"
+  E2.transfer_to_person: "Asks for a transfer to a private card"
+  E3.take_a_loan: "Pushes you to take out a loan"
+  E4.crypto_address: "A crypto wallet address in an unsolicited message"
+  E5.mule_recruitment: "Offers to rent your card or account"
+  E6.guarantee_deposit: "Demands a deposit or guarantee payment"
+  E7.upfront_fee: "Asks you to pay first to receive something"
+  F1.remote_access_app: "Asks you to install a remote-access app"
+  F2.apk_attachment: "An .apk file or link — installing outside the app store"
+  F3.install_instruction: "Asks you to install an app from a supplied link"
+  F4.disable_protection: "Asks you to turn off your phone protection"
+  G1.lookalike_domain: "The web address nearly matches a known brand"
+  G2.punycode_idn: "Substituted characters in the address (punycode)"
+  G3.shortener: "A short link hiding the real address"
+  G4.long_redirect_chain: "The link travels through a chain of redirects"
+  G5.brand_mismatch: "A brand name in the address on someone else's domain"
+  G6.fresh_domain: "The domain was registered recently"
+  G7.qr_payload_risk: "Dangerous content inside the QR code"
+  G8.ip_url: "An IP address in place of a domain"
+  H1.guaranteed_returns: "Promises guaranteed returns"
+  H2.celebrity_investment: "A famous name beside an investment pitch"
+  H3.unsolicited_prize: "An unsolicited prize, payout or compensation"
+  H4.easy_job: "Easy money with no experience"
+  H5.romance_to_investment: "A friendship turning into an investment talk"
+  I1.foreign_number_local_claim: "A foreign number claiming a Kazakhstani institution"
+  I2.spoofed_short_code: "The bank short code is spoofed"
+  I3.new_telegram_account: "A new or anonymous account is writing"
+  I4.relative_new_number: "A relative writing from an unknown number"
+  J1.secrecy: "Asks you to tell no one"
+  J2.relative_in_trouble: "A story about a relative in trouble"
+  J3.hijacked_account_ask: "A known contact urgently asking for money"
+  J4.script_handoff: "Handover to a specialist — the call is following a script"
+
+action:
+  generic:
+    scam: "End the conversation. Give no one a code, card details or password, transfer no money, and install nothing. Call the bank yourself, on the number printed on your card, never the one you were given."
+    suspicious: "Do not hurry and do not open the link in the message. Contact the organisation yourself, on the number from its official site, and ask whether they wrote to you."
+    unsure: "Until this is clear, give no code, transfer no money and install nothing. Talk it over with someone close to you: a pause costs nothing, haste costs money."
+    likely_safe: "Nothing to do. The standing rule holds: an SMS code, card details and passwords are never shared with anyone, bank staff included."
+
+hotline:
+  police: "Police"
+  egov: "eGov contact centre"
+  cn_police: "Police (China)"
+  generic: "Hotline"
+
+footer:
+  disclaimer: "This is an automated assessment, not an official ruling."
+  risk: "Risk score: {percent}%"
+  check_id: "Check id: {check_id}"
+  fallback: "Some text is shown in Russian: the translation is not ready yet."

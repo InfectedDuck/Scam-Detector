@@ -1,0 +1,136 @@
+# Russian — the source language. Every key is written here first and must never
+# be empty: the loader refuses a table with a hole in it, because a missing
+# Russian string is a bug in the renderer rather than a pending translation.
+#
+# Placeholders in braces are part of the contract with the code. Renaming one
+# here breaks the card; the wording around it is free.
+
+band:
+  scam:
+    label: "Мошенничество"
+    title: "Это похоже на мошенничество"
+    summary: "В сообщении есть признаки известной мошеннической схемы. Не сообщайте коды, не переводите деньги и не устанавливайте приложения по этой просьбе."
+  suspicious:
+    label: "Подозрительно"
+    title: "Подозрительное сообщение"
+    summary: "Признаки настораживают, но их недостаточно для однозначного вывода. Проверьте отправителя по официальному номеру, прежде чем что-то делать."
+  unsure:
+    label: "Без вердикта"
+    title: "Не берёмся судить"
+    summary: "Сигналы противоречат друг другу, поэтому вердикта не будет. Отнеситесь к сообщению осторожно и проверьте его сами."
+  likely_safe:
+    label: "Признаков не найдено"
+    title: "Признаков мошенничества не найдено"
+    summary: "Явных признаков известных схем в сообщении нет. Это не гарантия: проверка смотрит на текст, а не на человека за ним."
+
+abstained:
+  line: "Почему без вердикта: {reason}."
+  reason:
+    disagreement: "правила и модель разошлись в оценке слишком сильно, чтобы усреднять их"
+    low_self_consistency: "модель не повторила свой же ответ при перепроверке"
+    unknown: "проверка остановилась до вывода"
+
+stage:
+  now: "Сейчас: {label} — {description}"
+  next: "Дальше по сценарию: {label} — {description}"
+  contact:
+    label: "контакт"
+    description: "с вами связались первый раз."
+  hook:
+    label: "зацепка"
+    description: "рассказывают историю, которая заставляет вникнуть."
+  trust:
+    label: "доверие"
+    description: "подтверждают свою легенду именем, документом или переводом на «специалиста»."
+  pressure:
+    label: "давление"
+    description: "торопят, пугают и просят никому не рассказывать."
+  extraction:
+    label: "изъятие"
+    description: "просят код, перевод или установку приложения."
+  cashout:
+    label: "вывод денег"
+    description: "деньги уже уходят, и счёт идёт на минуты."
+
+evidence:
+  line: "«{quote}» — {label}"
+  line_no_quote: "{label}"
+  line_bare: "«{quote}»"
+  none: "Отдельных признаков не нашлось."
+  more: "…и ещё {count}"
+
+# One label per indicator id from docs/03_INDICATORS.md. The label says what was
+# found and why it matters, in the words a reader would use, not the words the
+# rule uses.
+indicator:
+  A1.otp_request: "Просят одноразовый код из СМС"
+  A2.card_secrets: "Просят данные карты: полный номер, CVV или ПИН"
+  A3.password_request: "Просят логин или пароль"
+  A4.code_relay: "Просят продиктовать код, который только что пришёл"
+  B1.urgency: "Искусственная спешка"
+  B2.account_block_threat: "Пугают блокировкой счёта или карты"
+  B3.criminal_threat: "Пугают уголовным делом или задержанием"
+  B4.money_at_risk: "Уверяют, что деньги списывают прямо сейчас"
+  C1.bank_security: "Представляются службой безопасности банка"
+  C2.police_prosecutor: "Представляются полицией, прокуратурой или финмониторингом"
+  C3.egov_1414: "Представляются eGov или службой 1414"
+  C4.national_bank: "Представляются Национальным банком"
+  C5.embassy_immigration: "Представляются посольством или миграционной службой"
+  C6.courier_post: "Представляются почтой, курьером или таможней"
+  C7.telecom: "Представляются мобильным оператором"
+  D1.move_to_messenger: "Уводят разговор в WhatsApp или Telegram"
+  D2.leave_platform: "Предлагают уйти с площадки, чтобы «завершить сделку»"
+  D3.dont_hang_up: "Просят не класть трубку и ни с кем не советоваться"
+  E1.safe_account: "«Безопасный счёт» — такого счёта не существует ни в одном банке"
+  E2.transfer_to_person: "Просят перевод на карту частного лица"
+  E3.take_a_loan: "Подталкивают оформить кредит"
+  E4.crypto_address: "В незапрошенном сообщении адрес криптокошелька"
+  E5.mule_recruitment: "Предлагают сдать свою карту или счёт в аренду"
+  E6.guarantee_deposit: "Требуют залог или «гарантийный взнос»"
+  E7.upfront_fee: "Просят заплатить вперёд, чтобы что-то получить"
+  F1.remote_access_app: "Просят установить программу удалённого доступа"
+  F2.apk_attachment: "Файл или ссылка .apk — установка в обход магазина приложений"
+  F3.install_instruction: "Просят установить приложение по присланной ссылке"
+  F4.disable_protection: "Просят отключить защиту телефона"
+  G1.lookalike_domain: "Адрес сайта почти совпадает с известным брендом"
+  G2.punycode_idn: "В адресе подменённые символы (punycode)"
+  G3.shortener: "Короткая ссылка прячет настоящий адрес"
+  G4.long_redirect_chain: "Ссылка ведёт через цепочку перенаправлений"
+  G5.brand_mismatch: "Имя бренда в адресе, а домен принадлежит другому"
+  G6.fresh_domain: "Домен зарегистрирован недавно"
+  G7.qr_payload_risk: "Опасное содержимое внутри QR-кода"
+  G8.ip_url: "Вместо домена в ссылке IP-адрес"
+  H1.guaranteed_returns: "Обещают гарантированный доход"
+  H2.celebrity_investment: "Известное имя рядом с инвестиционным предложением"
+  H3.unsolicited_prize: "Незапрошенный выигрыш, выплата или компенсация"
+  H4.easy_job: "Лёгкий заработок без опыта"
+  H5.romance_to_investment: "Знакомство переходит к разговору об инвестициях"
+  I1.foreign_number_local_claim: "Иностранный номер при ссылке на казахстанское учреждение"
+  I2.spoofed_short_code: "Короткий номер банка подделан"
+  I3.new_telegram_account: "Пишет новый или обезличенный аккаунт"
+  I4.relative_new_number: "«Родственник» пишет с незнакомого номера"
+  J1.secrecy: "Просят никому не рассказывать"
+  J2.relative_in_trouble: "История о беде с близким человеком"
+  J3.hijacked_account_ask: "Знакомый контакт срочно просит денег"
+  J4.script_handoff: "Передают «специалисту» — разговор идёт по сценарию"
+
+# Used only when no playbook applies. A playbook always brings its own action
+# text, because advice is written by a person and reviewed, never assembled.
+action:
+  generic:
+    scam: "Прекратите разговор. Никому не называйте код, данные карты и пароль, не переводите деньги и ничего не устанавливайте. Позвоните в банк сами — по номеру на обороте карты, а не по тому, который вам дали."
+    suspicious: "Не торопитесь и не переходите по ссылке из сообщения. Свяжитесь с организацией сами, по номеру с её официального сайта, и спросите, писали ли вам."
+    unsure: "Пока не разобрались — не давайте код, не переводите деньги и ничего не устанавливайте. Посоветуйтесь с близким человеком: пауза ничего не стоит, а спешка стоит денег."
+    likely_safe: "Ничего делать не нужно. Общее правило остаётся: код из СМС, данные карты и пароль не сообщают никому, даже сотруднику банка."
+
+hotline:
+  police: "Полиция"
+  egov: "Единый контакт-центр eGov"
+  cn_police: "Полиция КНР"
+  generic: "Горячая линия"
+
+footer:
+  disclaimer: "Это автоматическая оценка, а не официальное заключение."
+  risk: "Оценка риска: {percent}%"
+  check_id: "Код проверки: {check_id}"
+  fallback: "Часть текста показана по-русски: перевод ещё не готов."

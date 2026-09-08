@@ -1,0 +1,131 @@
+# Chinese. Terse, and aimed at the Chinese-speaking students the CN playbooks
+# are written for. The key set is identical to ru.yaml and a test enforces that.
+# Complete as a first draft and still unreviewed by a native speaker: mark any
+# line that needs rework with `null  # TODO-zh` rather than guessing at it. The
+# key stays, the value falls back to Russian, and the card says so in its
+# footer.
+
+band:
+  scam:
+    label: "诈骗"
+    title: "这看起来是诈骗"
+    summary: "消息中带有已知诈骗套路的特征。不要提供验证码，不要转账，也不要按对方要求安装任何应用。"
+  suspicious:
+    label: "可疑"
+    title: "可疑消息"
+    summary: "存在可疑迹象，但不足以下定论。做任何事之前，请通过官方号码核实发件人。"
+  unsure:
+    label: "无法判定"
+    title: "无法给出结论"
+    summary: "各项信号互相矛盾，因此不给出结论。请谨慎对待并自行核实。"
+  likely_safe:
+    label: "未发现迹象"
+    title: "未发现诈骗迹象"
+    summary: "没有已知套路的明显特征。这不是保证：本检测只看文字，看不到文字背后的人。"
+
+abstained:
+  line: "无法判定的原因：{reason}。"
+  reason:
+    disagreement: "规则与模型的判断相差过大，无法取中"
+    low_self_consistency: "模型复核时没有重复自己的答案"
+    unknown: "检测在得出结论前中止"
+
+stage:
+  now: "当前：{label} — {description}"
+  next: "套路的下一步：{label} — {description}"
+  contact:
+    label: "接触"
+    description: "对方第一次联系你。"
+  hook:
+    label: "下钩"
+    description: "编一个让你上心的故事。"
+  trust:
+    label: "取信"
+    description: "用你的姓名、证件或转接“专员”来坐实说法。"
+  pressure:
+    label: "施压"
+    description: "催促、恐吓，并要求你别告诉任何人。"
+  extraction:
+    label: "索取"
+    description: "索要验证码、转账或安装应用。"
+  cashout:
+    label: "提现"
+    description: "钱已经在走，时间以分钟计。"
+
+evidence:
+  line: "「{quote}」— {label}"
+  line_no_quote: "{label}"
+  line_bare: "「{quote}」"
+  none: "未发现单项迹象。"
+  more: "…另有 {count} 项"
+
+indicator:
+  A1.otp_request: "索要短信验证码"
+  A2.card_secrets: "索要卡片信息：完整卡号、CVV 或密码"
+  A3.password_request: "索要账号或密码"
+  A4.code_relay: "要求你复述刚收到的验证码"
+  B1.urgency: "人为制造的紧迫感"
+  B2.account_block_threat: "威胁冻结账户或银行卡"
+  B3.criminal_threat: "威胁刑事立案或拘留"
+  B4.money_at_risk: "声称你的钱正在被划走"
+  C1.bank_security: "冒充银行安全部门"
+  C2.police_prosecutor: "冒充公安、检察院或反洗钱部门"
+  C3.egov_1414: "冒充 eGov 或 1414 热线"
+  C4.national_bank: "冒充哈萨克斯坦国家银行"
+  C5.embassy_immigration: "冒充大使馆或出入境管理部门"
+  C6.courier_post: "冒充邮政、快递或海关"
+  C7.telecom: "冒充电信运营商"
+  D1.move_to_messenger: "把对话引到 WhatsApp 或 Telegram"
+  D2.leave_platform: "劝你离开平台去“完成交易”"
+  D3.dont_hang_up: "要求你别挂电话、别找人商量"
+  E1.safe_account: "所谓“安全账户”——任何银行都没有这种账户"
+  E2.transfer_to_person: "要求转账到个人银行卡"
+  E3.take_a_loan: "诱导你去办贷款"
+  E4.crypto_address: "陌生消息里出现加密钱包地址"
+  E5.mule_recruitment: "招揽你出租银行卡或账户"
+  E6.guarantee_deposit: "要求缴纳保证金"
+  E7.upfront_fee: "要求先付款才能拿到东西"
+  F1.remote_access_app: "要求安装远程控制软件"
+  F2.apk_attachment: ".apk 文件或链接——绕过应用商店安装"
+  F3.install_instruction: "要求通过所给链接安装应用"
+  F4.disable_protection: "要求关闭手机的安全防护"
+  G1.lookalike_domain: "网址与知名品牌高度相似"
+  G2.punycode_idn: "网址中含有替换字符（punycode）"
+  G3.shortener: "短链接掩盖了真实网址"
+  G4.long_redirect_chain: "链接经过多次跳转"
+  G5.brand_mismatch: "网址里有品牌名，域名却属于别人"
+  G6.fresh_domain: "域名是近期注册的"
+  G7.qr_payload_risk: "二维码里含有危险内容"
+  G8.ip_url: "用 IP 地址代替域名"
+  H1.guaranteed_returns: "承诺保本高收益"
+  H2.celebrity_investment: "名人名义搭配投资推介"
+  H3.unsolicited_prize: "不请自来的中奖、补贴或赔付"
+  H4.easy_job: "无需经验的轻松高薪"
+  H5.romance_to_investment: "交友聊着聊着转向投资"
+  I1.foreign_number_local_claim: "境外号码却自称哈萨克斯坦机构"
+  I2.spoofed_short_code: "银行短号码被伪造"
+  I3.new_telegram_account: "新注册或无名账号在联系你"
+  I4.relative_new_number: "“亲属”用陌生号码联系你"
+  J1.secrecy: "要求你不要告诉任何人"
+  J2.relative_in_trouble: "亲人出事的故事"
+  J3.hijacked_account_ask: "熟人账号急着找你借钱"
+  J4.script_handoff: "转接“专员”——按脚本走流程"
+
+action:
+  generic:
+    scam: "立即结束对话。不要把验证码、卡片信息或密码告诉任何人，不要转账，不要安装任何东西。自己拨打银行电话——用卡背面印的号码，绝不要用对方给的号码。"
+    suspicious: "不要着急，也不要点消息里的链接。自己联系该机构——用其官网上的电话——问清楚是否给你发过消息。"
+    unsure: "在弄清楚之前，不要给验证码、不要转账、不要安装任何东西。和身边的人商量一下：停一停不花钱，着急才花钱。"
+    likely_safe: "无需任何操作。基本规则不变：短信验证码、卡片信息和密码不告诉任何人，包括自称银行员工的人。"
+
+hotline:
+  police: "警察（哈萨克斯坦）"
+  egov: "eGov 统一服务热线"
+  cn_police: "中国公安"
+  generic: "热线"
+
+footer:
+  disclaimer: "这是自动评估，不是官方结论。"
+  risk: "风险评分：{percent}%"
+  check_id: "检查编号：{check_id}"
+  fallback: "部分文字以俄语显示：中文翻译尚未完成。"
