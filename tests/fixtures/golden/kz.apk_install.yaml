@@ -52,9 +52,6 @@ cases:
     note: >-
       Pure Kazakh delivery-tracker pretext: C6 through the kk delivery-problem phrasings,
       F3 "қосымшаны орнатыңыз", F2 on the .apk link and G5 on the kazpost host.
-    xfail_playbook: >-
-      Retrieval gap: kz.apk_install has no Kazakh retrieval_phrases (apk файл, қосымшаны
-      орнатыңыз, сілтеме арқылы жүктеңіз). The shared token "apk" alone is below the floor.
 
   - id: mixed_ru_kk_whatsapp_halyk_update
     lang_hint: kk

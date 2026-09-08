@@ -21,6 +21,14 @@ keyword_indicator(
         "risk-free",
         # kk
         *kk("H1.guaranteed_returns"),
+        # zh
+        "零风险",
+        "稳赚不亏",
+        "稳赚",
+        "保证收益",
+        "稳定收益",
+        "无风险",
+        "包赚",
     ],
 )
 
@@ -79,6 +87,11 @@ keyword_indicator(
         "兼职招聘",
         # kk
         *kk("H4.easy_job"),
+        # zh
+        "轻松赚钱",
+        "无需经验",
+        "手机操作即可",
+        "每单佣金",
     ],
 )
 

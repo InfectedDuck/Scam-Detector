@@ -36,6 +36,16 @@ retrieval_phrases:
   - "做任务提现失败"
   - "客服说要再做一单才能提现"
   - "在校学生兼职 手机操作即可"
+  # Chinese, in the register of the scam itself and of a student describing it.
+  # Tokenised as character bigrams, so coverage needs the actual wording.
+  - "兼职招聘 在校学生 手机操作即可"
+  - "刷单日结 每单佣金"
+  - "先垫付本金 做任务后返还"
+  - "加微信私聊接任务"
+  - "轻松赚钱 无需经验"
+  - "提现失败 说要再充值"
+  - "做任务返佣 日结工资"
+  - "本金和佣金一起返还"
 
 expected_indicators:
   - H4.easy_job

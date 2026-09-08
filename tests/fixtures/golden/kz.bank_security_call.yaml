@@ -63,11 +63,6 @@ cases:
       Pure Kazakh version of the same script. Exercises the kk lexicon for
       C1, B1, B4, A1, E1 and D3 in one message. The rules score it 1.0; only the
       playbook name is missing.
-    xfail_playbook: >-
-      Retrieval gap: kz.bank_security_call carries no Kazakh retrieval_phrases, so the
-      lexical retriever scores a Kazakh message at 0 and names no playbook. Fix: add the
-      week-2 Kazakh phrases (қауіпсіздік қызметі, кодты айтыңыз, қауіпсіз шот, телефонды
-      қоймаңыз, шотыңыздан ақша шығарылып жатыр) to the playbook.
 
   - id: mixed_ru_kk_sms_foreign_callback_number
     lang_hint: ru

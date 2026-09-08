@@ -16,11 +16,6 @@ cases:
     note: >-
       The order-brushing recruitment post: H4 fires three times, D1 twice; the
       "advance the principal" line is the E7 signal and has no Chinese phrase.
-    xfail: >-
-      Rule gap: E7 has no Chinese phrases (垫付本金, 先垫付, 充值后提现) and H1 none
-      (轻松, 无需经验). Two medium hits score 0.24, below suspicious. Retrieval itself
-      names the right playbook at 0.31.
-
   - id: ru_telegram_students_in_china_likes_and_reviews
     lang_hint: ru
     channel: telegram

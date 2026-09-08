@@ -53,9 +53,6 @@ cases:
     note: >-
       Pure Kazakh: every family of the script fires through the kk lexicon plus the
       Latin app name. Rules score 1.0.
-    xfail_playbook: >-
-      Retrieval gap: kz.remote_access_loan has no Kazakh retrieval_phrases; the shared
-      token "anydesk" alone is below the 0.10 floor in a message this long.
 
   - id: mixed_kk_ru_call_teamviewer_halyk
     lang_hint: kk

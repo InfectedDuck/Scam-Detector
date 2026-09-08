@@ -38,6 +38,18 @@ retrieval_phrases:
   - "让我把钱转到安全账户"
   - "要交保证金证明自己清白"
   - "不许我告诉任何人"
+  # Chinese, in the register of the scam itself and of a student describing it.
+  # Tokenised as character bigrams, so coverage needs the actual wording.
+  - "自称是公安局刑侦支队的人打电话"
+  - "说我涉嫌洗钱案件 要配合调查"
+  - "报了案件编号 说要立案"
+  - "让我不要挂电话 一直保持通话"
+  - "要求保密 不要告诉家人和同学"
+  - "让我把资金转入指定的安全账户"
+  - "说核查后原路退还"
+  - "说我的护照或银行卡被冒用"
+  - "视频里穿着警服 出示通缉令"
+  - "说我是嫌疑人 要证明清白"
 
 expected_indicators:
   - C2.police_prosecutor

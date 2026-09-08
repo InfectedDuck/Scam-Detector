@@ -35,6 +35,16 @@ retrieval_phrases:
   - "私下换汇 微信转账"
   - "换汇之后银行卡被冻结"
   - "收到的钱是赃款 被公安调查"
+  # Chinese, in the register of the scam itself and of a student describing it.
+  # Tokenised as character bigrams, so coverage needs the actual wording.
+  - "留学生群里有人换汇 汇率比银行高"
+  - "让我先转人民币到支付宝"
+  - "说五分钟内坚戈到账"
+  - "私下换汇 先付款后收款"
+  - "转了钱之后被拉黑"
+  - "换汇稳赚不亏 零风险"
+  - "加微信私聊换汇"
+  - "人民币兑坚戈 手续费全免"
 
 expected_indicators:
   - D1.move_to_messenger

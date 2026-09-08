@@ -51,9 +51,6 @@ cases:
     note: >-
       Pure Kazakh buyer message. A2 through the kk lexicon and the Latin "CVV", G5 on the
       OLX-branded host. D1 has no Kazakh phrase ("WhatsApp-қа жазыңыз"), so it is not required.
-    xfail_playbook: >-
-      Retrieval gap: kz.marketplace_safe_deal has no Kazakh retrieval_phrases (OLX жеткізу,
-      картаңыздың нөмірін енгізіңіз, WhatsApp-қа жазыңыз). Rules alone reach the scam band.
 
   - id: mixed_ru_kk_olx_receive_payment_link
     lang_hint: ru

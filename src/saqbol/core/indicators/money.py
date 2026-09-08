@@ -44,6 +44,13 @@ keyword_indicator(
         "transfer to this card",
         # kk
         *kk("E2.transfer_to_person"),
+        # zh
+        "先转",
+        "转到我",
+        "转账到我",
+        "打到我卡",
+        "转到这张卡",
+        "先付款",
     ],
 )
 
@@ -117,6 +124,14 @@ keyword_indicator(
         "pay the fee first",
         # kk
         *kk("E7.upfront_fee"),
+        # zh
+        "垫付本金",
+        "先垫付",
+        "充值后提现",
+        "缴纳手续费",
+        "先交费",
+        "解冻费",
+        "再充值",
     ],
 )
 

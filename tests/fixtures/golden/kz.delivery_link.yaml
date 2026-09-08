@@ -51,9 +51,6 @@ cases:
       Pure Kazakh customs-hold SMS: C6 through the kk delivery-problem phrasings, B1
       "сағат ішінде", and G5 on the kazpost-branded host. No Kazakh E7 phrase exists,
       so suspicious is accepted.
-    xfail_playbook: >-
-      Retrieval gap: kz.delivery_link has no Kazakh retrieval_phrases (сәлемдеме кеденде
-      ұсталды, кеден төлемі, жеткізу төлемі); the Latin host token alone scores below the floor.
 
   - id: ru_telegram_tracking_lookalike_domain
     lang_hint: ru

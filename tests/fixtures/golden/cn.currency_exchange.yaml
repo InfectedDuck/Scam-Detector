@@ -17,10 +17,6 @@ cases:
     note: >-
       The student-group exchange offer in Chinese: pay first, better-than-bank rate,
       no risk. Only D1 has Chinese phrases today.
-    xfail: >-
-      Rule gap: H1 has no Chinese phrases (零风险, 稳赚不亏, 汇率比银行高) and E2 has none
-      (先转...到我, 先付款). D1 alone scores 0.12, below the suspicious threshold.
-
   - id: zh_wechat_send_me_your_card_number
     lang_hint: zh
     channel: wechat

@@ -50,10 +50,6 @@ cases:
     note: >-
       Pure Kazakh: C3 via the kk lexicon, E3 "атыңызға несие" (a loan in your name),
       A1 "кодты айтыңыз" and two B1 urgency forms.
-    xfail_playbook: >-
-      Retrieval gap: kz.egov_1414_code has no Kazakh retrieval_phrases; the shared token
-      "1414" alone does not lift a Kazakh message over the 0.10 floor. Fix: add Kazakh
-      phrases (1414-тен код келді, кодты айтыңыз, атыңызға несие рәсімделіп жатыр, ЭЦП).
 
   - id: mixed_ru_kk_whatsapp_which_code_arrived
     lang_hint: ru

@@ -33,12 +33,6 @@ cases:
     note: >-
       The same script as a formal call transcript. Rules score 1.0 with seven hits; the
       longer, more formal wording is what drops retrieval below the floor.
-    xfail_playbook: >-
-      Retrieval gap: cn.fake_police_deposit carries five Chinese retrieval_phrases, too few
-      for bigram coverage of a formal transcript (scores 0.07 against a 0.10 floor). Fix: add
-      ten more Chinese phrases in the scammer's register (刑侦支队, 案件编号, 配合调查,
-      涉嫌洗钱案件, 核查后原路退还, 需要保密).
-
   - id: zh_wechat_embassy_visa_cancelled_deposit
     lang_hint: zh
     channel: wechat
