@@ -180,6 +180,20 @@ tests, which is the argument for end-to-end fixtures.
 - **A likely-safe verdict named a script and printed a hotline.** Something
   always sits at the top of a ranked list. "Looks safe, call the anti-fraud
   line" is incoherent, so a safe verdict now names nothing.
+- **A fully Kazakh message scored zero.** The first Kazakh pass filled the
+  seventeen rules that carried a marker and stopped. Eighteen more rules had
+  no Kazakh at all, and no Kazakh playbook had a single Kazakh retrieval
+  phrase, so a Kazakh hijacked-relative or mule-recruitment message fired
+  nothing and retrieved nothing. Nobody noticed until the golden fixtures
+  ran the whole pipeline on pure Kazakh text: every unit test had passed,
+  because each tested only the rule it was written for. The fix was
+  vocabulary, not code, and the lesson is that a per-language baseline needs
+  a per-language end-to-end fixture, not a per-rule one.
+- **A bank's own warning was a scam.** "Мы никогда не спрашиваем код из СМС"
+  contains the request phrase and none of the negation cues, so the
+  highest-severity rule fired on the sentence that exists to prevent the
+  scam. "Никогда не", "не спрашива" and "это мошенники" are now cues, and a
+  courier's "скажите код от домофона" is excused by the noun that follows.
 
 ## 10. What was deliberately left out of v1
 
