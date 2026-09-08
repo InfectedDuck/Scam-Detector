@@ -18,9 +18,14 @@ at moderate cosine similarity to its nearest playbook. Including it made almost
 everything abstain. Two independent judgements, one disagreement measure.
 
 **Missing components are dropped and the weights renormalised.** The
-`rules_only` leaderboard row runs with no retrieval and no model, so a fixed
-divisor would cap its risk at the rule weight and it could never reach the scam
-band, making the baseline unbeatable by construction and meaningless.
+`rules_only` leaderboard row runs with no model, so a fixed divisor would cap
+its risk at the rule weight and it could never reach the scam band, making the
+baseline unbeatable by construction and meaningless.
+
+**Retrieval similarity is not a risk signal at all.** It selects which script
+the verdict names and it is reported in `Components`, but it does not move the
+risk. Similarity answers "which script", not "is this a scam", and a message
+matching no playbook can still be one.
 """
 
 from __future__ import annotations
@@ -45,18 +50,31 @@ from saqbol.core.types import (
 
 @dataclass(frozen=True)
 class FusionWeights:
-    """Relative trust in each signal. Fitted on the calibration split (T505),
-    never on test."""
+    """Relative trust in each judgement. Fitted on the calibration split
+    (T505), never on test.
 
-    rule: float = 0.45
-    retrieval: float = 0.20
-    llm: float = 0.35
+    Retrieval has no weight here, deliberately. Similarity answers "which
+    script is this", not "is this a scam", and treating it as a third vote
+    made a low score argue for safety. A real delivery scam scoring 59 on the
+    rules was pushed down to 0.41 and out of the scam band by a retrieval
+    score of 0.007, which only ever meant "no playbook matched well" — and a
+    message that matches no playbook can still be a scam. That is what
+    `other_scam` is for.
+    """
+
+    rule: float = 0.55
+    llm: float = 0.45
 
 
 @dataclass(frozen=True)
 class Thresholds:
     scam: float = 0.70
-    suspicious: float = 0.45
+    #: Tied to the severity scale rather than chosen freely: one critical
+    #: indicator is worth 40 of the 100-point cap, so a threshold above 0.40
+    #: made "назовите код из СМС" — a bare credential request, the single
+    #: strongest signal in the catalogue — come out as likely safe.
+    #: Refitted on the calibration split in T505.
+    suspicious: float = 0.40
     #: Gap between the rules and the model above which neither is trusted.
     disagreement: float = 0.40
     #: Share of self-consistency samples that must agree.
@@ -64,6 +82,9 @@ class Thresholds:
     #: Band in which self-consistency sampling is worth paying for.
     sample_lo: float = 0.30
     sample_hi: float = 0.75
+    #: Similarity below which retrieval has not really matched anything, so the
+    #: verdict names no script rather than the least-bad one.
+    retrieval_floor: float = 0.10
 
 
 DEFAULT_WEIGHTS = FusionWeights()
@@ -214,7 +235,9 @@ def collect_evidence(
 
 
 def choose_playbook(
-    judgement: LLMJudgement | None, retrieval: tuple[str, float] | None
+    judgement: LLMJudgement | None,
+    retrieval: tuple[str, float] | None,
+    thresholds: Thresholds = DEFAULT_THRESHOLDS,
 ) -> tuple[str | None, float]:
     """Which script the verdict names, and how strongly.
 
@@ -227,7 +250,7 @@ def choose_playbook(
     """
     if judgement is not None and judgement.playbook_id:
         return judgement.playbook_id, judgement.confidence
-    if retrieval is not None:
+    if retrieval is not None and retrieval[1] >= thresholds.retrieval_floor:
         return retrieval
     return None, 0.0
 
@@ -279,8 +302,6 @@ def fuse(
     # Only components that actually ran contribute, and the weights are
     # renormalised over them.
     parts: list[tuple[float, float]] = [(weights.rule, rules)]
-    if retrieval is not None:
-        parts.append((weights.retrieval, similarity))
     if judgement is not None:
         parts.append((weights.llm, confidence))
 
@@ -298,7 +319,15 @@ def fuse(
 
     band = Band.UNSURE if abstained else band_for(risk, thresholds)
 
-    playbook_id, playbook_confidence = choose_playbook(judgement, retrieval)
+    playbook_id, playbook_confidence = choose_playbook(judgement, retrieval, thresholds)
+
+    # A verdict that says the message looks fine must not also name a scam
+    # script and print a hotline. "Looks safe, call the anti-fraud line" is
+    # incoherent, and it was happening because something always sits at the
+    # top of a ranked list.
+    if band is Band.LIKELY_SAFE:
+        playbook_id, playbook_confidence = None, 0.0
+        action_key, hotline = "", ""
 
     return Verdict(
         check_id=check_id or uuid.uuid4().hex,

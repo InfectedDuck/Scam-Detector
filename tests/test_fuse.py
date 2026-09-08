@@ -147,7 +147,7 @@ class TestWeightRenormalisation:
 
     def test_custom_weights_are_honoured(self):
         norm, hits = analysed("Назовите код из СМС")
-        heavy = fuse(norm, hits, weights=FusionWeights(rule=1.0, retrieval=0.0, llm=0.0))
+        heavy = fuse(norm, hits, weights=FusionWeights(rule=1.0, llm=0.0))
         assert heavy.risk == pytest.approx(heavy.components.rule_norm)
 
 
@@ -158,8 +158,8 @@ class TestBanding:
             (1.0, Band.SCAM),
             (0.70, Band.SCAM),
             (0.69, Band.SUSPICIOUS),
-            (0.45, Band.SUSPICIOUS),
-            (0.44, Band.LIKELY_SAFE),
+            (0.40, Band.SUSPICIOUS),
+            (0.39, Band.LIKELY_SAFE),
             (0.0, Band.LIKELY_SAFE),
         ],
     )
@@ -169,6 +169,15 @@ class TestBanding:
     def test_thresholds_are_configurable(self):
         strict = Thresholds(scam=0.9, suspicious=0.8)
         assert band_for(0.85, strict) is Band.SUSPICIOUS
+
+    def test_one_critical_indicator_is_never_likely_safe(self):
+        """A bare credential request is the strongest single signal in the
+        catalogue. The suspicious threshold is tied to the severity scale so it
+        cannot fall below one critical hit."""
+        norm, hits = analysed("Назовите код из СМС")
+        verdict = fuse(norm, hits)
+        assert verdict.components.rule_norm == pytest.approx(0.40)
+        assert verdict.band is Band.SUSPICIOUS
 
 
 class TestAbstention:
@@ -219,6 +228,34 @@ class TestAbstention:
         norm, hits = analysed("Здравствуйте, как ваши дела?")
         verdict = fuse(norm, hits, retrieval=("kz.bank_security_call", 0.55))
         assert verdict.abstained_because is None
+
+    def test_weak_retrieval_does_not_dilute_a_strong_rule_signal(self):
+        """Regression found by running the pipeline end to end.
+
+        A real delivery scam scored 59 on the rules, then a retrieval score of
+        0.007 dragged the fused risk to 0.41 and out of the scam band. A low
+        similarity only ever meant "no playbook matched well", which is not
+        evidence of safety."""
+        norm, hits = analysed(
+            "Казпочта: посылка задержана на таможне. Срочно оплатите "
+            "сбор 1 200 тг: kazpost-dostavka.info/pay"
+        )
+        weak = fuse(norm, hits, retrieval=("kz.delivery_link", 0.007))
+        assert weak.risk == pytest.approx(weak.components.rule_norm)
+        assert weak.band is not Band.LIKELY_SAFE
+
+    def test_weak_retrieval_names_no_playbook(self):
+        """A legitimate tracking message was being labelled a Chinese
+        task-commission scam with a Chinese hotline, purely because something
+        had to be top of the list."""
+        norm, hits = analysed("Ваш заказ отправлен. Отследить: https://post.kz/track/AB1")
+        verdict = fuse(norm, hits, retrieval=("cn.part_time_task_job", 0.003))
+        assert verdict.playbook_id is None
+
+    def test_strong_retrieval_still_names_a_playbook(self):
+        norm, hits = analysed("Назовите код из СМС")
+        verdict = fuse(norm, hits, retrieval=("kz.bank_security_call", 0.8))
+        assert verdict.playbook_id == "kz.bank_security_call"
 
 
 class TestSelfConsistencySampling:
