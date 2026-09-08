@@ -185,9 +185,14 @@ def test_a_cell_that_needs_a_provider_key_is_skipped_with_a_reason(tmp_path):
 
 
 def test_a_missing_split_file_is_reported_not_raised(tmp_path):
-    config = load_config(FULL_CONFIG)
-    for split, path in config.splits.items():
-        assert not Path(path).exists(), f"{split} exists; this test expects it not to yet"
+    # The full matrix, pointed at split files that do not exist.
+    base = load_config(FULL_CONFIG).model_dump()
+    base["splits"] = {
+        split: (tmp_path / "absent" / f"{split}.jsonl").as_posix() for split in base["splits"]
+    }
+    config = EvalConfig.model_validate(base)
+    for path in config.splits.values():
+        assert not Path(path).exists()
 
     outcome = run(config, out_dir=tmp_path, env=NO_KEYS, run_id="missing")
 

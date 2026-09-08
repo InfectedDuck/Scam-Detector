@@ -1,8 +1,10 @@
-"""`python -m saqbol.eval`: run the matrix, or render the leaderboard.
+"""`python -m saqbol.eval`: run the matrix, render the leaderboard, or build the splits.
 
     python -m saqbol.eval run --config eval/configs/v0.1.yaml [--limit N]
         [--systems rules_only,hybrid] [--out DIR] [--run-id ID]
     python -m saqbol.eval leaderboard --results DIR/results.json --out DIR/leaderboard.md
+    python -m saqbol.eval splits --corpus data/corpus --out data/kazscam_v0.1
+        --seed 20260908 [--calibration-size 150]
 
 `run` exits 0 whenever the run completed, however many cells were skipped:
 the manifest and the summary printed here say which cells did not run and
@@ -17,9 +19,10 @@ import sys
 from collections.abc import Sequence
 from pathlib import Path
 
-from saqbol.eval.config import load_config
+from saqbol.eval.config import DEFAULT_SEED, load_config
 from saqbol.eval.leaderboard import group_skipped, write_leaderboard
 from saqbol.eval.run import DEFAULT_OUT_DIR, run
+from saqbol.eval.splits import DEFAULT_CALIBRATION_SIZE, SPLIT_NAMES, build_and_write
 
 
 def _say(text: str) -> None:
@@ -49,6 +52,21 @@ def _parser() -> argparse.ArgumentParser:
     board.add_argument("--results", required=True, type=Path, help="path to results.json")
     board.add_argument(
         "--out", type=Path, default=None, help="output path (default: beside results.json)"
+    )
+
+    splitter = commands.add_parser("splits", help="build the KazScam splits from the corpus")
+    splitter.add_argument(
+        "--corpus", type=Path, default=Path("data/corpus"), help="directory of corpus batch files"
+    )
+    splitter.add_argument(
+        "--out", type=Path, default=Path("data/kazscam_v0.1"), help="directory for the JSONL files"
+    )
+    splitter.add_argument("--seed", type=int, default=DEFAULT_SEED, help="assignment seed")
+    splitter.add_argument(
+        "--calibration-size",
+        type=int,
+        default=DEFAULT_CALIBRATION_SIZE,
+        help="calibration rows wanted, capped at 40%% of the press pool",
     )
     return parser
 
@@ -86,11 +104,27 @@ def _leaderboard(args: argparse.Namespace) -> int:
     return 0
 
 
+def _splits(args: argparse.Namespace) -> int:
+    manifest = build_and_write(
+        args.corpus, args.out, seed=args.seed, calibration_size=args.calibration_size
+    )
+    counts = ", ".join(f"{name}={manifest['splits'][name]['n']}" for name in SPLIT_NAMES)
+    _say(
+        f"splits (seed {manifest['seed']}): {counts}; "
+        f"{manifest['excluded_fragments']} fragments excluded, "
+        f"{manifest['groups']['n_multi_row_groups']} multi-row groups kept together"
+    )
+    _say(f"wrote {Path(args.out) / 'manifest.json'}")
+    return 0
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     args = _parser().parse_args(argv)
     try:
         if args.command == "run":
             return _run(args)
+        if args.command == "splits":
+            return _splits(args)
         return _leaderboard(args)
     except (ValueError, OSError) as exc:
         # A config, split or results file the run cannot use. The message
