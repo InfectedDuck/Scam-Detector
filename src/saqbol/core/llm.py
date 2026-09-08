@@ -44,7 +44,7 @@ import re
 import tempfile
 import urllib.error
 import urllib.request
-from collections.abc import Awaitable, Callable, Mapping
+from collections.abc import Awaitable, Callable, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
@@ -284,14 +284,27 @@ class CacheEntry(BaseModel):
     recorded_at: str = Field(default_factory=lambda: datetime.now(UTC).isoformat())
 
 
-def cache_key(*, model: str, system: str, user: str, schema_name: str, temperature: float) -> str:
+def cache_key(
+    *,
+    model: str,
+    system: str,
+    user: str,
+    schema_name: str,
+    temperature: float,
+    images: Sequence[str] = (),
+) -> str:
     """sha256 over everything that determines the response.
 
     Fields are length-prefixed rather than joined by a separator, so no
-    combination of inputs can be rearranged into another's key.
+    combination of inputs can be rearranged into another's key. Images enter
+    as their own digests, after the text fields, so a text-only call keeps the
+    key it always had and a cassette recorded before images existed still
+    replays.
     """
     digest = hashlib.sha256()
-    for part in (str(CACHE_VERSION), model, system, user, schema_name, f"{temperature:.4f}"):
+    parts = [str(CACHE_VERSION), model, system, user, schema_name, f"{temperature:.4f}"]
+    parts.extend(hashlib.sha256(image.encode("utf-8")).hexdigest() for image in images)
+    for part in parts:
         encoded = part.encode("utf-8")
         digest.update(f"{len(encoded)}\x00".encode("ascii"))
         digest.update(encoded)
@@ -360,6 +373,20 @@ class DiskCache:
 # ---------------------------------------------------------------------------
 
 
+def _user_content(user: str, images: Sequence[str]) -> str | list[dict]:
+    """A plain string for text, the multimodal parts list when images ride along.
+
+    `images` are already data URLs (`data:image/jpeg;base64,...`); nothing here
+    reads or stores bytes. Image parts go first so the text that follows can
+    refer to "the screenshot above", which is how the OCR prompt is written.
+    """
+    if not images:
+        return user
+    parts: list[dict] = [{"type": "image_url", "image_url": {"url": url}} for url in images]
+    parts.append({"type": "text", "text": user})
+    return parts
+
+
 @dataclass(frozen=True)
 class RawCompletion:
     """What came back, before any schema thinking."""
@@ -379,6 +406,7 @@ class Transport(Protocol):
         system: str,
         user: str,
         temperature: float,
+        images: Sequence[str] = (),
     ) -> RawCompletion: ...
 
 
@@ -419,6 +447,7 @@ class HttpTransport:
         system: str,
         user: str,
         temperature: float,
+        images: Sequence[str] = (),
     ) -> RawCompletion:
         api_key, base_url = credentials(provider, self._env)
         body = {
@@ -430,9 +459,14 @@ class HttpTransport:
             "response_format": {"type": "json_object"},
             "messages": [
                 {"role": "system", "content": system},
-                {"role": "user", "content": user},
+                {"role": "user", "content": _user_content(user, images)},
             ],
         }
+        if images and provider is DASHSCOPE:
+            # Qwen3-VL is a hybrid model, and JSON mode is only honoured with
+            # thinking off. Sent only on image calls so text calls keep the
+            # exact body they had.
+            body["enable_thinking"] = False
         headers = {
             "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json",
@@ -606,6 +640,7 @@ class LLMClient:
         user: str,
         schema: type[T],
         temperature: float = 0.0,
+        images: Sequence[str] = (),
     ) -> tuple[T, CallStats]:
         started = perf_counter()
 
@@ -615,6 +650,7 @@ class LLMClient:
             user=user,
             schema_name=schema.__name__,
             temperature=temperature,
+            images=images,
         )
 
         if self._cache is not None:
@@ -641,6 +677,7 @@ class LLMClient:
                 system=system_prompt,
                 user=current_user,
                 temperature=temperature,
+                images=images,
             )
             retries += transport_retries
 
@@ -726,10 +763,14 @@ class LLMClient:
         system: str,
         user: str,
         temperature: float,
+        images: Sequence[str] = (),
     ) -> tuple[RawCompletion, int]:
         """One logical request, retrying transient failures with backoff."""
         retries = 0
         delay = self._base_delay
+        # Passed only when present, so a transport written before images
+        # existed — every fake in the test suite included — keeps working.
+        extra: dict = {"images": tuple(images)} if images else {}
 
         while True:
             try:
@@ -739,6 +780,7 @@ class LLMClient:
                     system=system,
                     user=user,
                     temperature=temperature,
+                    **extra,
                 )
                 return raw, retries
             except TransientError:
