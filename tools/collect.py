@@ -437,7 +437,12 @@ def cmd_check(args: argparse.Namespace) -> int:
         if "synthetic_seed" in (row.get("source", ""), row.get("provenance", "")):
             print(f"  ! {rid}: synthetic_seed must not appear in the corpus")
             problems += 1
-        if row.get("text_hash") != text_hash(row.get("text", "")):
+        # tools/scrub_corpus.py keeps text_hash as the hash of the verbatim
+        # text on purpose, so a re-collected copy is still caught as a
+        # duplicate; a row whose text was changed by scrubbing is expected
+        # to differ. A row scrubbed to no change must still match.
+        scrubbed = bool(row.get("scrub_applied")) and bool(row.get("scrub_placeholders"))
+        if not scrubbed and row.get("text_hash") != text_hash(row.get("text", "")):
             print(f"  ! {rid}: text_hash does not match text")
             problems += 1
 
