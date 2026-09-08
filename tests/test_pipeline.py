@@ -43,7 +43,7 @@ class FakeStats:
 
 
 class FakeClient:
-    """Stands in for saqbol.llm.LLMClient. Same seam, no network."""
+    """Stands in for saqbol.core.llm.LLMClient. Same seam, no network."""
 
     def __init__(self, judgement: LLMJudgement | None = None, raises: Exception | None = None):
         self.judgement = judgement

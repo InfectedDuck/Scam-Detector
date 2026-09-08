@@ -4,11 +4,11 @@ The bot needs two things it does not own: something that analyses a message and
 something that renders the result. Both are being written in parallel lanes, so
 they are declared here as protocols and satisfied by stubs until the real
 modules land. When they do, **this file is the only one that changes** — no
-handler imports `saqbol.render` or `saqbol.pipeline` directly.
+handler imports `saqbol.core.render` or `saqbol.pipeline` directly.
 
 The pinned signatures are:
 
-    # saqbol/render
+    # saqbol/core/render.py
     class Card(BaseModel):
         title: str; band_label: str; summary: str
         evidence: list[str]; stage_now: str | None; stage_next: str | None
@@ -84,7 +84,7 @@ class Analyze(Protocol):
 
 @dataclass
 class StubCard:
-    """Structural stand-in for `saqbol.render.Card`."""
+    """Structural stand-in for `saqbol.core.render.Card`."""
 
     title: str
     band_label: str
@@ -242,9 +242,9 @@ def build_deps(
     render_card: RenderCard = stub_render_card
     renderer_is_stub = True
     try:
-        from saqbol.render import render_card as real_render_card
+        from saqbol.core.render import render_card as real_render_card
     except ImportError:
-        log.info("saqbol.render is not available yet; using the stub renderer")
+        log.info("saqbol.core.render is not available yet; using the stub renderer")
     else:
         render_card = real_render_card
         renderer_is_stub = False

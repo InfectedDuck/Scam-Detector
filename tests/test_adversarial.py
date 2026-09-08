@@ -184,7 +184,7 @@ def _model_unavailable() -> str | None:
     if os.environ.get("SAQBOL_LLM_OFFLINE") == "1":
         return None  # recorded cassettes stand in for the provider
     try:
-        from saqbol.llm.providers import credentials, resolve
+        from saqbol.core.llm import credentials, resolve
 
         credentials(resolve(INJECTION_MODEL))
     except Exception as exc:  # any failure to configure a provider is a skip, not an error
@@ -582,7 +582,7 @@ def _analyzer():
     through it here would measure the rules twice and call the result an
     injection test.
     """
-    from saqbol.llm import LLMClient
+    from saqbol.core.llm import LLMClient
     from saqbol.pipeline import Analyzer, AnalyzerConfig
 
     return Analyzer(client=LLMClient(), config=AnalyzerConfig(model=INJECTION_MODEL))

@@ -1,8 +1,9 @@
 """T111 — the LLM client.
 
-Every test here runs with no API key, no network and no recorded fixture. The
+Every test runs with no API key, no network and no recorded fixture. The
 network boundary is a single `Transport.complete`, so a fake implementation of
-that one method exercises caching, schema repair, backoff and costing.
+that one method exercises caching, refusal handling, schema repair, backoff and
+costing.
 
 `pytest-asyncio` is deliberately not a dependency — the dev extra is three
 packages and stays that way — so coroutines are driven through `asyncio.run`.
@@ -16,26 +17,30 @@ import json
 import pytest
 from pydantic import BaseModel
 
-from saqbol.llm import (
+from saqbol.core.llm import (
     DASHSCOPE,
     DEEPSEEK,
     OPENROUTER,
     PRICES,
+    REFUSAL_MARKERS,
     CacheEntry,
     DiskCache,
     LLMClient,
+    ModelRefused,
     OfflineCacheMiss,
     ProviderNotConfigured,
+    RawCompletion,
     SchemaViolation,
     TransientError,
     UnknownProvider,
+    _schema_prompt,
     cache_key,
+    credentials,
+    looks_like_refusal,
     price,
     resolve,
+    wire_name,
 )
-from saqbol.llm.client import _schema_prompt
-from saqbol.llm.providers import credentials, wire_name
-from saqbol.llm.transport import RawCompletion
 
 
 class Judgement(BaseModel):
@@ -106,8 +111,7 @@ def ask(cli: LLMClient, *, user: str = "проверь это", model: str = "de
 
 
 def test_returns_validated_object(tmp_path):
-    cli = client(tmp_path, FakeTransport(reply(VALID)))
-    judgement, stats = ask(cli)
+    judgement, stats = ask(client(tmp_path, FakeTransport(reply(VALID))))
 
     assert isinstance(judgement, Judgement)
     assert judgement.playbook_id == "kz.bank_security_call"
@@ -115,20 +119,37 @@ def test_returns_validated_object(tmp_path):
     assert stats.retries == 0
 
 
-def test_cost_and_latency_are_populated_on_every_call(tmp_path):
-    cli = client(tmp_path, FakeTransport(reply(VALID)))
-    _, live = ask(cli)
+def test_usage_and_latency_are_recorded(tmp_path):
+    _, stats = ask(client(tmp_path, FakeTransport(reply(VALID))))
 
-    # deepseek-chat: 0.27 in / 1.10 out per 1M.
+    assert stats.prompt_tokens == 1200
+    assert stats.completion_tokens == 80
+    assert stats.latency_ms >= 0
+    assert stats.model == "deepseek-chat"
+
+
+def test_cost_is_none_until_the_price_is_verified(tmp_path):
+    # PRICES ships empty on purpose. An absent cost is honest; a guessed one
+    # becomes a wrong number in the report's budget table.
+    _, stats = ask(client(tmp_path, FakeTransport(reply(VALID))))
+    assert stats.cost_usd is None
+
+
+def test_cost_is_computed_once_a_price_is_added(tmp_path, monkeypatch):
+    monkeypatch.setitem(PRICES, "deepseek-chat", (0.27, 1.10))
+    _, live = ask(client(tmp_path, FakeTransport(reply(VALID))))
     assert live.cost_usd == pytest.approx((1200 * 0.27 + 80 * 1.10) / 1_000_000)
-    assert live.prompt_tokens == 1200
-    assert live.completion_tokens == 80
-    assert live.latency_ms >= 0
 
-    # A replay is priced too. `cost_usd` is what the tokens are worth; `cached`
-    # is what says no money moved. Both numbers are needed: one for the
-    # leaderboard's cost-per-check, one for the budget.
+
+def test_a_replay_is_priced_but_not_billed(tmp_path, monkeypatch):
+    monkeypatch.setitem(PRICES, "deepseek-chat", (0.27, 1.10))
+    cli = client(tmp_path, FakeTransport(reply(VALID)))
+
+    _, live = ask(cli)
     _, replayed = ask(cli)
+
+    # `cost_usd` is what the tokens are worth; `cached` is what says no money
+    # moved. Both are needed: one for cost-per-check, one for the budget.
     assert replayed.cached is True
     assert replayed.cost_usd == pytest.approx(live.cost_usd)
 
@@ -142,6 +163,61 @@ def test_schema_is_appended_to_the_system_prompt(tmp_path):
     assert "playbook_id" in sent
     # DeepSeek's JSON mode refuses a request whose prompt never says "json".
     assert "json" in sent.lower()
+
+
+def test_schema_prompt_keeps_cyrillic_readable():
+    class Localised(BaseModel):
+        причина: str = ""
+
+    rendered = _schema_prompt("system", Localised)
+    assert "причина" in rendered
+    assert "\\u" not in rendered
+
+
+# --------------------------------------------------------------------------
+# Refusals — an outcome, not an error
+# --------------------------------------------------------------------------
+
+
+def test_a_refusal_raises_its_own_type(tmp_path):
+    transport = FakeTransport(reply("I can't help with analysing that message."))
+
+    with pytest.raises(ModelRefused) as caught:
+        ask(client(tmp_path, transport))
+
+    assert caught.value.model == "deepseek-chat"
+    assert "can't help" in caught.value.text
+
+
+def test_a_refusal_is_never_retried_or_cached(tmp_path):
+    cache = DiskCache(tmp_path / "cache")
+    transport = FakeTransport(reply("Не могу помочь с этим запросом."))
+
+    with pytest.raises(ModelRefused):
+        ask(client(tmp_path, transport, cache=cache))
+
+    # One call, and nothing recorded: a decline is a measurement, and repairing
+    # it would measure our persistence rather than the model's behaviour.
+    assert len(transport.calls) == 1
+    assert len(cache) == 0
+
+
+def test_refusal_detection_only_looks_at_the_head():
+    assert looks_like_refusal("I cannot assist with that request.")
+    assert looks_like_refusal("не могу помочь")
+    assert not looks_like_refusal("")
+    assert not looks_like_refusal(VALID)
+
+    # An analysis that quotes the phrase far into a long reply is not a refusal.
+    quoting = "The scammer wrote: " + "x" * 500 + " i can't help"
+    assert not looks_like_refusal(quoting)
+
+
+def test_refusal_markers_cover_the_four_report_languages():
+    joined = " ".join(REFUSAL_MARKERS)
+    assert "can't help" in joined  # en
+    assert "не могу" in joined  # ru
+    assert any("一" <= ch <= "鿿" for ch in joined)  # zh
 
 
 # --------------------------------------------------------------------------
@@ -192,18 +268,31 @@ def test_cache_key_is_not_confusable_by_field_boundaries():
     assert a != b
 
 
-def test_disk_cache_survives_a_corrupt_entry(tmp_path):
+def test_a_corrupt_entry_is_treated_as_absent(tmp_path):
     cache = DiskCache(tmp_path / "cache")
     key = "deadbeef" * 8
     cache.put(key, CacheEntry(model="deepseek-chat", content=VALID))
     assert cache.get(key) is not None
 
-    path = tmp_path / "cache" / key[:2] / f"{key}.json"
-    path.write_text("{ not json", encoding="utf-8")
+    (tmp_path / "cache" / key[:2] / f"{key}.json").write_text("{ not json", encoding="utf-8")
 
-    # Treated as absent rather than raising, so one bad file cannot break an
-    # eval run that has already paid for several hundred good ones.
+    # One bad file cannot break an eval run that has already paid for the other
+    # several hundred.
     assert cache.get(key) is None
+
+
+def test_an_unwritable_cache_does_not_fail_the_call(tmp_path):
+    class Unwritable(DiskCache):
+        def put(self, key, entry):  # exercised through the real code path
+            raise AssertionError("should be swallowed by the base class")
+
+    cache = DiskCache(tmp_path / "nested" / "cache")
+    # A path collision makes mkdir fail; the call must still return.
+    (tmp_path / "nested").write_text("not a directory", encoding="utf-8")
+
+    judgement, stats = ask(client(tmp_path, FakeTransport(reply(VALID)), cache=cache))
+    assert judgement.confidence == 0.9
+    assert stats.cached is False
 
 
 # --------------------------------------------------------------------------
@@ -212,18 +301,15 @@ def test_disk_cache_survives_a_corrupt_entry(tmp_path):
 
 
 def test_offline_raises_on_a_cache_miss(tmp_path):
-    # A transport with an empty queue would raise AssertionError if reached;
+    # An empty transport queue would raise AssertionError if reached, so
     # OfflineCacheMiss proves the client never got that far.
-    cli = client(tmp_path, FakeTransport(), offline=True)
-
     with pytest.raises(OfflineCacheMiss):
-        ask(cli)
+        ask(client(tmp_path, FakeTransport(), offline=True))
 
 
 def test_offline_replays_a_recorded_call(tmp_path):
     cache_dir = tmp_path / "cache"
-    recorder = client(tmp_path, FakeTransport(reply(VALID)), cache=DiskCache(cache_dir))
-    ask(recorder)
+    ask(client(tmp_path, FakeTransport(reply(VALID)), cache=DiskCache(cache_dir)))
 
     offline = client(tmp_path, FakeTransport(), cache=DiskCache(cache_dir), offline=True)
     judgement, stats = ask(offline)
@@ -239,8 +325,7 @@ def test_offline_flag_is_read_from_the_environment(tmp_path):
         ask(cli)
 
 
-def test_a_stale_cassette_fails_loudly_offline(tmp_path):
-    cache_dir = tmp_path / "cache"
+def _seed_stale(cache_dir):
     key = cache_key(
         model="deepseek-chat",
         system="you are a triage assistant",
@@ -249,6 +334,11 @@ def test_a_stale_cassette_fails_loudly_offline(tmp_path):
         temperature=0.0,
     )
     DiskCache(cache_dir).put(key, CacheEntry(model="deepseek-chat", content=WRONG_SHAPE))
+
+
+def test_a_stale_cassette_fails_loudly_offline(tmp_path):
+    cache_dir = tmp_path / "cache"
+    _seed_stale(cache_dir)
 
     offline = client(tmp_path, FakeTransport(), cache=DiskCache(cache_dir), offline=True)
     with pytest.raises(SchemaViolation, match="no longer validates"):
@@ -257,18 +347,10 @@ def test_a_stale_cassette_fails_loudly_offline(tmp_path):
 
 def test_a_stale_cassette_is_re_recorded_when_online(tmp_path):
     cache_dir = tmp_path / "cache"
-    key = cache_key(
-        model="deepseek-chat",
-        system="you are a triage assistant",
-        user="проверь это",
-        schema_name="Judgement",
-        temperature=0.0,
-    )
-    DiskCache(cache_dir).put(key, CacheEntry(model="deepseek-chat", content=WRONG_SHAPE))
+    _seed_stale(cache_dir)
 
     transport = FakeTransport(reply(VALID))
-    cli = client(tmp_path, transport, cache=DiskCache(cache_dir))
-    judgement, stats = ask(cli)
+    judgement, stats = ask(client(tmp_path, transport, cache=DiskCache(cache_dir)))
 
     assert judgement.confidence == 0.9
     assert stats.cached is False
@@ -322,7 +404,7 @@ def test_markdown_fence_and_preamble_are_tolerated(tmp_path):
 
 
 def test_a_reply_with_no_json_is_a_schema_violation(tmp_path):
-    transport = FakeTransport(reply("I cannot help with that."), reply("Still no."))
+    transport = FakeTransport(reply("Nothing structured here."), reply("Still none."))
     with pytest.raises(SchemaViolation):
         ask(client(tmp_path, transport))
 
@@ -339,8 +421,7 @@ def test_transient_failures_back_off_then_succeed(tmp_path):
         slept.append(delay)
 
     transport = FakeTransport(TransientError("429"), TransientError("503"), reply(VALID))
-    cli = client(tmp_path, transport, sleep=fake_sleep, base_delay=0.5)
-    _, stats = ask(cli)
+    _, stats = ask(client(tmp_path, transport, sleep=fake_sleep, base_delay=0.5))
 
     assert len(transport.calls) == 3
     assert stats.retries == 2
@@ -374,8 +455,8 @@ def test_transient_failures_eventually_give_up(tmp_path):
         ("qwen-vl-plus", DASHSCOPE),
         ("openai/gpt-4o-mini", OPENROUTER),
         ("meta-llama/llama-3.3-70b-instruct", OPENROUTER),
-        # The slash wins over the vendor prefix: this is DeepSeek rented
-        # through OpenRouter, which is a different endpoint and a different bill.
+        # The slash wins over the vendor prefix: this is DeepSeek rented through
+        # OpenRouter, a different endpoint and a different bill.
         ("deepseek/deepseek-chat", OPENROUTER),
         # An explicit prefix overrides everything.
         ("openrouter:qwen-plus", OPENROUTER),
@@ -411,9 +492,9 @@ def test_base_url_falls_back_to_the_provider_default():
     assert base == DASHSCOPE.default_base_url
 
     _, override = credentials(
-        DASHSCOPE, {"DASHSCOPE_API_KEY": "k", "DASHSCOPE_BASE_URL": "http://x"}
+        DASHSCOPE, {"DASHSCOPE_API_KEY": "k", "DASHSCOPE_BASE_URL": "http://x/"}
     )
-    assert override == "http://x"
+    assert override == "http://x"  # trailing slash stripped before /chat/completions
 
 
 # --------------------------------------------------------------------------
@@ -421,28 +502,24 @@ def test_base_url_falls_back_to_the_provider_default():
 # --------------------------------------------------------------------------
 
 
+def test_prices_ship_empty():
+    # Guard against a well-meaning guess. Adding an entry is fine, but the
+    # commit that adds it must record where the rate was read from.
+    assert PRICES == {}, "add the source and date of the check to the commit message"
+
+
 def test_every_priced_model_is_routable():
-    # A price for a model nothing can reach is a typo, and it would silently
+    # A price for a model nothing can reach is a typo that would silently
     # under-report the cost of whatever model was meant.
     for model in PRICES:
         assert resolve(model) is not None
 
 
-def test_an_unpriced_model_costs_zero_and_warns(caplog):
-    with caplog.at_level("WARNING"):
-        assert price("some-new-model", 1000, 100) == 0.0
-    assert "some-new-model" in caplog.text
+def test_an_unpriced_model_costs_none():
+    assert price("some-new-model", 1000, 100) is None
 
 
-def test_price_is_per_million_tokens():
+def test_price_is_per_million_tokens(monkeypatch):
+    monkeypatch.setitem(PRICES, "openai/gpt-4o-mini", (0.15, 0.60))
     assert price("openai/gpt-4o-mini", 1_000_000, 0) == pytest.approx(0.15)
     assert price("openai/gpt-4o-mini", 0, 1_000_000) == pytest.approx(0.60)
-
-
-def test_schema_prompt_keeps_cyrillic_readable():
-    class Localised(BaseModel):
-        причина: str = ""
-
-    rendered = _schema_prompt("system", Localised)
-    assert "причина" in rendered
-    assert "\\u" not in rendered
