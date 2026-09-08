@@ -1,0 +1,22 @@
+# Smoke matrix: the offline baseline over the 12-row fixture split.
+#
+#   python -m saqbol.eval run --config eval/configs/smoke.yaml
+#
+# No model, no key, no network. Finishes in seconds and exercises the whole
+# path from JSONL to results.json, which is what continuous integration runs
+# on every commit. Numbers from this file are a check that the harness works,
+# never a reported result.
+
+name: smoke
+dataset_version: kazscam-smoke
+seed: 20260908
+n_bootstrap: 10000
+
+systems: [rules_only]
+
+splits:
+  test_press: tests/fixtures/eval/smoke.jsonl
+
+languages: [all, ru, kk]
+ablations: [none]
+positive_bands: [scam, suspicious]

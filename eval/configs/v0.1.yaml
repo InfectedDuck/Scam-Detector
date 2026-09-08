@@ -1,0 +1,51 @@
+# KazScam v0.1 — the full matrix behind results.json and leaderboard.md.
+#
+#   python -m saqbol.eval run --config eval/configs/v0.1.yaml
+#
+# Every product of systems x models x splits x languages x ablations is one
+# cell. A cell that cannot run (a split file that does not exist yet, a model
+# with no provider key, an ablation the split cannot support) is recorded in
+# manifest.json with its reason; the run never fails because of it.
+#
+# Split paths are relative to the working directory: run from the repository
+# root. The released splits land in data/kazscam_v0.1/ (docs/01_ARCHITECTURE.md).
+# train_synthetic is never evaluated (docs/02_DATA_CONTRACTS.md section 6) and
+# calibration is reported separately by T505, so neither is listed here.
+
+name: kazscam-v0.1
+dataset_version: kazscam-v0.1
+
+# Bootstrap: docs/05_EVAL_PROTOCOL.md section 5. The seed is written into
+# every results row so any interval can be regenerated exactly.
+seed: 20260908
+n_bootstrap: 10000
+
+# docs/05_EVAL_PROTOCOL.md section 4. rules_only runs once, with no model.
+systems: [rules_only, llm_zeroshot, hybrid]
+
+# Model names route through saqbol.core.llm: a bare deepseek-* or qwen-* name
+# goes to the vendor's own endpoint, a vendor/model id goes through OpenRouter.
+models:
+  - deepseek-chat                       # DeepSeek-V3
+  - qwen-plus                           # Qwen3, DashScope international
+  - openai/gpt-4o-mini                  # GPT-4o-mini via OpenRouter
+  - meta-llama/llama-3.3-70b-instruct   # Llama-3.3-70B via OpenRouter
+
+splits:
+  test_press: data/kazscam_v0.1/test_press.jsonl
+  test_donated: data/kazscam_v0.1/test_donated.jsonl
+
+# Slices of each split by the row's `lang` field; `all` is the whole split.
+languages: [all, ru, kk]
+
+# docs/05_EVAL_PROTOCOL.md section 6. `translated` runs only on rows that
+# carry the co-annotators' translation in `text_translated`, and is skipped
+# with a reason while no row does.
+ablations: [none, translated, cue_masked, no_playbook_context]
+
+# Verdict bands scored as a positive prediction. A `suspicious` warning on a
+# genuine bank SMS is a false positive as far as the recipient is concerned.
+positive_bands: [scam, suspicious]
+
+# Model calls in flight at once within a cell. Changes no number.
+concurrency: 4
