@@ -41,6 +41,8 @@ class HealthOut(BaseModel):
     ok: bool
     db: bool
     llm: bool
+    #: A screenshot can be read: a vision provider key, or offline replay.
+    vision: bool = False
 
 
 class ActionOut(BaseModel):

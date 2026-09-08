@@ -41,6 +41,16 @@ PROVIDER_KEY_ENVS = ("DEEPSEEK_API_KEY", "DASHSCOPE_API_KEY", "OPENROUTER_API_KE
 TRUE_VALUES = frozenset({"1", "true", "yes", "on"})
 
 
+class _Unset:
+    """Marker for "not resolved yet", for a dependency whose resolved value may be None."""
+
+    def __repr__(self) -> str:
+        return "UNSET"
+
+
+UNSET = _Unset()
+
+
 def _env_int(name: str, default: int) -> int:
     raw = os.environ.get(name, "").strip()
     if not raw:
@@ -100,12 +110,31 @@ class AnalyzeFn(Protocol):
         locale: Lang | None = None,
         surface: str = "api",
         thread: list[str] | None = None,
+        metadata: dict | None = None,
     ) -> Verdict: ...
+
+
+class Perceive(Protocol):
+    """Screenshot bytes in, transcript text out. Raises on failure.
+
+    The same seam the bot uses. An implementation must not keep, write or log
+    the bytes; the handler drops its own reference the moment this returns.
+    An empty string means the image held no readable message text.
+    """
+
+    async def __call__(self, image: bytes, *, locale: Lang | None) -> str: ...
 
 
 def llm_configured() -> bool:
     """Whether a provider key is present. Never contacts a provider."""
     return any(_env_set(name) for name in PROVIDER_KEY_ENVS)
+
+
+def vision_configured() -> bool:
+    """Whether this process can read a screenshot. Never contacts a provider."""
+    from saqbol.core.perceive import vision_available
+
+    return vision_available()
 
 
 def build_store() -> Store:
@@ -122,6 +151,37 @@ def build_analyzer() -> AnalyzeFn:
     # Load the playbooks and the retrieval index now, not on the first request.
     pipeline.default_analyzer()
     return pipeline.analyze
+
+
+def build_perceive() -> Perceive | None:
+    """The screenshot reader, or None when this process cannot read one.
+
+    A DashScope key, or offline replay mode with recorded cassettes, makes it
+    available. Without either, `POST /api/v1/analyze` answers a screenshot
+    with `image_not_supported` instead of spending a check on a call that
+    cannot succeed.
+    """
+    if not vision_configured():
+        log.info("no vision provider configured; screenshots are disabled")
+        return None
+
+    from saqbol.core.llm import LLMClient
+    from saqbol.core.perceive import perceive
+
+    client = LLMClient()
+
+    async def call(image: bytes, *, locale: Lang | None) -> str:
+        transcript, stats = await perceive(image, client=client, hint=locale)
+        log.info(
+            "screenshot read: model=%s turns=%d cached=%s latency_ms=%d",
+            stats.model,
+            len(transcript.turns),
+            stats.cached,
+            stats.latency_ms,
+        )
+        return transcript.render()
+
+    return call
 
 
 def build_actor_secret() -> bytes:
@@ -145,12 +205,15 @@ class Deps:
         analyzer: AnalyzeFn | None = None,
         playbooks: dict[str, Playbook] | None = None,
         actor_secret: bytes | None = None,
+        perceive: Perceive | _Unset | None = UNSET,
     ) -> None:
         self._settings = settings
         self._store = store
         self._analyzer = analyzer
         self._playbooks = playbooks
         self._actor_secret = actor_secret
+        # None is a real value here ("screenshots off"), so absence needs its own marker.
+        self._perceive: Perceive | _Unset | None = perceive
         self._lock = threading.Lock()
 
     def _once[T](self, attr: str, factory: Callable[[], T]) -> T:
@@ -183,9 +246,17 @@ class Deps:
     def actor_secret(self) -> bytes:
         return self._once("_actor_secret", build_actor_secret)
 
+    @property
+    def perceive(self) -> Perceive | None:
+        if self._perceive is UNSET:
+            with self._lock:
+                if self._perceive is UNSET:
+                    self._perceive = build_perceive()
+        return None if self._perceive is UNSET else self._perceive
+
     def warm(self) -> None:
         """Resolve everything now, so a bad configuration fails at startup."""
-        for name in ("settings", "store", "analyzer", "playbooks", "actor_secret"):
+        for name in ("settings", "store", "analyzer", "playbooks", "actor_secret", "perceive"):
             getattr(self, name)
 
 
@@ -200,10 +271,13 @@ __all__ = [
     "AnalyzeFn",
     "Deps",
     "DepsDep",
+    "Perceive",
     "Settings",
     "build_actor_secret",
     "build_analyzer",
+    "build_perceive",
     "build_store",
     "get_deps",
     "llm_configured",
+    "vision_configured",
 ]

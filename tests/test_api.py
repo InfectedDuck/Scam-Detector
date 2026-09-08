@@ -6,6 +6,7 @@ Everything here is offline. No provider key is set, so the pipeline behind
 
 from __future__ import annotations
 
+import base64
 import logging
 import re
 
@@ -123,6 +124,123 @@ def test_image_only_is_refused_not_faked(client: TestClient, store: Store) -> No
     assert response.status_code == 422
     assert response.json() == {"error": "image_not_supported"}
     assert rows(store, Check) == []
+
+
+# ------------------------------------------------------------ screenshots
+
+#: A JPEG header on a recognisable payload, so a test can prove the bytes went nowhere.
+IMAGE_BYTES = b"\xff\xd8\xff\xe0" + b"SAQBOL-SCREENSHOT-BYTES-" * 8
+IMAGE_B64 = base64.b64encode(IMAGE_BYTES).decode("ascii")
+TRANSCRIPT = "[Kaspi · +7 700 000 00 00]\n> " + SCAM_RU
+
+
+class FakePerceive:
+    """Scripted screenshot reader. Records what it saw so a test can check it."""
+
+    def __init__(self, reply: str | Exception = TRANSCRIPT) -> None:
+        self.reply = reply
+        self.calls: list[tuple[bytes, object]] = []
+
+    async def __call__(self, image: bytes, *, locale) -> str:
+        self.calls.append((image, locale))
+        if isinstance(self.reply, Exception):
+            raise self.reply
+        return self.reply
+
+
+def vision_client(store: Store, perceive: FakePerceive) -> TestClient:
+    return TestClient(create_app(Deps(store=store, perceive=perceive)))
+
+
+def test_screenshot_is_read_then_analysed_as_text(store: Store) -> None:
+    reader = FakePerceive()
+    with vision_client(store, reader) as client:
+        response = analyze(client, None, image_b64=IMAGE_B64, lang_hint="ru")
+    assert response.status_code == 200, response.text
+    body = response.json()
+
+    # The reader got the decoded bytes and the caller's language, once.
+    assert reader.calls == [(IMAGE_BYTES, "ru")]
+    # The transcript is the text from here on: scored, offset-indexed and stored.
+    assert body["band"] == "scam"
+    assert SCAM_RU[:40] in body["normalized_text"]
+    assert all(
+        body["normalized_text"][span["start"] : span["end"]] == span["text"]
+        for span in body["evidence"]
+    )
+    (check,) = rows(store, Check)
+    assert check.input_type == "image"
+    assert IMAGE_B64 not in check.text_scrubbed
+    assert "SAQBOL-SCREENSHOT" not in check.text_scrubbed
+
+
+def test_screenshot_accepts_a_data_url_and_keeps_typed_text_as_context(store: Store) -> None:
+    reader = FakePerceive()
+    with vision_client(store, reader) as client:
+        response = analyze(
+            client, "Это мне пришло сегодня", image_b64="data:image/jpeg;base64," + IMAGE_B64
+        )
+    assert response.status_code == 200, response.text
+    assert reader.calls[0][0] == IMAGE_BYTES
+    normalized = response.json()["normalized_text"]
+    assert normalized.index(SCAM_RU[:20]) < normalized.index("Это мне пришло сегодня")
+
+
+def test_non_image_payload_is_refused_before_a_check_is_spent(
+    store: Store, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("DAILY_CHECK_LIMIT", "1")
+    reader = FakePerceive()
+    with vision_client(store, reader) as client:
+        for payload in ("aGVsbG8=", "not base64!!", base64.b64encode(b"%PDF-1.4").decode()):
+            response = analyze(client, None, image_b64=payload)
+            assert response.status_code == 422, payload
+            assert response.json() == {"error": "invalid_image"}
+        assert reader.calls == []
+        # The limit was never touched by the refusals: one real check still goes through.
+        assert analyze(client, None, image_b64=IMAGE_B64).status_code == 200
+
+
+def test_screenshot_spends_the_daily_check_before_the_vision_call(
+    store: Store, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("DAILY_CHECK_LIMIT", "1")
+    reader = FakePerceive()
+    with vision_client(store, reader) as client:
+        assert analyze(client, None, image_b64=IMAGE_B64).status_code == 200
+        response = analyze(client, None, image_b64=IMAGE_B64)
+    assert response.status_code == 429
+    assert len(reader.calls) == 1
+
+
+def test_unreadable_screenshot_is_502_and_records_nothing(store: Store) -> None:
+    with vision_client(store, FakePerceive(RuntimeError("provider down"))) as client:
+        response = analyze(client, None, image_b64=IMAGE_B64)
+    assert response.status_code == 502
+    assert response.json() == {"error": "image_unreadable"}
+    assert rows(store, Check) == []
+
+
+def test_screenshot_with_no_text_is_422_unless_text_came_with_it(store: Store) -> None:
+    with vision_client(store, FakePerceive("")) as client:
+        response = analyze(client, None, image_b64=IMAGE_B64)
+        assert response.status_code == 422
+        assert response.json() == {"error": "image_no_text"}
+        # Typed text alongside an empty screenshot is still a check on that text.
+        response = analyze(client, SCAM_RU, image_b64=IMAGE_B64)
+        assert response.status_code == 200
+        assert response.json()["band"] == "scam"
+    (check,) = rows(store, Check)
+    assert check.input_type == "image"
+
+
+def test_screenshot_bytes_never_reach_a_log_line(store: Store, caplog) -> None:
+    with caplog.at_level(logging.DEBUG), vision_client(store, FakePerceive()) as client:
+        analyze(client, None, image_b64=IMAGE_B64)
+        analyze(client, None, image_b64=IMAGE_B64.replace("SAQBOL", "XXXXXX"))
+    joined = "\n".join(record.getMessage() for record in caplog.records)
+    assert "SAQBOL-SCREENSHOT" not in joined
+    assert IMAGE_B64[:24] not in joined
 
 
 def test_empty_and_invalid_bodies_are_422_with_an_error_key(client: TestClient) -> None:
@@ -290,7 +408,7 @@ def test_playbook_detail_and_unknown_id(client: TestClient) -> None:
 def test_healthz_reports_db_and_no_llm(client: TestClient) -> None:
     response = client.get("/healthz")
     assert response.status_code == 200
-    assert response.json() == {"ok": True, "db": True, "llm": False}
+    assert response.json() == {"ok": True, "db": True, "llm": False, "vision": False}
 
 
 def test_healthz_sees_a_provider_key_without_calling_anyone(
@@ -298,7 +416,12 @@ def test_healthz_sees_a_provider_key_without_calling_anyone(
 ) -> None:
     monkeypatch.setenv("DASHSCOPE_API_KEY", "not-a-real-key")
     with make_client(store) as client:
-        assert client.get("/healthz").json() == {"ok": True, "db": True, "llm": True}
+        assert client.get("/healthz").json() == {
+            "ok": True,
+            "db": True,
+            "llm": True,
+            "vision": True,
+        }
 
 
 # ------------------------------------------------------------ app wiring

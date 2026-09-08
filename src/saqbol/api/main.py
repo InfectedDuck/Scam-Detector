@@ -20,6 +20,8 @@ switch on one key.
 from __future__ import annotations
 
 import asyncio
+import base64
+import binascii
 import logging
 import math
 import time
@@ -37,9 +39,10 @@ from fastapi.responses import JSONResponse
 from sqlalchemy import text as sql_text
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from saqbol.api.deps import Deps, DepsDep, llm_configured
+from saqbol.api.deps import Deps, DepsDep, llm_configured, vision_configured
 from saqbol.api.schemas import AnalyzeOut, FeedbackIn, HealthOut, PlaybookPublic
 from saqbol.core.normalize import normalize
+from saqbol.core.perceive import image_mime
 from saqbol.core.types import AnalysisInput
 from saqbol.db.hashing import hash_actor
 from saqbol.db.repo import Store, UnknownCheck
@@ -90,6 +93,25 @@ def decoded_image_size(image_b64: str) -> int:
     return max(0, len(payload) * 3 // 4 - padding)
 
 
+def decode_image(image_b64: str) -> bytes:
+    """The screenshot bytes, or a 422 if the payload is not a JPEG, PNG or WebP image.
+
+    The size cap has already been applied to the encoded form, so decoding here
+    cannot allocate more than the cap allows.
+    """
+    payload = image_b64
+    if payload.startswith("data:"):
+        payload = payload.partition(",")[2]
+    payload = "".join(payload.split())
+    try:
+        data = base64.b64decode(payload, validate=True)
+    except (binascii.Error, ValueError):
+        raise ApiError(422, "invalid_image") from None
+    if image_mime(data) is None:
+        raise ApiError(422, "invalid_image")
+    return data
+
+
 def client_address(request: Request, *, trust_proxy: bool) -> str:
     """The address the rate limit is keyed on. Hashed before it goes anywhere."""
     if trust_proxy:
@@ -130,34 +152,86 @@ router = APIRouter()
     response_model=AnalyzeOut,
     responses={
         413: {"description": "text over MAX_TEXT_CHARS or image over MAX_IMAGE_BYTES"},
-        422: {"description": "invalid body, empty input, or an image without text"},
+        422: {
+            "description": (
+                "invalid body, empty input, an image when no vision provider is configured, "
+                "a payload that is not an image, or an image with no readable text"
+            )
+        },
         429: {"description": "daily limit reached; retry_after is seconds until UTC midnight"},
+        502: {"description": "the vision provider could not read the screenshot"},
     },
 )
 async def analyze(body: AnalysisInput, request: Request, deps: DepsDep) -> AnalyzeOut:
-    settings = deps.settings
-    text = body.text or ""
+    """One message or one screenshot in, one verdict out.
 
-    if len(text) > settings.max_text_chars:
+    A screenshot is read by the vision model into a transcript, and from then
+    on the transcript is the text: it is what the pipeline scores, what the
+    record stores, and what the evidence offsets index. The image bytes live in
+    one local for the length of one `perceive` call and are dropped on every
+    path out of it. Nothing below that call can see them.
+
+    The daily check is spent before the vision call, because reading a
+    screenshot is itself a model call.
+    """
+    settings = deps.settings
+    typed = body.text or ""
+
+    if len(typed) > settings.max_text_chars:
         raise ApiError(413, "too_large")
     if body.image_b64 and decoded_image_size(body.image_b64) > settings.max_image_bytes:
         raise ApiError(413, "too_large")
-    if not text.strip():
-        # There is no OCR yet. Saying so beats returning a verdict on nothing.
-        raise ApiError(422, "image_not_supported" if body.image_b64 else "empty_input")
+
+    has_image = bool(body.image_b64 and body.image_b64.strip())
+    if has_image and deps.perceive is None:
+        raise ApiError(422, "image_not_supported")
+    if not has_image and not typed.strip():
+        raise ApiError(422, "empty_input")
 
     surface = request_surface(request)
     address = client_address(request, trust_proxy=settings.trust_proxy)
     actor = hash_actor(address, secret=deps.actor_secret)
     store = deps.store
 
+    # Validate the image before the check is spent, so a bad upload costs nothing.
+    image = decode_image(body.image_b64) if has_image else None
+
     allowed = await asyncio.to_thread(store.spend_check, actor, limit=settings.daily_check_limit)
     if not allowed:
         raise ApiError(429, "rate_limited", retry_after=seconds_until_utc_midnight())
 
     started = time.perf_counter()
+    metadata: dict = {}
+    text = typed
+    input_type = "text"
+
+    if image is not None:
+        assert deps.perceive is not None
+        try:
+            transcript = await deps.perceive(image, locale=body.lang_hint)
+        except Exception:
+            # The traceback is useful; nothing about the image is, and none of it is logged.
+            log.exception("screenshot read failed")
+            raise ApiError(502, "image_unreadable") from None
+        finally:
+            # The only reference to the bytes. Nothing above wrote them anywhere.
+            del image
+        transcript = transcript.strip()
+        if not transcript and not typed.strip():
+            raise ApiError(422, "image_no_text")
+        # The transcript is the message; anything typed alongside is context.
+        # A screenshot cannot be shortened by the user, so the cap truncates.
+        text = "\n\n".join(part for part in (transcript, typed.strip()) if part)
+        text = text[: settings.max_text_chars]
+        metadata["input_type"] = "image"
+        input_type = "image"
+
     verdict = await deps.analyzer(
-        text, locale=body.lang_hint, surface=surface, thread=list(body.thread)
+        text,
+        locale=body.lang_hint,
+        surface=surface,
+        thread=list(body.thread),
+        metadata=metadata or None,
     )
     # The same call the pipeline makes, so the offsets in the verdict index this string.
     normalized = normalize(text, lang_hint=body.lang_hint).text
@@ -170,14 +244,15 @@ async def analyze(body: AnalysisInput, request: Request, deps: DepsDep) -> Analy
         actor_hash=actor,
         text=normalized,
         surface=surface,
-        input_type="text",
+        input_type=input_type,
         consent_dataset=body.consent_dataset,
     )
     elapsed_ms = round((time.perf_counter() - started) * 1000)
     log.info(
-        "check %s band=%s latency_ms=%d model_ms=%d",
+        "check %s band=%s input=%s latency_ms=%d model_ms=%d",
         verdict.check_id,
         verdict.band,
+        input_type,
         elapsed_ms,
         verdict.latency_ms,
     )
@@ -232,7 +307,7 @@ async def healthz(deps: DepsDep) -> HealthOut:
         db = await asyncio.to_thread(_db_reachable, deps.store)
     except Exception:
         db = False
-    return HealthOut(ok=db, db=db, llm=llm_configured())
+    return HealthOut(ok=db, db=db, llm=llm_configured(), vision=vision_configured())
 
 
 # ------------------------------------------------------------ error bodies
