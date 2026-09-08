@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Secrets — never commit
+.env
+.env.local
+*.pem
+*.key
+
+# Data: raw collection is not redistributable, only the released splits are
+data/raw/
+data/*.jsonl
+!data/kazscam_v0.1/*.jsonl
+
+# LLM response cache
+.cache/
+eval/cache/
+
+# Node / Next.js
+node_modules/
+web/.next/
+web/out/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini

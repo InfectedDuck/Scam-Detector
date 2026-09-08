@@ -1,0 +1,72 @@
+[project]
+name = "saqbol"
+version = "0.1.0"
+description = "Explainable multilingual scam triage for Kazakhstan, with the KazScam dataset and leaderboard"
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "MIT" }
+authors = [{ name = "Toktar Kametay" }]
+keywords = ["scam-detection", "fraud", "kazakh", "nlp", "multilingual"]
+
+# Core runtime: pure Python, no network, no native builds.
+# Everything in `core/` must work with only these installed.
+dependencies = [
+    "pydantic>=2.9",
+    "pyyaml>=6.0",
+    "regex>=2024.9.11",
+    "tldextract>=5.1",
+]
+
+[project.optional-dependencies]
+api = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.32",
+    "sqlalchemy>=2.0",
+    "alembic>=1.14",
+    "psycopg[binary]>=3.2",
+    "pgvector>=0.3",
+]
+bot = ["aiogram>=3.15"]
+llm = [
+    "openai>=1.57",
+    "langgraph>=0.2.50",
+    "sentence-transformers>=3.3",
+]
+dev = [
+    "pytest>=8.3",
+    "pytest-cov>=6.0",
+    "ruff>=0.8",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/saqbol"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = "-q --strict-markers"
+markers = [
+    "network: requires network access, skipped in CI",
+    "llm: requires a live LLM provider key",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
+ignore = [
+    "E501",    # line length handled by formatter
+    "RUF001",  # ambiguous unicode in strings is the point of this project
+    "RUF002",
+    "RUF003",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["E402"]
