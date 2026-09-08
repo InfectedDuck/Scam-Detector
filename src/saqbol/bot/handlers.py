@@ -18,6 +18,7 @@ import asyncio
 import logging
 from collections.abc import Callable
 from dataclasses import dataclass
+from io import BytesIO
 from typing import Any
 
 from aiogram import F, Router
@@ -29,7 +30,7 @@ from saqbol.bot.actors import actor_hash, chat_key, short_ref
 from saqbol.bot.cards import format_card, share_text
 from saqbol.bot.deps import Deps, RenderCard
 from saqbol.bot.forwards import SURFACE, forward_metadata
-from saqbol.bot.guards import RateLimiter, check_image_size, check_text_size
+from saqbol.bot.guards import LimitDecision, RateLimiter, check_image_size, check_text_size
 from saqbol.bot.keyboards import (
     LANGUAGE_CALLBACK_PREFIX,
     VERDICT_CALLBACK_PREFIX,
@@ -235,12 +236,41 @@ async def _run_check(message: Message, deps: Deps) -> None:
         )
         return
 
+    decision = await _spend_check(message, deps, session)
+    if decision is None:
+        return
+    await _analyze_and_reply(message, deps, session, text, decision=decision)
+
+
+async def _spend_check(message: Message, deps: Deps, session: Session) -> LimitDecision | None:
+    """Consume one of today's checks, or tell the user why not."""
     limiter = RateLimiter(deps.store, deps.config.daily_check_limit)
     decision = limiter.consume(session.actor, deps.now())
     if not decision.allowed:
         log.info("rate limited: actor=%s used=%d", short_ref(session.actor), decision.used)
-        await message.answer(t(locale, "rate_limited", limit=decision.limit))
-        return
+        await message.answer(t(session.locale, "rate_limited", limit=decision.limit))
+        return None
+    return decision
+
+
+async def _analyze_and_reply(
+    message: Message,
+    deps: Deps,
+    session: Session,
+    text: str,
+    *,
+    decision: LimitDecision,
+    image: bool = False,
+) -> None:
+    """Thread assembly, the pipeline, the record, the card.
+
+    `image` marks a transcript that came out of a screenshot. The pipeline is
+    told through `metadata` and the record through `input_type`; the text
+    itself is handled exactly like typed text from here on.
+    """
+    profile = session.profile
+    assert profile is not None  # callers have checked consent
+    locale = session.locale
 
     now = deps.now()
     thread = assemble(
@@ -254,6 +284,8 @@ async def _run_check(message: Message, deps: Deps) -> None:
     deps.store.put_profile(session.chat, profile)
 
     metadata = forward_metadata(message, now=now)
+    if image:
+        metadata["input_type"] = "image"
 
     try:
         verdict = await deps.analyze(
@@ -271,14 +303,14 @@ async def _run_check(message: Message, deps: Deps) -> None:
         return
 
     is_forward = bool(metadata.get("is_forward", False))
-    recorded = await _record_check(
-        deps, session, verdict, text, input_type="forward" if is_forward else "text"
-    )
+    input_type = "image" if image else ("forward" if is_forward else "text")
+    recorded = await _record_check(deps, session, verdict, text, input_type=input_type)
 
     log.info(
-        "check done: actor=%s band=%s thread=%d forward=%s recorded=%s remaining=%d",
+        "check done: actor=%s band=%s input=%s thread=%d forward=%s recorded=%s remaining=%d",
         short_ref(session.actor),
         verdict.band.value,
+        input_type,
         len(thread.texts),
         is_forward,
         recorded,
@@ -323,10 +355,16 @@ async def _record_check(
 
 
 async def on_photo(message: Message, deps: Deps) -> None:
-    """Screenshots. The size cap is enforced here; OCR arrives with T203.
+    """Screenshots: size cap, spend a check, download, read, discard, analyse.
 
-    The cap is checked against the `file_size` Telegram puts in the update, so
-    an oversized image is refused without a byte being downloaded.
+    The order is the privacy argument. The cap is checked against the
+    `file_size` Telegram puts in the update, so an oversized image is refused
+    without a byte being downloaded. The daily limit is spent before the
+    download because reading a screenshot is itself a model call. The bytes
+    then live in one local for the length of one `perceive` call and are
+    dropped on every path out of it: never written, never logged, never
+    handed to the pipeline or the database, which only ever see the
+    transcript.
     """
     if message.from_user is None:
         return
@@ -334,6 +372,7 @@ async def on_photo(message: Message, deps: Deps) -> None:
     if not session.has_consented:
         await _send_consent(message, deps, preamble=True)
         return
+    locale = session.locale
 
     largest = message.photo[-1] if message.photo else None
     rejected = check_image_size(largest.file_size if largest else None, deps.config.max_image_bytes)
@@ -346,7 +385,7 @@ async def on_photo(message: Message, deps: Deps) -> None:
         )
         await message.answer(
             t(
-                session.locale,
+                locale,
                 "image_too_large",
                 actual=f"{rejected.actual / _BYTES_PER_MB:.1f}",
                 limit=f"{rejected.limit / _BYTES_PER_MB:.1f}",
@@ -354,9 +393,47 @@ async def on_photo(message: Message, deps: Deps) -> None:
         )
         return
 
-    # T203 continues from here: spend a check, download, OCR, discard the bytes.
-    # Nothing above this line has touched the image.
-    await message.answer(t(session.locale, "photo_not_supported"))
+    if deps.perceive is None or largest is None or message.bot is None:
+        await message.answer(t(locale, "photo_not_supported"))
+        return
+
+    decision = await _spend_check(message, deps, session)
+    if decision is None:
+        return
+
+    # A vision call takes seconds; the typing indicator says the bot is on it.
+    await message.bot.send_chat_action(message.chat.id, "typing")
+
+    buffer = BytesIO()
+    try:
+        await message.bot.download(largest, destination=buffer)
+        image = buffer.getvalue()
+    except Exception:
+        log.exception("screenshot download failed: actor=%s", short_ref(session.actor))
+        await message.answer(t(locale, "error"))
+        return
+    finally:
+        buffer.close()
+
+    try:
+        text = await deps.perceive(image, locale=locale)
+    except Exception:
+        log.exception("screenshot read failed: actor=%s", short_ref(session.actor))
+        await message.answer(t(locale, "photo_unreadable"))
+        return
+    finally:
+        # The only reference to the image. Nothing above wrote it anywhere.
+        del image
+
+    text = text.strip()
+    if not text:
+        await message.answer(t(locale, "photo_no_text"))
+        return
+    # A screenshot cannot be shortened by the user, so the text cap truncates
+    # rather than refuses. Real transcripts are far below it.
+    text = text[: deps.config.max_text_chars]
+
+    await _analyze_and_reply(message, deps, session, text, decision=decision, image=True)
 
 
 async def on_forward(message: Message, deps: Deps) -> None:

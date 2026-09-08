@@ -86,6 +86,17 @@ class Analyze(Protocol):
     ) -> Verdict: ...
 
 
+class Perceive(Protocol):
+    """Screenshot bytes in, the transcript text out. Raises on failure.
+
+    The bytes are the caller's to discard; an implementation must not keep,
+    write or log them. An empty string means the image had no readable
+    message text, which the handler explains rather than analysing nothing.
+    """
+
+    async def __call__(self, image: bytes, *, locale: Lang) -> str: ...
+
+
 # ------------------------------------------------------------------- stubs
 
 
@@ -230,6 +241,9 @@ class Deps:
     #: nothing is recorded; the buttons under a card still render, and a press
     #: answers "not available right now" instead of failing.
     db: Store | None = None
+    #: The screenshot reader. `None` when no vision provider is configured;
+    #: the handler then says screenshots are off in this build, for free.
+    perceive: Perceive | None = None
 
 
 def build_db() -> Store | None:
@@ -304,4 +318,38 @@ def build_deps(
         analyze_is_stub=analyze_is_stub,
         renderer_is_stub=renderer_is_stub,
         db=db if db is not None else build_db(),
+        perceive=build_perceive(),
     )
+
+
+def build_perceive() -> Perceive | None:
+    """The screenshot reader, or None when this process cannot read one.
+
+    Availability is decided by the environment: a DashScope key, or offline
+    replay mode with recorded cassettes. Without either, `on_photo` tells the
+    user that screenshots are not enabled rather than spending a check on a
+    call that cannot succeed.
+    """
+    from saqbol.core.perceive import vision_available
+
+    if not vision_available():
+        log.info("no vision provider configured; screenshots are disabled")
+        return None
+
+    from saqbol.core.llm import LLMClient
+    from saqbol.core.perceive import perceive as real_perceive
+
+    client = LLMClient()
+
+    async def call(image: bytes, *, locale: Lang) -> str:
+        transcript, stats = await real_perceive(image, client=client, hint=locale)
+        log.info(
+            "screenshot read: model=%s turns=%d cached=%s latency_ms=%d",
+            stats.model,
+            len(transcript.turns),
+            stats.cached,
+            stats.latency_ms,
+        )
+        return transcript.render()
+
+    return call

@@ -94,6 +94,12 @@ _RU = {
     "photo_not_supported": """Распознавание скриншотов ещё не включено в этой сборке.
 
 Пока перешлите само сообщение или скопируйте текст — так я тоже увижу отправителя.""",
+    "photo_unreadable": """Не смог разобрать этот скриншот.
+
+Пришлите более чёткий снимок или скопируйте текст сообщения — так надёжнее.""",
+    "photo_no_text": """На скриншоте не нашёл текста сообщений.
+
+Пришлите снимок самой переписки или скопируйте текст.""",
     "unsupported": """Я разбираю текст, пересланные сообщения и скриншоты.
 
 Голосовые, файлы и видео пока не умею. Если сообщение пришло голосом, напишите своими словами, что вам сказали.""",
@@ -197,6 +203,12 @@ _KK = {
     "photo_not_supported": """Скриншот тану бұл құрастырымда әлі қосылмаған.
 
 Әзірге хабарламаның өзін қайта жіберіңіз немесе мәтінін көшіріп салыңыз — сонда жіберушіні де көремін.""",
+    "photo_unreadable": """Бұл скриншотты оқи алмадым.
+
+Анығырақ сурет жіберіңіз немесе хабарламаның мәтінін көшіріп салыңыз — солай сенімдірек.""",
+    "photo_no_text": """Скриншоттан хабарлама мәтінін таппадым.
+
+Жазысудың өзін түсіріп жіберіңіз немесе мәтінін көшіріңіз.""",
     "unsupported": """Мен мәтінді, қайта жіберілген хабарламаларды және скриншоттарды қараймын.
 
 Дауыстық хабарлама, файл және бейнені әзірге танымаймын. Егер хабарлама дауыспен келсе, сізге не айтқанын өз сөзіңізбен жазыңыз.""",
@@ -300,6 +312,12 @@ Send a screenshot rather than a photo of a screen, or reduce the quality.""",
     "photo_not_supported": """Screenshot reading is not enabled in this build yet.
 
 For now, forward the message itself or paste the text — that way I see the sender too.""",
+    "photo_unreadable": """I could not read that screenshot.
+
+Send a sharper one, or paste the message text — that is more reliable.""",
+    "photo_no_text": """I found no message text in that screenshot.
+
+Send a shot of the conversation itself, or paste the text.""",
     "unsupported": """I read text, forwarded messages and screenshots.
 
 Voice messages, files and video are not supported yet. If it came as a voice message, write down in your own words what you were told.""",
@@ -403,6 +421,12 @@ _ZH = {
     "photo_not_supported": """这个版本还没有启用截图识别。
 
 暂时请直接转发原消息或粘贴文字 — 这样我也能看到发送方。""",
+    "photo_unreadable": """这张截图我没能识别。
+
+请发一张更清晰的，或者直接粘贴消息文字 — 这样更可靠。""",
+    "photo_no_text": """截图里没有找到消息文字。
+
+请发送对话本身的截图，或者粘贴文字。""",
     "unsupported": """我可以看文字、转发的消息和截图。
 
 暂时不支持语音、文件和视频。如果是语音消息，请用自己的话写下对方说了什么。""",

@@ -16,6 +16,7 @@ fails loudly instead of quietly passing.
 from __future__ import annotations
 
 import asyncio
+import base64
 import itertools
 import json
 import logging
@@ -33,12 +34,14 @@ from aiogram.methods import (
     AnswerCallbackQuery,
     EditMessageReplyMarkup,
     EditMessageText,
+    GetFile,
     SendMessage,
     TelegramMethod,
 )
 from aiogram.types import (
     CallbackQuery,
     Chat,
+    File,
     InlineKeyboardMarkup,
     Message,
     MessageOriginChannel,
@@ -228,6 +231,8 @@ def make_harness(
     *,
     clock: Clock | None = None,
     db: Store | None = None,
+    session: FakeSession | None = None,
+    perceive: Any = None,
     **config_overrides: Any,
 ) -> Harness:
     config = BotConfig(
@@ -248,8 +253,9 @@ def make_harness(
         analyze_is_stub=True,
         renderer_is_stub=True,
         db=db,
+        perceive=perceive,
     )
-    session = FakeSession()
+    session = session or FakeSession()
     return Harness(
         bot=Bot(TOKEN, session=session),
         dispatcher=build_dispatcher(deps),
@@ -702,13 +708,179 @@ def test_oversized_image_is_refused_without_downloading_it(state_path: Path) -> 
     assert bot.analyzer.calls == []
 
 
-def test_an_image_within_the_cap_is_accepted_for_now(state_path: Path) -> None:
+def test_an_image_within_the_cap_passes_the_size_check(state_path: Path) -> None:
     bot = make_harness(state_path, max_image_bytes=5 * 1024 * 1024)
     consent(bot)
     bot.feed(message_update(photo=photo(size_bytes=200 * 1024)))
 
     assert "слишком большая" not in bot.last
     assert [type(call).__name__ for call in bot.session.calls] == ["SendMessage"]
+
+
+# ------------------------------------------------------------- screenshots
+#
+# The image path is the one place the bot handles bytes it must not keep. These
+# tests serve a screenshot with a sentinel inside it and then look for that
+# sentinel everywhere it must not be: the state file, the log, the pipeline
+# input, and any file under the temp directory.
+
+IMAGE_SENTINEL = b"SAQBOL-SCREENSHOT-SENTINEL"
+SCREENSHOT = b"\xff\xd8\xff\xe0" + IMAGE_SENTINEL * 4
+TRANSCRIPT = "[WhatsApp · +7 700 123 45 67]\n> Продиктуйте код из СМС\n< какой код?"
+
+
+class DownloadingSession(FakeSession):
+    """A `FakeSession` that serves one file, so a download can be observed."""
+
+    def __init__(self, payload: bytes) -> None:
+        super().__init__()
+        self.payload = payload
+        self.downloads = 0
+
+    async def make_request(self, bot: Bot, method: TelegramMethod, timeout: int | None = None):
+        if isinstance(method, GetFile):
+            self.calls.append(method)
+            return File(
+                file_id=method.file_id,
+                file_unique_id="lu",
+                file_size=len(self.payload),
+                file_path="photos/file_1.jpg",
+            )
+        return await super().make_request(bot, method, timeout)
+
+    async def stream_content(
+        self,
+        url: str,
+        headers: dict[str, Any] | None = None,
+        timeout: int = 30,
+        chunk_size: int = 65536,
+        raise_for_status: bool = True,
+    ):
+        self.downloads += 1
+        for start in range(0, len(self.payload), chunk_size):
+            yield self.payload[start : start + chunk_size]
+
+
+@dataclass
+class ScriptedPerceive:
+    """Stands in for `saqbol.core.perceive`. Remembers what it was handed."""
+
+    result: str | Exception = TRANSCRIPT
+    received: list[bytes] = field(default_factory=list)
+    locales: list[Lang] = field(default_factory=list)
+
+    async def __call__(self, image: bytes, *, locale: Lang) -> str:
+        self.received.append(image)
+        self.locales.append(locale)
+        if isinstance(self.result, Exception):
+            raise self.result
+        return self.result
+
+
+def screenshot_harness(
+    state_path: Path,
+    *,
+    perceive: ScriptedPerceive | None,
+    **config_overrides: Any,
+) -> Harness:
+    harness = make_harness(
+        state_path,
+        session=DownloadingSession(SCREENSHOT),
+        perceive=perceive,
+        **config_overrides,
+    )
+    consent(harness)
+    return harness
+
+
+def _method_names(harness: Harness) -> list[str]:
+    return [type(call).__name__ for call in harness.session.calls]
+
+
+def test_screenshot_is_read_analysed_and_never_stored(
+    state_path: Path, tmp_path: Path, caplog: pytest.LogCaptureFixture
+) -> None:
+    reader = ScriptedPerceive()
+    bot = screenshot_harness(state_path, perceive=reader)
+
+    with caplog.at_level(logging.DEBUG):
+        bot.feed(message_update(photo=photo(size_bytes=200 * 1024)))
+
+    # The bytes reached the reader exactly once, whole, with the chat's locale.
+    assert reader.received == [SCREENSHOT]
+    assert reader.locales == [Lang.RU]
+    assert bot.session.downloads == 1
+
+    # The pipeline saw the transcript and only the transcript.
+    (call,) = bot.analyzer.calls
+    assert call["text"] == TRANSCRIPT
+    assert call["metadata"]["input_type"] == "image"
+    assert call["metadata"]["is_forward"] is False
+
+    # A card went out, after a typing indicator during the read.
+    names = _method_names(bot)
+    assert names.index("SendChatAction") < names.index("GetFile")
+    assert names[-1] == "SendMessage"
+    assert "[stub]" in bot.last
+
+    # The image is nowhere it must not be.
+    bot.store.flush()
+    on_disk = b"".join(p.read_bytes() for p in tmp_path.rglob("*") if p.is_file())
+    assert IMAGE_SENTINEL not in on_disk
+    assert base64.b64encode(SCREENSHOT) not in on_disk
+    assert sorted(p.name for p in tmp_path.rglob("*") if p.is_file()) == ["bot.json"]
+    assert IMAGE_SENTINEL.decode() not in _log_text(caplog.records)
+    assert "SCREENSHOT" not in call["text"]
+
+
+def test_screenshot_spends_a_check_before_the_download(state_path: Path) -> None:
+    bot = screenshot_harness(state_path, perceive=ScriptedPerceive(), daily_check_limit=1)
+
+    bot.feed(message_update(photo=photo(size_bytes=1024)))
+    assert bot.session.downloads == 1
+    bot.clear()
+
+    bot.feed(message_update(photo=photo(size_bytes=1024)))
+
+    assert "лимит" in bot.last.lower() or "1" in bot.last
+    assert bot.session.downloads == 1, "a refused check must not download"
+    assert "GetFile" not in _method_names(bot)
+    assert bot.analyzer.calls == []
+
+
+def test_unreadable_screenshot_is_explained_not_analysed(state_path: Path) -> None:
+    reader = ScriptedPerceive(result=RuntimeError("vision provider down"))
+    bot = screenshot_harness(state_path, perceive=reader)
+
+    bot.feed(message_update(photo=photo(size_bytes=1024)))
+
+    assert "Не смог разобрать" in bot.last
+    assert bot.analyzer.calls == []
+    assert reader.received == [SCREENSHOT]
+
+
+def test_screenshot_without_message_text_is_explained(state_path: Path) -> None:
+    bot = screenshot_harness(state_path, perceive=ScriptedPerceive(result="  \n"))
+
+    bot.feed(message_update(photo=photo(size_bytes=1024)))
+
+    assert "не нашёл текста" in bot.last
+    assert bot.analyzer.calls == []
+
+
+def test_without_a_vision_provider_screenshots_are_declined_for_free(state_path: Path) -> None:
+    bot = screenshot_harness(state_path, perceive=None, daily_check_limit=1)
+
+    bot.feed(message_update(photo=photo(size_bytes=1024)))
+
+    assert "ещё не включено" in bot.last
+    assert bot.session.downloads == 0
+    assert bot.analyzer.calls == []
+
+    # No check was spent: a text check still goes through on a limit of one.
+    bot.clear()
+    bot.feed(message_update("Срочно продиктуйте код"))
+    assert len(bot.analyzer.calls) == 1
 
 
 def test_unsupported_content_gets_an_explanation(bot: Harness) -> None:
