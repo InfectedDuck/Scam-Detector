@@ -1,0 +1,164 @@
+{
+  "check_id": "chk_01K4Q7YB3M2P8ZV0",
+  "band": "scam",
+  "risk": 0.95,
+  "playbook_id": "kz.bank_security_call",
+  "playbook_confidence": 0.91,
+  "stage": null,
+  "indicators": [
+    {
+      "indicator_id": "C1.bank_security",
+      "severity": "high",
+      "spans": [
+        {
+          "start": 28,
+          "end": 58,
+          "text": "служба безопасности Kaspi Bank",
+          "indicator_id": "C1.bank_security"
+        }
+      ],
+      "detail": {
+        "claimed_brand": "Kaspi Bank"
+      }
+    },
+    {
+      "indicator_id": "B1.urgency",
+      "severity": "medium",
+      "spans": [
+        {
+          "start": 75,
+          "end": 87,
+          "text": "прямо сейчас",
+          "indicator_id": "B1.urgency"
+        }
+      ],
+      "detail": {}
+    },
+    {
+      "indicator_id": "B4.money_at_risk",
+      "severity": "medium",
+      "spans": [
+        {
+          "start": 88,
+          "end": 118,
+          "text": "пытаются списать 480 000 тенге",
+          "indicator_id": "B4.money_at_risk"
+        }
+      ],
+      "detail": {
+        "amount": "480 000 тенге"
+      }
+    },
+    {
+      "indicator_id": "A1.otp_request",
+      "severity": "critical",
+      "spans": [
+        {
+          "start": 230,
+          "end": 249,
+          "text": "назовите код из СМС",
+          "indicator_id": "A1.otp_request"
+        }
+      ],
+      "detail": {
+        "credential": "otp"
+      }
+    },
+    {
+      "indicator_id": "D3.dont_hang_up",
+      "severity": "high",
+      "spans": [
+        {
+          "start": 278,
+          "end": 295,
+          "text": "Не кладите трубку",
+          "indicator_id": "D3.dont_hang_up"
+        }
+      ],
+      "detail": {}
+    },
+    {
+      "indicator_id": "J1.secrecy",
+      "severity": "high",
+      "spans": [
+        {
+          "start": 298,
+          "end": 317,
+          "text": "никому не сообщайте",
+          "indicator_id": "J1.secrecy"
+        }
+      ],
+      "detail": {}
+    },
+    {
+      "indicator_id": "E1.safe_account",
+      "severity": "critical",
+      "spans": [
+        {
+          "start": 376,
+          "end": 412,
+          "text": "переведите остаток на резервный счёт",
+          "indicator_id": "E1.safe_account"
+        }
+      ],
+      "detail": {}
+    }
+  ],
+  "evidence": [
+    {
+      "start": 28,
+      "end": 58,
+      "text": "служба безопасности Kaspi Bank",
+      "indicator_id": "C1.bank_security"
+    },
+    {
+      "start": 75,
+      "end": 87,
+      "text": "прямо сейчас",
+      "indicator_id": "B1.urgency"
+    },
+    {
+      "start": 88,
+      "end": 118,
+      "text": "пытаются списать 480 000 тенге",
+      "indicator_id": "B4.money_at_risk"
+    },
+    {
+      "start": 230,
+      "end": 249,
+      "text": "назовите код из СМС",
+      "indicator_id": "A1.otp_request"
+    },
+    {
+      "start": 278,
+      "end": 295,
+      "text": "Не кладите трубку",
+      "indicator_id": "D3.dont_hang_up"
+    },
+    {
+      "start": 298,
+      "end": 317,
+      "text": "никому не сообщайте",
+      "indicator_id": "J1.secrecy"
+    },
+    {
+      "start": 376,
+      "end": 412,
+      "text": "переведите остаток на резервный счёт",
+      "indicator_id": "E1.safe_account"
+    }
+  ],
+  "action_key": "action.hang_up_call_bank",
+  "hotline": "1414",
+  "language": "ru",
+  "components": {
+    "rule_norm": 1,
+    "retrieval_sim": 0.87,
+    "llm_conf": 0.94,
+    "self_consistency": null
+  },
+  "abstained_because": null,
+  "model": "deepseek-v3",
+  "latency_ms": 1840,
+  "cached": false
+}

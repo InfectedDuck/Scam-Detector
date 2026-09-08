@@ -1,0 +1,45 @@
+{
+  "app.name": "SaqBol",
+  "app.tagline": "Ақшаңыздан айырылмас бұрын хабарламаны тексеріңіз",
+  "home.lead": "Күмәнді хабарламаны, SMS-ті немесе жазысуды осында қойыңыз. SaqBol алаяқтыққа ұқсататын нақты сөздерді белгілейді, сценарийін атайды және не істеу керегін айтады.",
+
+  "form.label": "Тексерілетін хабарлама",
+  "form.placeholder": "Хабарламаны осында қойыңыз…",
+  "form.submit": "Хабарламаны тексеру",
+  "form.submitting": "Тексерілуде…",
+  "form.counter": "{n} / {max} таңба",
+  "form.error.empty": "Алдымен хабарламаны қойыңыз.",
+  "form.error.too_long": "Хабарлама {max} таңбадан ұзын. Ең маңызды бөлігін қойыңыз.",
+  "form.error.failed": "Тексеру аяқталмады. Сәлден соң қайталап көріңіз.",
+  "form.error.rate_limited": "Күндізгі шектеу таусылды. Кейінірек қайталаңыз.",
+  "form.samples.title": "Немесе мысалды қараңыз",
+  "form.samples.hint": "Нағыз алаяқтық сценарийлері және бір шынайы банк хабарламасы.",
+
+  "sample.bank_call": "«Қауіпсіздік қызметінің» қоңырауы",
+  "sample.parcel_fee": "Жөнелтілім үшін кеден алымы",
+  "sample.job_offer": "Қашықтан жұмыс ұсынысы",
+  "sample.real_notification": "Банктен келген нағыз SMS",
+  "sample.police_impersonation": "«Полиция» атынан қоңырау",
+
+  "card.text.title": "Дәлелдері белгіленген хабарлама",
+  "card.evidence": "Себебі",
+  "card.evidence.unanchored": "Мәтіннен табылмаған дәлел саны: {n}. Олар жоғарыда белгіленбеген.",
+  "card.action": "Не істеу керек",
+  "card.call": "{hotline} нөміріне қоңырау шалу",
+  "card.playbook": "Сценарий",
+  "card.how": "Шешім қалай қабылданды",
+  "card.components.rule_norm": "Ережелер",
+  "card.components.retrieval_sim": "Сценарий сәйкестігі",
+  "card.components.llm_conf": "Модель",
+  "card.components.self_consistency": "Модель тұрақтылығы",
+  "card.meta.latency": "{ms} мс",
+  "card.meta.cached": "кэштен",
+
+  "severity.critical": "аса қауіпті",
+  "severity.high": "жоғары",
+  "severity.medium": "орташа",
+  "severity.low": "төмен",
+
+  "nav.language": "Тіл",
+  "mock.banner": "Демонстрациялық деректер. Бұл құрастырылымда талдау сервері қосылмаған."
+}

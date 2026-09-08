@@ -1,0 +1,88 @@
+{
+  "check_id": "chk_01K4Q8B0S9H5N3RC",
+  "band": "unsure",
+  "risk": 0.67,
+  "playbook_id": null,
+  "playbook_confidence": 0.41,
+  "stage": null,
+  "indicators": [
+    {
+      "indicator_id": "H1.guaranteed_returns",
+      "severity": "high",
+      "spans": [
+        {
+          "start": 62,
+          "end": 81,
+          "text": "айына 350 000 теңге",
+          "indicator_id": "H1.guaranteed_returns"
+        }
+      ],
+      "detail": {
+        "amount": "350 000 теңге",
+        "hours_claimed": "2"
+      }
+    },
+    {
+      "indicator_id": "H4.easy_job",
+      "severity": "medium",
+      "spans": [
+        {
+          "start": 83,
+          "end": 102,
+          "text": "Тәжірибе қажет емес",
+          "indicator_id": "H4.easy_job"
+        }
+      ],
+      "detail": {}
+    },
+    {
+      "indicator_id": "D1.move_to_messenger",
+      "severity": "medium",
+      "spans": [
+        {
+          "start": 148,
+          "end": 171,
+          "text": "Telegram арқылы жазыңыз",
+          "indicator_id": "D1.move_to_messenger"
+        }
+      ],
+      "detail": {
+        "channel": "telegram",
+        "handle": "@hr_kazwork_2026"
+      }
+    }
+  ],
+  "evidence": [
+    {
+      "start": 62,
+      "end": 81,
+      "text": "айына 350 000 теңге",
+      "indicator_id": "H1.guaranteed_returns"
+    },
+    {
+      "start": 83,
+      "end": 102,
+      "text": "Тәжірибе қажет емес",
+      "indicator_id": "H4.easy_job"
+    },
+    {
+      "start": 148,
+      "end": 171,
+      "text": "Telegram арқылы жазыңыз",
+      "indicator_id": "D1.move_to_messenger"
+    }
+  ],
+  "action_key": "action.generic.unsure",
+  "hotline": "1414",
+  "language": "kk",
+  "components": {
+    "rule_norm": 0.49,
+    "retrieval_sim": 0.66,
+    "llm_conf": 0.91,
+    "self_consistency": 0.8
+  },
+  "abstained_because": "disagreement",
+  "model": "deepseek-v3",
+  "latency_ms": 4870,
+  "cached": false
+}

@@ -1,0 +1,23 @@
+{
+  "check_id": "chk_01K4Q8HN7E1J6YD4",
+  "band": "likely_safe",
+  "risk": 0.1,
+  "playbook_id": null,
+  "playbook_confidence": 0,
+  "stage": null,
+  "indicators": [],
+  "evidence": [],
+  "action_key": "action.generic.likely_safe",
+  "hotline": "1414",
+  "language": "ru",
+  "components": {
+    "rule_norm": 0,
+    "retrieval_sim": 0.34,
+    "llm_conf": 0.08,
+    "self_consistency": null
+  },
+  "abstained_because": null,
+  "model": "deepseek-v3",
+  "latency_ms": 42,
+  "cached": true
+}

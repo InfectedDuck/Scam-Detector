@@ -1,0 +1,45 @@
+{
+  "app.name": "SaqBol",
+  "app.tagline": "Check a message before you lose money",
+  "home.lead": "Paste a message, SMS or chat you are unsure about. SaqBol marks the exact words that make it look like a scam, names the script it follows, and tells you what to do next.",
+
+  "form.label": "Message to check",
+  "form.placeholder": "Paste the message here…",
+  "form.submit": "Check this message",
+  "form.submitting": "Checking…",
+  "form.counter": "{n} / {max} characters",
+  "form.error.empty": "Paste a message first.",
+  "form.error.too_long": "That message is longer than {max} characters. Paste the important part.",
+  "form.error.failed": "The check could not be completed. Try again in a moment.",
+  "form.error.rate_limited": "Daily limit reached. Try again later.",
+  "form.samples.title": "Or try one of these",
+  "form.samples.hint": "Real scam scripts, plus one genuine bank notification.",
+
+  "sample.bank_call": "Bank security call",
+  "sample.parcel_fee": "Parcel customs fee",
+  "sample.job_offer": "Remote job offer",
+  "sample.real_notification": "Genuine bank SMS",
+  "sample.police_impersonation": "Police impersonation",
+
+  "card.text.title": "The message, with the evidence marked",
+  "card.evidence": "Why",
+  "card.evidence.unanchored": "{n} piece(s) of evidence could not be located in the text and are not marked above.",
+  "card.action": "What to do",
+  "card.call": "Call {hotline}",
+  "card.playbook": "Scam script",
+  "card.how": "How this was decided",
+  "card.components.rule_norm": "Rules",
+  "card.components.retrieval_sim": "Playbook match",
+  "card.components.llm_conf": "Model",
+  "card.components.self_consistency": "Model agreement",
+  "card.meta.latency": "{ms} ms",
+  "card.meta.cached": "cached",
+
+  "severity.critical": "critical",
+  "severity.high": "high",
+  "severity.medium": "medium",
+  "severity.low": "low",
+
+  "nav.language": "Language",
+  "mock.banner": "Demo data. The analysis backend is not connected in this build."
+}

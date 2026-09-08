@@ -1,0 +1,45 @@
+{
+  "app.name": "SaqBol",
+  "app.tagline": "在损失金钱之前，先核实这条消息",
+  "home.lead": "把你不确定的短信、消息或聊天记录粘贴进来。SaqBol 会标出让它看起来像诈骗的具体字句，指出它属于哪一套话术，并告诉你下一步该怎么做。",
+
+  "form.label": "要核实的消息",
+  "form.placeholder": "把消息粘贴到这里…",
+  "form.submit": "核实这条消息",
+  "form.submitting": "正在核实…",
+  "form.counter": "{n} / {max} 字符",
+  "form.error.empty": "请先粘贴一条消息。",
+  "form.error.too_long": "这条消息超过 {max} 个字符，请只粘贴关键部分。",
+  "form.error.failed": "核实未能完成，请稍后再试。",
+  "form.error.rate_limited": "已达当日上限，请稍后再试。",
+  "form.samples.title": "或者看看示例",
+  "form.samples.hint": "真实的诈骗话术，外加一条真正的银行通知。",
+
+  "sample.bank_call": "冒充银行安全部门来电",
+  "sample.parcel_fee": "包裹清关费",
+  "sample.job_offer": "远程兼职招聘",
+  "sample.real_notification": "真实的银行短信",
+  "sample.police_impersonation": "冒充公安来电",
+
+  "card.text.title": "已标出证据的原文",
+  "card.evidence": "依据",
+  "card.evidence.unanchored": "有 {n} 处证据未能在原文中定位，未在上方标出。",
+  "card.action": "该怎么做",
+  "card.call": "拨打 {hotline}",
+  "card.playbook": "诈骗话术",
+  "card.how": "判定过程",
+  "card.components.rule_norm": "规则",
+  "card.components.retrieval_sim": "话术匹配度",
+  "card.components.llm_conf": "模型",
+  "card.components.self_consistency": "模型一致性",
+  "card.meta.latency": "{ms} 毫秒",
+  "card.meta.cached": "缓存",
+
+  "severity.critical": "极高",
+  "severity.high": "高",
+  "severity.medium": "中",
+  "severity.low": "低",
+
+  "nav.language": "语言",
+  "mock.banner": "演示数据。此版本尚未连接分析后端。"
+}

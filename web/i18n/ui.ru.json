@@ -1,0 +1,45 @@
+{
+  "app.name": "SaqBol",
+  "app.tagline": "Проверьте сообщение, пока не потеряли деньги",
+  "home.lead": "Вставьте сообщение, SMS или переписку, в которых вы не уверены. SaqBol подчеркнёт те самые слова, из-за которых это похоже на мошенничество, назовёт сценарий и подскажет, что делать.",
+
+  "form.label": "Сообщение для проверки",
+  "form.placeholder": "Вставьте сообщение сюда…",
+  "form.submit": "Проверить сообщение",
+  "form.submitting": "Проверяем…",
+  "form.counter": "{n} / {max} символов",
+  "form.error.empty": "Сначала вставьте сообщение.",
+  "form.error.too_long": "Сообщение длиннее {max} символов. Вставьте главную часть.",
+  "form.error.failed": "Проверить не удалось. Попробуйте ещё раз через минуту.",
+  "form.error.rate_limited": "Дневной лимит исчерпан. Попробуйте позже.",
+  "form.samples.title": "Или посмотрите пример",
+  "form.samples.hint": "Настоящие мошеннические сценарии и одно подлинное уведомление банка.",
+
+  "sample.bank_call": "Звонок «службы безопасности»",
+  "sample.parcel_fee": "Таможенный сбор за посылку",
+  "sample.job_offer": "Предложение удалённой работы",
+  "sample.real_notification": "Настоящее СМС от банка",
+  "sample.police_impersonation": "Звонок от «полиции»",
+
+  "card.text.title": "Сообщение с отмеченными уликами",
+  "card.evidence": "Почему",
+  "card.evidence.unanchored": "Улик, которые не удалось найти в тексте: {n}. Они не отмечены выше.",
+  "card.action": "Что делать",
+  "card.call": "Позвонить {hotline}",
+  "card.playbook": "Сценарий",
+  "card.how": "Как получен вывод",
+  "card.components.rule_norm": "Правила",
+  "card.components.retrieval_sim": "Совпадение сценария",
+  "card.components.llm_conf": "Модель",
+  "card.components.self_consistency": "Согласованность модели",
+  "card.meta.latency": "{ms} мс",
+  "card.meta.cached": "из кэша",
+
+  "severity.critical": "критично",
+  "severity.high": "высокий",
+  "severity.medium": "средний",
+  "severity.low": "низкий",
+
+  "nav.language": "Язык",
+  "mock.banner": "Демонстрационные данные. Бэкенд анализа в этой сборке не подключён."
+}

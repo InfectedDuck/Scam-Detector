@@ -1,0 +1,142 @@
+{
+  "check_id": "chk_01K4Q8T2V8A9M1QF",
+  "band": "scam",
+  "risk": 0.95,
+  "playbook_id": "cn.fake_police_deposit",
+  "playbook_confidence": 0.93,
+  "stage": null,
+  "indicators": [
+    {
+      "indicator_id": "C2.police_prosecutor",
+      "severity": "high",
+      "spans": [
+        {
+          "start": 6,
+          "end": 16,
+          "text": "深圳市公安局反诈中心",
+          "indicator_id": "C2.police_prosecutor"
+        }
+      ],
+      "detail": {
+        "claimed_authority": "public_security",
+        "jurisdiction": "cn"
+      }
+    },
+    {
+      "indicator_id": "B1.urgency",
+      "severity": "medium",
+      "spans": [
+        {
+          "start": 34,
+          "end": 41,
+          "text": "请立即配合调查",
+          "indicator_id": "B1.urgency"
+        }
+      ],
+      "detail": {}
+    },
+    {
+      "indicator_id": "E1.safe_account",
+      "severity": "critical",
+      "spans": [
+        {
+          "start": 56,
+          "end": 67,
+          "text": "转入我们指定的安全账户",
+          "indicator_id": "E1.safe_account"
+        }
+      ],
+      "detail": {}
+    },
+    {
+      "indicator_id": "D3.dont_hang_up",
+      "severity": "high",
+      "spans": [
+        {
+          "start": 69,
+          "end": 75,
+          "text": "全程保持通话",
+          "indicator_id": "D3.dont_hang_up"
+        }
+      ],
+      "detail": {}
+    },
+    {
+      "indicator_id": "J1.secrecy",
+      "severity": "high",
+      "spans": [
+        {
+          "start": 76,
+          "end": 86,
+          "text": "不得向任何人透露案情",
+          "indicator_id": "J1.secrecy"
+        }
+      ],
+      "detail": {}
+    },
+    {
+      "indicator_id": "B3.criminal_threat",
+      "severity": "high",
+      "spans": [
+        {
+          "start": 87,
+          "end": 97,
+          "text": "否则将以妨碍司法论处",
+          "indicator_id": "B3.criminal_threat"
+        }
+      ],
+      "detail": {}
+    }
+  ],
+  "evidence": [
+    {
+      "start": 6,
+      "end": 16,
+      "text": "深圳市公安局反诈中心",
+      "indicator_id": "C2.police_prosecutor"
+    },
+    {
+      "start": 34,
+      "end": 41,
+      "text": "请立即配合调查",
+      "indicator_id": "B1.urgency"
+    },
+    {
+      "start": 56,
+      "end": 67,
+      "text": "转入我们指定的安全账户",
+      "indicator_id": "E1.safe_account"
+    },
+    {
+      "start": 69,
+      "end": 75,
+      "text": "全程保持通话",
+      "indicator_id": "D3.dont_hang_up"
+    },
+    {
+      "start": 76,
+      "end": 86,
+      "text": "不得向任何人透露案情",
+      "indicator_id": "J1.secrecy"
+    },
+    {
+      "start": 87,
+      "end": 97,
+      "text": "否则将以妨碍司法论处",
+      "indicator_id": "B3.criminal_threat"
+    }
+  ],
+  "action_key": "action.hang_up_dial_96110",
+  "hotline": "96110",
+  "language": "zh",
+  "components": {
+    "rule_norm": 1,
+    "retrieval_sim": 0.83,
+    "llm_conf": 0.96,
+    "self_consistency": null
+  },
+  "abstained_because": null,
+  "model": "qwen3-max",
+  "latency_ms": 1610,
+  "cached": false
+}

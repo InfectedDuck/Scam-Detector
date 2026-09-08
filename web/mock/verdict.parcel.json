@@ -1,0 +1,127 @@
+{
+  "check_id": "chk_01K4Q81F6D4T2WX7",
+  "band": "suspicious",
+  "risk": 0.69,
+  "playbook_id": "kz.delivery_link",
+  "playbook_confidence": 0.74,
+  "stage": null,
+  "indicators": [
+    {
+      "indicator_id": "C6.courier_post",
+      "severity": "medium",
+      "spans": [
+        {
+          "start": 15,
+          "end": 45,
+          "text": "задержана на таможенном складе",
+          "indicator_id": "C6.courier_post"
+        }
+      ],
+      "detail": {}
+    },
+    {
+      "indicator_id": "E7.upfront_fee",
+      "severity": "high",
+      "spans": [
+        {
+          "start": 47,
+          "end": 71,
+          "text": "Оплатите таможенный сбор",
+          "indicator_id": "E7.upfront_fee"
+        }
+      ],
+      "detail": {
+        "amount": "1 490 тг"
+      }
+    },
+    {
+      "indicator_id": "G5.brand_mismatch",
+      "severity": "high",
+      "spans": [
+        {
+          "start": 92,
+          "end": 138,
+          "text": "https://kaspi-kz.pay-secure.top/track?id=88214",
+          "indicator_id": "G5.brand_mismatch"
+        }
+      ],
+      "detail": {
+        "brand": "kaspi",
+        "registrable_domain": "pay-secure.top"
+      }
+    },
+    {
+      "indicator_id": "G6.fresh_domain",
+      "severity": "low",
+      "spans": [
+        {
+          "start": 109,
+          "end": 123,
+          "text": "pay-secure.top",
+          "indicator_id": "G6.fresh_domain"
+        }
+      ],
+      "detail": {
+        "registered_days_ago": 9
+      }
+    },
+    {
+      "indicator_id": "B1.urgency",
+      "severity": "medium",
+      "spans": [
+        {
+          "start": 153,
+          "end": 175,
+          "text": "истекает через 24 часа",
+          "indicator_id": "B1.urgency"
+        }
+      ],
+      "detail": {}
+    }
+  ],
+  "evidence": [
+    {
+      "start": 15,
+      "end": 45,
+      "text": "задержана на таможенном складе",
+      "indicator_id": "C6.courier_post"
+    },
+    {
+      "start": 47,
+      "end": 71,
+      "text": "Оплатите таможенный сбор",
+      "indicator_id": "E7.upfront_fee"
+    },
+    {
+      "start": 92,
+      "end": 138,
+      "text": "https://kaspi-kz.pay-secure.top/track?id=88214",
+      "indicator_id": "G5.brand_mismatch"
+    },
+    {
+      "start": 109,
+      "end": 123,
+      "text": "pay-secure.top",
+      "indicator_id": "G6.fresh_domain"
+    },
+    {
+      "start": 153,
+      "end": 175,
+      "text": "истекает через 24 часа",
+      "indicator_id": "B1.urgency"
+    }
+  ],
+  "action_key": "action.check_tracking_on_official_site",
+  "hotline": "102",
+  "language": "ru",
+  "components": {
+    "rule_norm": 0.79,
+    "retrieval_sim": 0.71,
+    "llm_conf": 0.55,
+    "self_consistency": 0.8
+  },
+  "abstained_because": null,
+  "model": "deepseek-v3",
+  "latency_ms": 3120,
+  "cached": false
+}
