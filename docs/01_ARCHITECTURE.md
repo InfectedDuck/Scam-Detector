@@ -88,8 +88,14 @@ Three components, each in `[0, 1]`:
 
 ```python
 risk = 0.45 * rule_norm + 0.20 * retrieval_sim + 0.35 * llm_conf
-disagreement = max(components) - min(components)
+disagreement = abs(rule_norm - llm_conf)
 ```
+
+Two corrections the implementation made to this draft, both in `fuse.py`:
+
+**Disagreement is measured between the rules and the model only**, not across all three components. Retrieval similarity is an input to the model's judgement rather than a third opinion, and its scale is not calibrated against the other two: an unrelated message still sits at moderate cosine similarity to its nearest playbook. Including it made almost everything abstain.
+
+**Absent components are dropped and the weights renormalised.** The `rules_only` baseline runs with no retrieval and no model. With a fixed divisor its risk would cap at 0.45 and it could never reach the scam band, making the baseline unbeatable by construction and the comparison meaningless.
 
 Banding (initial values, retuned on the calibration split in T512):
 
