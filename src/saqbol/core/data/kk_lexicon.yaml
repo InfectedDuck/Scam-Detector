@@ -93,6 +93,8 @@ phrases:
     - "код* қандай"             # кодыңыз қандай
     - "маған код* керек"        # маған код керек
     - "маған кодыңыз* керек"    # маған кодыңыз керек
+    - "код* айтып жібер*"
+    - "соны айтып жіберіңіз*"
 
   # Card number, PIN, CVV, expiry.
   # Verb-anchored throughout — see the bare-noun paragraph in the header. The
@@ -131,6 +133,8 @@ phrases:
     - "үш сан* айтыңыз*"            # артқы жағындағы үш санды айтыңыз
     - "үш цифр* айтыңыз*"
     - "үш сан* маған айтыңыз*"
+    - "картаңызды тіркеңіз*"
+    - "картаңызды тіркес*"
 
   # Password / banking-app login.
   "A3.password_request":
@@ -238,6 +242,8 @@ phrases:
     # the wording callers use, or do they keep the Russian "отдел по борьбе с
     # мошенничеством" inside a Kazakh sentence? If the latter, the ru line
     # already covers it and this one can go.
+    - "қауіпсіздік қызметінен*"
+    - "байланыс операторының қауіпсіздік*"
 
   "C3.egov_1414":
     - "электронд* үкімет*"          # электрондық үкімет / үкіметтің
@@ -306,6 +312,8 @@ phrases:
     - "сақтандыру шот*"         # insurance account
     - "қорғалған шот*"          # protected account
     - "арнайы шот* аудар*"      # арнайы шотқа аударыңыз
+    - "уақытша шот*"
+    - "депозиттен шеш*"
 
   "E3.take_a_loan":
     - "несие* рәсімде*"         # несиені рәсімдеңіз
@@ -494,6 +502,7 @@ phrases:
     - "шығару үшін төлеңіз*"    # pay to withdraw
     - "бронь ақысы*"            # booking fee
     - "сақтандыру төлеңіз*"
+    - "сілтеме арқылы төлеңіз*"
 
   "F4.disable_protection":
     - "play protect-ті өшіріңіз*"
@@ -569,6 +578,7 @@ phrases:
     - "шұғыл ақша керек"
     - "қарыз бере аласың*"
     - "қарызға бере аласың*"
+    - "дауыс беріп жібер*"
 
   "J4.script_handoff":
     - "маманға қосамын"

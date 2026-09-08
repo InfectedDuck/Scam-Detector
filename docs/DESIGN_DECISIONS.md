@@ -89,6 +89,28 @@ messages that share surface form with scams. A genuine bank warning about
 fraud contains the entire scam vocabulary. The false-positive rate on that set
 is reported on its own, because it is the number a bank would ask about first.
 
+### A contamination note for the rules-only row
+
+On 9 September the provisional splits were built from the 126 collected
+rows and the rules-only system was run on them for the first time. It
+caught 10 of 59 quoted scam messages. Most misses were one-line press
+quotes carrying a single cue, which the scoring is designed to leave below
+the suspicious band, but several were plain phrase gaps: the genitive
+"службы безопасности", the commonest real form, had never matched; "пришлите
+код" and "мне пришёл код" were absent; Kazakh had no "қауіпсіздік
+қызметінен". The phrase lists were revised using only the calibration split
+as justification, and recall on it went from 4 to 12 of 23 with no new false
+positive. Recall on `test_press` moved from 6 to 8 of 36.
+
+Two things must be said about that number. The rules were written after the
+author had read every row of both provisional splits in one error listing,
+so `test_press` is not a clean held-out set for `rules_only` until the
+splits are rebuilt after annotation with rows collected later. And the
+remaining misses are mostly by design: a single high-severity cue scores
+0.25, below the 0.40 band, because the thresholds were set for multi-cue
+messages. Whether one-line quotes deserve a lower threshold is a calibration
+question for T505, answered on the calibration split only.
+
 ## 5. What the cue-masked ablation controls for
 
 Brands, phone numbers, short codes and amounts are replaced with typed

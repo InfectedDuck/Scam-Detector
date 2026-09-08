@@ -66,6 +66,8 @@ keyword_indicator(
         "не завершайте звонок",
         "do not hang up",
         "stay on the line",
+        "не отключайте телефон",
+        "не выключайте телефон",
         # kk. Unlike family A, the prohibitive suffix is the signal here.
         *kk("D3.dont_hang_up"),
         # zh

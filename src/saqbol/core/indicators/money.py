@@ -22,6 +22,7 @@ keyword_indicator(
         "специальн* счет* банка",
         "safe account",
         "secure account",
+        "временн* счет*",
         # kk. "қауіпсіз счетке" — Kazakh adjective, Russian noun — is the form
         # heard most often, so both it and "шот" are carried.
         *kk("E1.safe_account"),
@@ -42,6 +43,12 @@ keyword_indicator(
         "переведите на счет",
         "для проверки переведите",
         "transfer to this card",
+        "деньги по ошибке",
+        "по ошибке перевел*",
+        "по ошибке отправил*",
+        "верните мне",
+        "деньги моему другу",
+        "другу на номер",
         # kk
         *kk("E2.transfer_to_person"),
         # zh

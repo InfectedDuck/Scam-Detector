@@ -42,6 +42,8 @@ keyword_indicator(
         "какой код",
         "код из смс",
         "код из сообщени*",
+        "пришл* код",
+        "пришли мне код",
         # kk
         *kk("A1.otp_request"),
         # en
@@ -120,6 +122,8 @@ keyword_indicator(
         "назов* цифры",
         "read me the code",
         "read out the code",
+        "мне пришел код",
+        "пришел код перешл*",
         # kk
         *kk("A4.code_relay"),
     ],
