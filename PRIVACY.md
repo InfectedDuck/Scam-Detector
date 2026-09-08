@@ -106,7 +106,7 @@ KazScam — открытый корпус сообщений на казахск
 
 Вы можете потребовать удаления в любой момент, причину объяснять не нужно.
 
-1. Откройте issue в репозитории проекта — **https://github.com/saqbol** — или напишите сопровождающему проекта напрямую.
+1. Откройте issue в репозитории проекта — **https://github.com/InfectedDuck/Scam-Detector** — или напишите сопровождающему проекта напрямую.
 2. Укажите свой **Telegram user id** (его показывают боты вроде `@userinfobot`) либо, если он у вас есть, идентификатор проверки. Не присылайте повторно номер карты, код или скриншот.
 3. Оператор заново вычисляет ваш `actor_hash` из этого id и удаляет все связанные строки: проверки, голоса и заявки в датасет со статусом `pending`.
 
@@ -223,7 +223,7 @@ A "correct / incorrect" vote under a verdict is stored with an optional comment 
 
 You can request deletion at any time, with no reason given.
 
-1. Open an issue on the project repository — **https://github.com/saqbol** — or contact the maintainer directly.
+1. Open an issue on the project repository — **https://github.com/InfectedDuck/Scam-Detector** — or contact the maintainer directly.
 2. Give your **Telegram user id** (bots such as `@userinfobot` will show it) or, if you have it, the check id. Do not re-send a card number, a code, or the screenshot.
 3. The operator re-derives your `actor_hash` from that id and deletes every associated row: checks, votes, and any `pending` dataset submissions.
 
