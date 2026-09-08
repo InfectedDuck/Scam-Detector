@@ -1,0 +1,72 @@
+# Golden end-to-end fixtures: kz.hijacked_account_relative. Constructed
+# examples; the names are invented.
+playbook_id: kz.hijacked_account_relative
+cases:
+  - id: ru_whatsapp_sister_hospital_new_number
+    lang_hint: ru
+    channel: whatsapp
+    text: >-
+      Привет, это я, Дана. Телефон разбился, пишу с нового номера. Срочно нужны деньги,
+      я в больнице, надо оплатить операцию до вечера. Скинь пожалуйста 120 000 на эту
+      карту, номер скину следом, я потом верну.
+    expect:
+      band_in: [scam]
+      playbook_id: kz.hijacked_account_relative
+      must_hit_families: [B, E, J]
+      evidence_contains: ["Срочно нужны деньги", "я в больнице", "Скинь пожалуйста", "на эту карту"]
+    note: >-
+      Relative-in-trouble (J2) plus the urgent-transfer ask (J3) to a third-party card
+      (E2), from a "new number". No authority claim anywhere.
+
+  - id: ru_telegram_friend_detained_lend_money
+    lang_hint: ru
+    channel: telegram
+    text: >-
+      Привет! Можешь одолжить 40 тысяч до завтра? Неудобно говорить, я в отделении,
+      меня задержали, нужно заплатить штраф. Переведи срочно на эту карту, номер ниже,
+      вечером верну. Никому не говори пожалуйста.
+    expect:
+      band_in: [scam]
+      playbook_id: kz.hijacked_account_relative
+      must_hit_families: [B, E, J]
+      evidence_contains: ["Можешь одолжить", "меня задержали", "Переведи срочно", "на эту карту"]
+    note: >-
+      Hijacked friend's account: "can't talk", detention story, transfer to someone
+      else's card. The secrecy line is the low-key personal kind, not J1's investigation
+      wording, so J1 is not required.
+
+  - id: kk_whatsapp_accident_transfer_to_this_card
+    lang_hint: kk
+    channel: whatsapp
+    text: >-
+      Сәлем, бұл мен, жаңа нөмір. Шұғыл ақша керек, апатқа ұшырадым, ауруханадамын, отаға
+      төлеу керек. 80 000 тг мына картаға аударып жіберші, ертең қайтарамын. Ешкімге айтпа,
+      анама айтпашы.
+    expect:
+      band_in: [scam, suspicious]
+      playbook_id: kz.hijacked_account_relative
+      must_hit_families: [B, J]
+      evidence_contains: ["Шұғыл"]
+    note: >-
+      Pure Kazakh version. Only B1 "шұғыл" is in the catalogue; the accident, hospital,
+      "transfer to this card" and "I'll pay you back tomorrow" phrasings are not.
+    xfail: >-
+      Rule gap: J2, J3 and E2 have no Kazakh phrases (апатқа ұшырадым, ауруханадамын, ақша
+      керек, аударып жіберші, ертең қайтарамын, мына картаға); kz.hijacked_account_relative
+      has no Kazakh retrieval_phrases.
+
+  - id: mixed_ru_kk_son_accident_send_money
+    lang_hint: ru
+    channel: whatsapp
+    text: >-
+      Апа, это я, Нурлан, телефон сломался, пишу с чужого. Срочно нужны деньги, попал в
+      аварию, требуют штраф на месте. Скинь 60 000 на эту карту, я потом верну.
+      Ешкімге айтпа, әкеме айтпа, өтінемін.
+    expect:
+      band_in: [scam]
+      playbook_id: kz.hijacked_account_relative
+      must_hit_families: [B, E, J]
+      evidence_contains: ["попал в аварию", "на эту карту", "я потом верну"]
+    note: >-
+      Code-switched "son" message to a parent: Russian carries the story and the ask,
+      Kazakh carries the plea for secrecy, which is how these actually read.

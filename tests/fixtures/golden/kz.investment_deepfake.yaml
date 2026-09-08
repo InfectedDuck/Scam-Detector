@@ -1,0 +1,74 @@
+# Golden end-to-end fixtures: kz.investment_deepfake. Constructed examples.
+# The TRON-shaped wallet address is fake and built to satisfy the entity pattern.
+playbook_id: kz.investment_deepfake
+cases:
+  - id: ru_instagram_ad_banker_platform
+    lang_hint: ru
+    channel: instagram
+    text: >-
+      Видели вчерашнее интервью? Известный банкир рассказал, как казахстанцы зарабатывают
+      на нефтяных акциях. Инвестиционная платформа, гарантированный доход от 250 000 тг
+      в месяц, без риска. Первый депозит всего 50 000 тг, персональный менеджер поможет
+      всё настроить. Напишите мне в WhatsApp +7 700 000 00 00
+    expect:
+      band_in: [scam]
+      playbook_id: kz.investment_deepfake
+      must_hit_families: [D, H]
+      evidence_contains: ["Инвестиционная платформа", "гарантированный доход", "без риска", "персональный менеджер"]
+    note: >-
+      The ad-stage funnel: endorsement framing, guaranteed returns (H1), platform and
+      personal manager (H2), an income-from figure (H4) and a WhatsApp handoff (D1).
+      H1's "гарантированн* доход" needs the nominative: "доходом" does not match.
+
+  - id: ru_telegram_withdrawal_tax_crypto
+    lang_hint: ru
+    channel: telegram
+    text: >-
+      Поздравляю, ваш баланс на платформе 2 480 000 тг! Чтобы вывести прибыль, нужно оплатить
+      налог 13% и комиссию за конвертацию, всего 322 000 тг. Оплатите комиссию на кошелёк
+      USDT TRC20: TFakeWalletForGoldenFixtureOnlyAbc — после зачисления вывод откроется
+      в течение часа. Ваш личный менеджер на связи в Telegram.
+    expect:
+      band_in: [scam]
+      playbook_id: kz.investment_deepfake
+      must_hit_families: [E, H]
+      evidence_contains: ["Оплатите комиссию", "личный менеджер"]
+    note: >-
+      Cash-out stage: the "tax before withdrawal" fee (E7) paid to a wallet address (E4,
+      entity-driven, no span) with the personal-manager wording (H2).
+
+  - id: kk_instagram_ad_guaranteed_income
+    lang_hint: kk
+    channel: instagram
+    text: >-
+      Белгілі кәсіпкердің бейнесін көрдіңіз бе? Қазақстандықтар үшін инвестициялық платформа:
+      айына 300 000 тг кепілдендірілген табыс, тәуекелсіз. Алғашқы салым 50 000 тг ғана.
+      Жеке менеджер барлығын үйретеді. WhatsApp-қа жазыңыз: +7 700 000 00 00
+    expect:
+      band_in: [scam, suspicious]
+      playbook_id: kz.investment_deepfake
+      must_hit_families: [H]
+      evidence_contains: ["кепілдендірілген табыс", "тәуекелсіз"]
+    note: >-
+      Pure Kazakh ad. H1 fires through the kk lexicon; H2, H4 and D1 have no Kazakh
+      phrases, so a single high hit (0.25) is all the rules see.
+    xfail: >-
+      Rule gap plus retrieval gap: H2 needs Kazakh (инвестициялық платформа, жеке менеджер),
+      D1 needs "WhatsApp-қа жазыңыз", H4 needs "айына ... тг"; kz.investment_deepfake has no
+      Kazakh retrieval_phrases.
+
+  - id: mixed_kk_ru_chat_same_platform
+    lang_hint: kk
+    channel: whatsapp
+    text: >-
+      Сәлем! Мен де сол платформада істеймін, айына 20% гарантированный доход, без риска.
+      Личный менеджер бәрін түсіндіреді, напишите мне в телеграм @invest_kz_manager_000,
+      бүгін тіркелсеңіз бонус береді.
+    expect:
+      band_in: [scam, suspicious]
+      playbook_id: kz.investment_deepfake
+      must_hit_families: [D, H]
+      evidence_contains: ["гарантированный доход", "Личный менеджер", "напишите мне в"]
+    note: >-
+      Code-switched referral from a "friend" already on the platform. H1, H2 and D1 all
+      fire on the Russian halves; 0.62 lands in suspicious, which is accepted.

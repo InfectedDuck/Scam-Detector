@@ -1,0 +1,72 @@
+# Golden end-to-end fixtures: kz.delivery_link. Constructed examples; links use
+# the reserved ".example" TLD; "p0st.kz" is a constructed lookalike of post.kz.
+playbook_id: kz.delivery_link
+cases:
+  - id: ru_sms_customs_fee_brand_host
+    lang_hint: ru
+    channel: sms
+    text: >-
+      KAZPOST: Ваша посылка задержана на таможне. Оплатите комиссию за таможенное
+      оформление 690 тг по ссылке https://kazpost-customs.example/pay в течение 24 часов,
+      иначе отправление вернут отправителю.
+    expect:
+      band_in: [scam]
+      playbook_id: kz.delivery_link
+      must_hit_families: [C, E, G]
+      evidence_contains: ["посылка задержана", "Оплатите комиссию"]
+    note: >-
+      The textbook shape: courier claim (C6), a fee before release (E7) and a host that
+      wears the Kazpost name on somebody else's domain (G5), plus the G+C6 bonus.
+
+  - id: ru_whatsapp_courier_shortener
+    lang_hint: ru
+    channel: whatsapp
+    text: >-
+      Здравствуйте! Курьерская служба CDEK. Не удалось доставить ваш заказ KZ0000000:
+      неверно указан адрес. Срочно уточните адрес и оплатите доставку 350 тг:
+      https://bit.ly/cdek-kz0000 . Хранение только 24 часа, потом заказ вернут на склад.
+    expect:
+      band_in: [scam, suspicious]
+      playbook_id: kz.delivery_link
+      must_hit_families: [B, C, G]
+      evidence_contains: ["Курьерская служба", "Не удалось доставить", "оплатите доставку"]
+    note: >-
+      A redelivery fee behind a shortener (G3). Realistically sits at the suspicious
+      boundary: the fee is small and there is no explicit "advance fee" wording, so
+      suspicious is accepted alongside scam.
+
+  - id: kk_sms_customs_hold_kazpost_host
+    lang_hint: kk
+    channel: sms
+    text: >-
+      Қазпошта: сіздің сәлемдемеңіз кеденде ұсталды. Кеден төлемін (890 тг) 24 сағат ішінде
+      https://kazpost-kz.example/pay сілтемесі арқылы төлеңіз, әйтпесе сәлемдеме кері
+      жіберіледі.
+    expect:
+      band_in: [scam, suspicious]
+      playbook_id: kz.delivery_link
+      must_hit_families: [B, C, G]
+      evidence_contains: ["Қазпошта", "сәлемдемеңіз кеденде", "сағат ішінде"]
+    note: >-
+      Pure Kazakh customs-hold SMS: C6 through the kk delivery-problem phrasings, B1
+      "сағат ішінде", and G5 on the kazpost-branded host. No Kazakh E7 phrase exists,
+      so suspicious is accepted.
+    xfail_playbook: >-
+      Retrieval gap: kz.delivery_link has no Kazakh retrieval_phrases (сәлемдеме кеденде
+      ұсталды, кеден төлемі, жеткізу төлемі); the Latin host token alone scores below the floor.
+
+  - id: ru_telegram_tracking_lookalike_domain
+    lang_hint: ru
+    channel: telegram
+    text: >-
+      Уведомление Казпочты: отправление RR000000000KZ ожидает оплаты доставки. Оплатите
+      доставку 420 тг: https://p0st.kz/track/RR000000000KZ — срок хранения истекает через
+      12 часов, после чего посылка будет возвращена.
+    expect:
+      band_in: [scam, suspicious]
+      playbook_id: kz.delivery_link
+      must_hit_families: [B, C, G]
+      evidence_contains: ["Оплатите доставку", "истекает через"]
+    note: >-
+      A confusable lookalike of post.kz (zero for the letter o) caught by G1's skeleton
+      match rather than by the brand-in-host rule. Small fee, so suspicious is accepted.

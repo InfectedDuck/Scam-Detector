@@ -1,0 +1,73 @@
+# Golden end-to-end fixtures: kz.mule_account_rental. Constructed examples.
+# The Telegram handles are invented.
+playbook_id: kz.mule_account_rental
+cases:
+  - id: ru_telegram_students_card_needed
+    lang_hint: ru
+    channel: telegram
+    text: >-
+      Привет! Срочно ищем студентов на удалённую подработку. Нужна ваша карта Kaspi или
+      Halyk: на неё будут приходить переводы клиентов, вы их пересылаете дальше и
+      оставляете себе 5%. Заработок от 150 000 тг в неделю, без опыта работы. Это законно,
+      просто обход комиссии. Напишите мне в Telegram @kz_easy_job_000
+    expect:
+      band_in: [scam]
+      playbook_id: kz.mule_account_rental
+      must_hit_families: [D, E, H]
+      evidence_contains: ["Нужна ваша карта", "удалённую подработку", "Напишите мне в"]
+    note: >-
+      Student-targeted recruitment: E5 card request, H4 easy-job wording, D1 move to
+      Telegram, with B1 urgency lifting it over the scam threshold.
+
+  - id: ru_whatsapp_rent_your_card
+    lang_hint: ru
+    channel: whatsapp
+    text: >-
+      Здравствуйте. Предлагаем сдать карту в аренду: 40 000 тг в месяц за каждую карту плюс
+      процент с оборота. Карту оформляете на себя в любом банке и передаёте нам вместе с
+      сим-картой. Никаких рисков, всё официально, договор на руки.
+    expect:
+      band_in: [scam, suspicious]
+      playbook_id: kz.mule_account_rental
+      must_hit_families: [E]
+      must_not_hit_families: [A, C]
+      evidence_contains: ["сдать карту в аренду"]
+    note: >-
+      The bare rental offer. A single critical E5 hit is 0.40 exactly, so suspicious is
+      the honest deterministic answer; "никаких рисков" does not match H1's "без риска".
+
+  - id: kk_telegram_transfers_through_your_card
+    lang_hint: kk
+    channel: telegram
+    text: >-
+      Сәлем! Студенттерге оңай табыс. Kaspi картаңыз арқылы клиенттердің аударымдарын
+      өткіземіз, әр аударымнан 5% сізге қалады. Аптасына 100 000 тг. Тәжірибе керек емес,
+      тек карта керек. Telegram-ға жазыңыз: @kz_student_income_000
+    expect:
+      band_in: [scam, suspicious]
+      playbook_id: kz.mule_account_rental
+      must_hit_families: [E]
+      evidence_contains: ["картаңыз арқылы"]
+    note: >-
+      Pure Kazakh mule recruitment aimed at students. Realistic wording; nothing in the
+      catalogue matches it today.
+    xfail: >-
+      Rule gap: E5, H4 and D1 have no Kazakh phrases (картаңыз арқылы аударым, тек карта
+      керек, картаңызды жалға, оңай табыс, Telegram-ға жазыңыз) and kz.mule_account_rental
+      has no Kazakh retrieval_phrases. Scores 0 on every family.
+
+  - id: mixed_kk_ru_chat_need_your_kaspi
+    lang_hint: kk
+    channel: whatsapp
+    text: >-
+      Сәлем, бауырым, тема есть: нужен твой Kaspi на пару дней, переводы за процент
+      пропустить через карту, 10% твои. Дропов не ищем, всё чисто, просто карта нужна.
+      Напишите мне в телегу, объясню.
+    expect:
+      band_in: [scam, suspicious]
+      playbook_id: kz.mule_account_rental
+      must_hit_families: [D, E]
+      evidence_contains: ["переводы за процент", "пропустить через карту", "Дропов"]
+    note: >-
+      Code-switched peer-to-peer recruitment. E5 fires on three separate phrasings and
+      D1 on the messenger push; the Kazakh greeting is how the message actually arrives.

@@ -1,0 +1,75 @@
+# Golden end-to-end fixtures: kz.apk_install. Constructed examples; the .apk
+# file names and hosts are invented.
+playbook_id: kz.apk_install
+cases:
+  - id: ru_whatsapp_bank_update_apk_play_protect
+    lang_hint: ru
+    channel: whatsapp
+    text: >-
+      Уважаемый клиент Kaspi! Из-за обновления системы безопасности старая версия
+      приложения перестанет работать 15 числа. Установите приложение по ссылке:
+      https://kaspi-update.example/Kaspi_Bank_v5.apk . При установке разрешите установку
+      из неизвестных источников и отключите Play Protect. Служба безопасности банка.
+    expect:
+      band_in: [scam]
+      playbook_id: kz.apk_install
+      must_hit_families: [C, F, G]
+      evidence_contains: ["Установите приложение", "отключите Play Protect", "Служба безопасности банка"]
+    note: >-
+      Bank-update pretext: an .apk link (F2), install instruction (F3), disabling
+      Play Protect (F4), a bank-security claim (C1) and a Kaspi-branded host (G5).
+
+  - id: ru_telegram_police_protocol_apk
+    lang_hint: ru
+    channel: telegram
+    text: >-
+      Департамент полиции г. Алматы. На ваше имя составлен административный протокол,
+      штраф 30 000 тг. Документ из суда можно открыть только приложением: откройте
+      вложение Постановление_0000.apk и установите приложение. В случае неявки в течение
+      3 дней материалы передадут в суд.
+    expect:
+      band_in: [scam]
+      playbook_id: kz.apk_install
+      must_hit_families: [C, F]
+      evidence_contains: ["Департамент полиции", "откройте вложение", "установите приложение"]
+    note: >-
+      Court-document pretext: police claim (C2) plus an .apk "attachment" (F2, F3),
+      which triggers the remote-access-with-authority combination. Retrieval has to
+      prefer kz.apk_install over cn.fake_police_deposit despite the police vocabulary.
+
+  - id: kk_sms_kazpost_tracker_apk
+    lang_hint: kk
+    channel: sms
+    text: >-
+      Қазпошта: сәлемдемеңізді бақылау үшін қосымшаны орнатыңыз:
+      https://kazpost-track.example/KazPost_Tracker.apk . Жеткізу мүмкін болмады,
+      мекенжайды қосымшада растаңыз, әйтпесе сәлемдеме кері жіберіледі.
+    expect:
+      band_in: [scam]
+      playbook_id: kz.apk_install
+      must_hit_families: [C, F, G]
+      evidence_contains: ["Қазпошта", "қосымшаны орнатыңыз", "Жеткізу мүмкін болмады"]
+    note: >-
+      Pure Kazakh delivery-tracker pretext: C6 through the kk delivery-problem phrasings,
+      F3 "қосымшаны орнатыңыз", F2 on the .apk link and G5 on the kazpost host.
+    xfail_playbook: >-
+      Retrieval gap: kz.apk_install has no Kazakh retrieval_phrases (apk файл, қосымшаны
+      орнатыңыз, сілтеме арқылы жүктеңіз). The shared token "apk" alone is below the floor.
+
+  - id: mixed_ru_kk_whatsapp_halyk_update
+    lang_hint: kk
+    channel: whatsapp
+    text: >-
+      Сәлеметсіз бе! Служба безопасности Halyk Bank. Ваше приложение устарело, обновите
+      приложение банка через присланную ссылку: https://halyk-secure.example/HalykBank_new.apk .
+      Скачайте по ссылке және Play Protect-ті өшіріңіз. Кешіктірмеңіз, әйтпесе
+      қолжетімділік жабылады.
+    expect:
+      band_in: [scam]
+      playbook_id: kz.apk_install
+      must_hit_families: [B, C, F, G]
+      evidence_contains: ["Служба безопасности", "Скачайте по ссылке", "Кешіктірмеңіз", "қолжетімділік жабылады"]
+    note: >-
+      Code-switched bank-update message: Russian authority claim and install instruction,
+      Kazakh urgency and account-block threat (B1, B2 through the kk lexicon), .apk link on
+      a Halyk-branded host.

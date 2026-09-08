@@ -1,0 +1,75 @@
+# Golden end-to-end fixtures: kz.fake_store. Constructed examples. This is the
+# weakest playbook for a rules-only engine — no link is required and the
+# pressure is social — so suspicious is accepted throughout.
+playbook_id: kz.fake_store
+cases:
+  - id: ru_instagram_shop_full_prepayment
+    lang_hint: ru
+    channel: instagram
+    text: >-
+      Здравствуйте! Да, кроссовки в наличии, размер 42 остался последний. Цена по акции
+      14 990 тг вместо 49 990, только сегодня. Работаем по 100% предоплате, переведите на
+      карту по номеру +7 700 000 00 00 (Kaspi), после оплаты пришлите чек, отправим сегодня
+      же. Бронь держим 30 минут.
+    expect:
+      band_in: [scam, suspicious]
+      playbook_id: kz.fake_store
+      must_hit_families: [E]
+      must_not_hit_families: [A, C]
+      evidence_contains: ["предоплате", "переведите на карту"]
+    note: >-
+      The Instagram storefront: below-market price, last item, full prepayment to a
+      personal Kaspi number (E7, E2). Scores 0.50 — suspicious is the expected band.
+
+  - id: ru_website_liquidation_prepay_only
+    lang_hint: ru
+    channel: sms
+    text: >-
+      Интернет магазин техники: iPhone 16 Pro за 289 000 тг, цена намного ниже чем везде!
+      Ликвидация склада, осталось 12 штук, успейте прямо сейчас. Заказ на сайте
+      https://apple-store-kz.example , работаем только по предоплате на карту продавца,
+      доставка по всему Казахстану. Вы выиграли скидку 10% как первый посетитель!
+    expect:
+      band_in: [scam, suspicious]
+      playbook_id: kz.fake_store
+      must_hit_families: [B, E, H]
+      evidence_contains: ["предоплате", "Вы выиграли", "прямо сейчас"]
+    note: >-
+      Fake web shop with a prize hook (H3), prepayment only (E7) and urgency (B1).
+      The domain would be caught by G6 if a domain age were supplied; offline it is not.
+
+  - id: kk_instagram_last_item_prepay_kaspi
+    lang_hint: kk
+    channel: instagram
+    text: >-
+      Сәлеметсіз бе! Иә, тауар бар, соңғы данасы қалды. Бағасы 12 500 тг (дүкенде 45 000).
+      Тек толық алдын ала төлем арқылы жұмыс істейміз, Kaspi-ге +7 700 000 00 00 нөміріне
+      аударыңыз, чекті жіберіңіз. Бронь тек бүгін, тез арада шешіңіз.
+    expect:
+      band_in: [scam, suspicious]
+      playbook_id: kz.fake_store
+      must_hit_families: [B, E]
+      evidence_contains: ["тез арада"]
+    note: >-
+      Pure Kazakh storefront reply. B1 "тез арада" is the only catalogue hit; the
+      prepayment and transfer-to-number phrasings have no Kazakh entries.
+    xfail: >-
+      Rule gap: E7 has no Kazakh phrase (алдын ала төлем, алдын ала төлеңіз, бронь ақысы)
+      and E2 has none (нөміріне аударыңыз, картаға аударыңыз); kz.fake_store has no Kazakh
+      retrieval_phrases.
+
+  - id: mixed_ru_kk_instagram_half_prepayment
+    lang_hint: ru
+    channel: instagram
+    text: >-
+      Сәлем! Да, есть в наличии, остался последний размер. Цена 9 900 тг, скидка только
+      сегодня. Предоплата 50%, переведите на карту Kaspi +7 700 000 00 00, потом отправляем.
+      Тез арада шешіңіз, басқа адам да сұрап жатыр.
+    expect:
+      band_in: [scam, suspicious]
+      playbook_id: kz.fake_store
+      must_hit_families: [B, E]
+      evidence_contains: ["Предоплата", "переведите на карту", "Тез арада"]
+    note: >-
+      Code-switched storefront: Russian carries the price and the prepayment ask, Kazakh
+      the pressure (B1 "тез арада"). E7, E2 and B1 together reach 0.62.

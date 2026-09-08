@@ -1,0 +1,94 @@
+# Golden end-to-end fixtures: cn.fake_police_deposit. Constructed examples.
+# Case numbers, officer names and amounts are invented.
+playbook_id: cn.fake_police_deposit
+cases:
+  - id: zh_wechat_police_parcel_money_laundering
+    lang_hint: zh
+    channel: wechat
+    text: >-
+      我是上海市公安局的警官。你的包裹里有违禁品，你名下的银行卡涉嫌洗钱，案件编号00000。
+      请立即配合调查，不要挂电话，也不要告诉家人。把钱转到安全账户交保证金，证明自己清白，核查后退还。
+    expect:
+      band_in: [scam]
+      playbook_id: cn.fake_police_deposit
+      must_hit_families: [B, C, D, E, J]
+      evidence_contains: ["公安局", "涉嫌洗钱", "不要挂电话", "安全账户", "保证金"]
+    note: >-
+      The dominant script against foreign students: police impersonation (C2), a
+      money-laundering charge (B3), isolation (D3, J1) and a guarantee deposit to a safe
+      account (E6, E1). Every Chinese phrase list in the catalogue fires here.
+
+  - id: zh_call_shanghai_police_formal_transcript
+    lang_hint: zh
+    channel: call
+    text: >-
+      您好，这里是上海市公安局刑侦支队。您名下的一张银行卡涉嫌洗钱案件，案件编号沪公刑字第00000号。
+      请您立即配合调查，不要挂电话，也不要告诉家人和同学，此案需要保密。为了证明您的清白，
+      请将账户内资金转入我们指定的安全账户作为保证金，核查后原路退还。
+    expect:
+      band_in: [scam]
+      playbook_id: cn.fake_police_deposit
+      must_hit_families: [B, C, D, E, J]
+      evidence_contains: ["公安局", "涉嫌洗钱", "不要挂电话", "保密", "安全账户", "保证金"]
+    note: >-
+      The same script as a formal call transcript. Rules score 1.0 with seven hits; the
+      longer, more formal wording is what drops retrieval below the floor.
+    xfail_playbook: >-
+      Retrieval gap: cn.fake_police_deposit carries five Chinese retrieval_phrases, too few
+      for bigram coverage of a formal transcript (scores 0.07 against a 0.10 floor). Fix: add
+      ten more Chinese phrases in the scammer's register (刑侦支队, 案件编号, 配合调查,
+      涉嫌洗钱案件, 核查后原路退还, 需要保密).
+
+  - id: zh_wechat_embassy_visa_cancelled_deposit
+    lang_hint: zh
+    channel: wechat
+    text: >-
+      使馆通知：您的包裹里有违禁品，出入境管理局要注销您的签证并遣返。请马上加办案警官微信
+      配合调查，交保证金证明自己清白，不要告诉任何人。
+    expect:
+      band_in: [scam]
+      playbook_id: cn.fake_police_deposit
+      must_hit_families: [B, C, E]
+      evidence_contains: ["出入境", "警官", "保证金"]
+    note: >-
+      Embassy / immigration variant: C5 on the immigration wording, C2 on the case
+      officer, B1 urgency, E6 deposit. "不要告诉任何人" is not in J1's Chinese list and
+      "签证" alone is not a C5 phrase, so neither is required.
+
+  - id: ru_call_beijing_investigator_bail_to_safe_account
+    lang_hint: ru
+    channel: call
+    text: >-
+      Говорит следователь отдела полиции Пекина по экономическим преступлениям. На ваш
+      паспорт зарегистрирована банковская карта, через которую отмывали деньги —
+      возбуждено уголовное дело. Постановление об аресте отправлено вам в WeChat.
+      Не прерывайте разговор и никому не рассказывайте, это тайна следствия.
+      Чтобы доказать невиновность, внесите залог 30 000 юаней на безопасный счёт
+      прокуратуры, после проверки деньги вернут.
+    expect:
+      band_in: [scam]
+      playbook_id: cn.fake_police_deposit
+      must_hit_families: [B, C, D, E, J]
+      evidence_contains: ["следователь", "уголовное дело", "Не прерывайте разговор", "тайна следствия", "внесите залог", "безопасный счёт"]
+    note: >-
+      The same script as a Kazakh student would retell it in Russian. Retrieval must
+      prefer the China playbook over kz.bank_security_call despite the shared vocabulary.
+
+  - id: kk_call_china_police_criminal_case
+    lang_hint: kk
+    channel: call
+    text: >-
+      Сәлеметсіз бе, бұл Қытай полициясы, тергеуші Ван. Сізге қылмыстық іс ашылған: банк
+      картаңыз ақша жылыстатуға қатысты. Қоңырауды аяқтамаңыз, ешкімге, тіпті ата-анаңызға
+      айтпаңыз. Кінәсіздігіңізді дәлелдеу үшін 20 000 юань кепілдік ақша аударуыңыз керек,
+      қауіпсіз шотқа.
+    expect:
+      band_in: [scam]
+      playbook_id: cn.fake_police_deposit
+      must_hit_families: [B, C, D, E]
+      evidence_contains: ["полициясы", "қылмыстық іс", "Қоңырауды аяқтамаңыз", "қауіпсіз шотқа"]
+    note: >-
+      Kazakh retelling. C2 fires on the borrowed "полиция", B3 and D3 through the kk
+      lexicon, E1 on "қауіпсіз шотқа". E6 has no Kazakh phrase ("кепілдік ақша"), so E
+      is satisfied by E1. This is the one playbook whose three Kazakh retrieval phrases
+      let a Kazakh message clear the floor.

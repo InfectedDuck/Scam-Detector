@@ -1,0 +1,71 @@
+# Golden end-to-end fixtures: cn.part_time_task_job. Constructed examples; the
+# messenger ids and phone numbers are invented.
+playbook_id: cn.part_time_task_job
+cases:
+  - id: zh_recruitment_brushing_orders_advance_principal
+    lang_hint: zh
+    channel: wechat
+    text: >-
+      【兼职招聘】在校学生兼职，手机操作即可，刷单日结，每单佣金30-80元。
+      先垫付本金，做任务后本金和佣金一起返还。有意者加我微信 rw_task_000 私聊。
+    expect:
+      band_in: [scam, suspicious]
+      playbook_id: cn.part_time_task_job
+      must_hit_families: [D, E, H]
+      evidence_contains: ["刷单", "日结", "加我微信"]
+    note: >-
+      The order-brushing recruitment post: H4 fires three times, D1 twice; the
+      "advance the principal" line is the E7 signal and has no Chinese phrase.
+    xfail: >-
+      Rule gap: E7 has no Chinese phrases (垫付本金, 先垫付, 充值后提现) and H1 none
+      (轻松, 无需经验). Two medium hits score 0.24, below suspicious. Retrieval itself
+      names the right playbook at 0.31.
+
+  - id: ru_telegram_students_in_china_likes_and_reviews
+    lang_hint: ru
+    channel: telegram
+    text: >-
+      Подработка для студентов в Китае, без опыта работы! Ставим лайки и пишем отзывы на
+      маркетплейсе, платят сразу, заработок от 300 юаней в день с телефона. Гарантированный
+      доход, всё легально. Напишите мне в WhatsApp +86 100 0000 0000
+    expect:
+      band_in: [scam, suspicious]
+      playbook_id: cn.part_time_task_job
+      must_hit_families: [D, H]
+      evidence_contains: ["без опыта работы", "заработок от", "Гарантированный доход", "Напишите мне в"]
+    note: >-
+      Recruitment stage in Russian: H4 easy-job wording, H1 guaranteed income, D1 push to
+      WhatsApp. Retrieval must pick the China playbook over kz.mule_account_rental.
+
+  - id: ru_curator_withdrawal_blocked_pay_to_unlock
+    lang_hint: ru
+    channel: telegram
+    text: >-
+      Куратор: ваш баланс 8 400 юаней, но вывод заблокирован — не выполнено задание 5.
+      Чтобы разблокировать вывод, внесите платёж 3 000 юаней на выкуп заказа, это без риска,
+      деньги вернутся с процентом. Для вывода оплатите комиссию 10%. Действуйте как можно
+      быстрее, слот закроется через час.
+    expect:
+      band_in: [scam, suspicious]
+      playbook_id: cn.part_time_task_job
+      must_hit_families: [B, E, H]
+      evidence_contains: ["внесите платёж", "Для вывода оплатите", "без риска"]
+    note: >-
+      Extraction stage: the locked withdrawal that needs one more paid task (E7 twice),
+      urgency (B1) and the "no risk" reassurance (H1).
+
+  - id: mixed_ru_kk_chat_student_side_job
+    lang_hint: kk
+    channel: telegram
+    text: >-
+      Сәлем! Подработка для студентов в Китае: телефонмен лайк басасың, отзыв жазасың,
+      300 юаней в день, платят сразу, без опыта работы. Тәуекелсіз, всё легально.
+      Напишите мне в Telegram @cn_tasks_000
+    expect:
+      band_in: [scam, suspicious]
+      playbook_id: cn.part_time_task_job
+      must_hit_families: [D, H]
+      evidence_contains: ["без опыта работы", "Тәуекелсіз", "Напишите мне в"]
+    note: >-
+      Code-switched recruitment: H4 on the Russian "без опыта работы", H1 on the Kazakh
+      "тәуекелсіз", D1 on the Russian messenger push.

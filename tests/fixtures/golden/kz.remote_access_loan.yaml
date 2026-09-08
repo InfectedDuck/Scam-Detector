@@ -1,0 +1,75 @@
+# Golden end-to-end fixtures: kz.remote_access_loan. Constructed examples.
+playbook_id: kz.remote_access_loan
+cases:
+  - id: ru_call_anydesk_then_loan_to_reserve_account
+    lang_hint: ru
+    channel: call
+    text: >-
+      Вас беспокоит служба безопасности банка. Чтобы защитить ваши средства, установите
+      приложение AnyDesk из Play Market и продиктуйте код с экрана — программа заблокирует
+      доступ мошенникам. Не кладите трубку, пока идёт установка. Дальше оформите кредит на
+      2 000 000 тг, чтобы вывести его на резервный счёт, мошенники не успеют.
+    expect:
+      band_in: [scam]
+      playbook_id: kz.remote_access_loan
+      must_hit_families: [A, C, D, E, F]
+      evidence_contains: ["установите приложение", "продиктуйте код", "служба безопасности банка", "оформите кредит", "резервный счёт"]
+    note: >-
+      The full second half of the bank-security script: remote-access tool (F1,
+      entity-driven), install instruction (F3), session code (A1), stay on the line (D3),
+      then a loan (E3) to a "reserve account" (E1). Note that C1 only matches the
+      nominative "служба безопасности"; the genitive "службы безопасности" does not fire.
+
+  - id: ru_whatsapp_rustdesk_virus_check
+    lang_hint: ru
+    channel: whatsapp
+    text: >-
+      Сотрудник банка: для проверки телефона на вирусы скачайте по ссылке программу RustDesk
+      https://rustdesk-kz.example/app и назовите ID из приложения. Пока идёт проверка,
+      не отключайтесь. Потом подтвердите заявку на кредит, которую мошенники оформили на
+      ваше имя — мы её отменим.
+    expect:
+      band_in: [scam]
+      playbook_id: kz.remote_access_loan
+      must_hit_families: [C, D, E, F]
+      evidence_contains: ["Сотрудник банка", "скачайте по ссылке", "не отключайтесь", "подтвердите заявку на кредит"]
+    note: >-
+      The RustDesk variant the police warned about, with the "confirm the loan
+      application so we can cancel it" inversion (E3).
+
+  - id: kk_call_anydesk_protect_account
+    lang_hint: kk
+    channel: call
+    text: >-
+      Сіздің шотыңызды қорғау үшін AnyDesk қосымшасын орнатыңыз және экрандағы кодты
+      айтыңыз. Бұл банктің қауіпсіздік қызметінің бағдарламасы. Орнату біткенше телефонды
+      қоймаңыз. Содан кейін алаяқтар сіздің атыңызға рәсімдеген несиені тоқтату үшін
+      кредитті рәсімдеңіз, ақша қауіпсіз шотқа түседі.
+    expect:
+      band_in: [scam]
+      playbook_id: kz.remote_access_loan
+      must_hit_families: [A, C, D, E, F]
+      evidence_contains: ["қосымшасын орнатыңыз", "кодты айтыңыз", "телефонды қоймаңыз", "кредитті рәсімдеңіз", "қауіпсіз шотқа"]
+    note: >-
+      Pure Kazakh: every family of the script fires through the kk lexicon plus the
+      Latin app name. Rules score 1.0.
+    xfail_playbook: >-
+      Retrieval gap: kz.remote_access_loan has no Kazakh retrieval_phrases; the shared
+      token "anydesk" alone is below the 0.10 floor in a message this long.
+
+  - id: mixed_kk_ru_call_teamviewer_halyk
+    lang_hint: kk
+    channel: call
+    text: >-
+      Алло, бұл Halyk банктің қауіпсіздік қызметі. Вам нужно установить TeamViewer
+      QuickSupport для защиты счёта, скачайте приложение по ссылке, потом назовите код с
+      экрана. Трубканы қоймаңыз. Оформите кредит — бұл тек алаяқтардың өтінімін жабу үшін,
+      деньги останутся у вас.
+    expect:
+      band_in: [scam]
+      playbook_id: kz.remote_access_loan
+      must_hit_families: [A, C, D, E, F]
+      evidence_contains: ["қауіпсіздік қызметі", "назовите код", "Трубканы қоймаңыз", "Оформите кредит"]
+    note: >-
+      Code-switched call: Kazakh authority claim and "do not hang up", Russian install,
+      code request and loan instruction, two remote-access tool names.

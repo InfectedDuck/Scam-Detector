@@ -1,0 +1,87 @@
+# Golden end-to-end fixtures: kz.bank_security_call.
+#
+# Every text here is a constructed example written for the test, not a
+# dataset row. Names are invented, phone numbers use the +7 700 000 00 00
+# shape, links use the RFC 2606 ".example" TLD. See tests/test_golden.py for
+# the assertion semantics of `expect`.
+playbook_id: kz.bank_security_call
+cases:
+  - id: ru_whatsapp_call_hook_and_otp
+    lang_hint: ru
+    channel: call
+    text: >-
+      Звонящий: Здравствуйте, Асель Бауыржановна? Вас беспокоит служба безопасности банка,
+      старший специалист. Только что с вашего счёта пытаются списать 480 000 тенге,
+      операция проходит в Алматы. Вы сейчас в Алматы? Нет? Значит, это мошенники.
+      Сейчас переключу на специалиста отдела по борьбе с мошенничеством, не кладите трубку.
+      Чтобы отменить операцию, вам придёт СМС — назовите код из СМС, и мы заблокируем перевод.
+      Это тайна следствия, никому не говорите о звонке, даже сотрудникам банка.
+    expect:
+      band_in: [scam]
+      playbook_id: kz.bank_security_call
+      must_hit_families: [A, B, C, D, J]
+      evidence_contains: ["служба безопасности банка", "назовите код", "не кладите трубку", "тайна следствия"]
+    note: >-
+      Hook plus extraction in one call transcript, the highest-volume Kazakhstan script.
+      Checks the C+A combination bonus, D3 isolation and the J1 secrecy phrase. The
+      "код из СМС" span is deliberately not required: the trailing "никому не говорите
+      о звонке" sits inside A1's 60-character after-window and negates it, while
+      "назовите код" survives.
+
+  - id: ru_call_safe_account_card_details
+    lang_hint: ru
+    channel: call
+    text: >-
+      Я сотрудник банка. Мы зафиксировали несанкционированный вход в ваш личный кабинет,
+      с вашего счёта пытаются перевести деньги. Их нужно срочно перевести на безопасный счёт
+      Национального банка, пока мошенники не успели. Продиктуйте полный номер карты,
+      срок действия и три цифры на обороте, перевод мы сделаем сами. Оставайтесь на линии
+      и не отвечайте, если перезвонит банк — это могут быть мошенники.
+    expect:
+      band_in: [scam]
+      playbook_id: kz.bank_security_call
+      must_hit_families: [A, B, C, D, E]
+      evidence_contains: ["безопасный счёт", "три цифры", "Оставайтесь на линии", "Национального банка"]
+    note: >-
+      Extraction stage: the safe-account fiction under pressure (E1+B combination),
+      full card secrets (A2) and a National Bank claim (C4). No "code" wording at all.
+
+  - id: kk_whatsapp_call_kaspi_security
+    lang_hint: kk
+    channel: call
+    text: >-
+      Сәлеметсіз бе, Kaspi банкінің қауіпсіздік қызметі мазалап тұр. Дәл қазір сіздің
+      шотыңыздан 350 000 теңге аударылмақшы, күдікті операция тіркелді. Аударымды тоқтату үшін
+      сізге СМС келеді, кодты маған айтыңыз. Қалған ақшаны қауіпсіз шотқа аударамыз.
+      Телефонды қоймаңыз және ешкімге айтпаңыз.
+    expect:
+      band_in: [scam]
+      playbook_id: kz.bank_security_call
+      must_hit_families: [A, B, C, D, E]
+      evidence_contains: ["қауіпсіздік қызметі", "кодты маған айтыңыз", "қауіпсіз шотқа", "Телефонды қоймаңыз"]
+    note: >-
+      Pure Kazakh version of the same script. Exercises the kk lexicon for
+      C1, B1, B4, A1, E1 and D3 in one message. The rules score it 1.0; only the
+      playbook name is missing.
+    xfail_playbook: >-
+      Retrieval gap: kz.bank_security_call carries no Kazakh retrieval_phrases, so the
+      lexical retriever scores a Kazakh message at 0 and names no playbook. Fix: add the
+      week-2 Kazakh phrases (қауіпсіздік қызметі, кодты айтыңыз, қауіпсіз шот, телефонды
+      қоймаңыз, шотыңыздан ақша шығарылып жатыр) to the playbook.
+
+  - id: mixed_ru_kk_sms_foreign_callback_number
+    lang_hint: ru
+    channel: sms
+    text: >-
+      Kaspi Bank, служба безопасности: с вашего счёта пытаются списать 199 000 тг. Если это
+      не вы, срочно перезвоните +44 20 0000 0000 и назовите код из СМС. Кешіктірмеңіз,
+      әйтпесе ақшаңыз кетеді!
+    expect:
+      band_in: [scam]
+      playbook_id: kz.bank_security_call
+      must_hit_families: [A, B, C, I]
+      evidence_contains: ["назовите код", "пытаются списать", "Кешіктірмеңіз"]
+    note: >-
+      Code-switched SMS with a UK callback number while claiming Kaspi: the
+      text-detectable I1 rule and the C+I combination bonus. B1 fires on both the Russian
+      "срочно" and the Kazakh "кешіктірмеңіз". The +44 number is fake.

@@ -1,0 +1,72 @@
+# Golden end-to-end fixtures: kz.egov_1414_code. Constructed examples; see
+# kz.bank_security_call.yaml for the conventions.
+playbook_id: kz.egov_1414_code
+cases:
+  - id: ru_call_cancel_microloan_relay_code
+    lang_hint: ru
+    channel: call
+    text: >-
+      Здравствуйте, это контакт-центр eGov, 1414. На ваше имя через портал электронного
+      правительства поступила заявка на микрокредит. Чтобы её отменить, вам сейчас придёт
+      СМС от 1414 — какой код вам пришёл? Продиктуйте код, и мы аннулируем заявку.
+      Действовать нужно немедленно, заявка подтверждается через 10 минут.
+    expect:
+      band_in: [scam]
+      playbook_id: kz.egov_1414_code
+      must_hit_families: [A, B, C]
+      evidence_contains: ["eGov", "какой код вам пришёл", "Продиктуйте код", "немедленно"]
+    note: >-
+      The classic shape: an unrequested 1414 code explained away by a "contact centre"
+      that asks the victim to read it back (A4 relay plus A1) under time pressure.
+
+  - id: ru_whatsapp_ecp_expiry_send_code
+    lang_hint: ru
+    channel: whatsapp
+    text: >-
+      Уважаемый пользователь eGov! Срок действия вашей ЭЦП истекает сегодня. Для продления
+      подтвердите личность: отправьте код из СМС от 1414 в ответ на это сообщение.
+      Без подтверждения доступ к порталу госуслуг будет заблокирован.
+    expect:
+      band_in: [scam]
+      playbook_id: kz.egov_1414_code
+      must_hit_families: [A, B, C]
+      evidence_contains: ["отправьте код", "будет заблокирован"]
+    note: >-
+      Text-only variant: the digital-signature expiry pretext, a request to forward the
+      code (A1 "отправ* код") and an account-block threat (B2).
+
+  - id: kk_call_loan_in_your_name
+    lang_hint: kk
+    channel: call
+    text: >-
+      Сәлеметсіз бе, бұл 1414, электрондық үкімет қызметі. Сіздің атыңызға несие
+      рәсімделіп жатыр. Оны тоқтату үшін қазір 1414-тен келген кодты айтыңыз.
+      Кешіктірмеңіз, өтінім 10 минут ішінде расталады.
+    expect:
+      band_in: [scam]
+      playbook_id: kz.egov_1414_code
+      must_hit_families: [A, B, C, E]
+      evidence_contains: ["электрондық үкімет", "атыңызға несие", "кодты айтыңыз", "Кешіктірмеңіз"]
+    note: >-
+      Pure Kazakh: C3 via the kk lexicon, E3 "атыңызға несие" (a loan in your name),
+      A1 "кодты айтыңыз" and two B1 urgency forms.
+    xfail_playbook: >-
+      Retrieval gap: kz.egov_1414_code has no Kazakh retrieval_phrases; the shared token
+      "1414" alone does not lift a Kazakh message over the 0.10 floor. Fix: add Kazakh
+      phrases (1414-тен код келді, кодты айтыңыз, атыңызға несие рәсімделіп жатыр, ЭЦП).
+
+  - id: mixed_ru_kk_whatsapp_which_code_arrived
+    lang_hint: ru
+    channel: whatsapp
+    text: >-
+      Салем! Это eGov, 1414. Сізге қазір смс код келді, қандай код келді? Скажите код,
+      чтобы отменить заявку на кредит на ваше имя, её оформили мошенники. Срочно, у вас
+      есть несколько минут.
+    expect:
+      band_in: [scam]
+      playbook_id: kz.egov_1414_code
+      must_hit_families: [A, B, C, E]
+      evidence_contains: ["қандай код", "Скажите код", "кредит на ваше имя"]
+    note: >-
+      Code-switched Russian-Kazakh chat: A1 fires on both the Kazakh "қандай код" and the
+      Russian "скажите код"; E3 on "кредит на ваше имя". Retrieval rides on the Russian half.

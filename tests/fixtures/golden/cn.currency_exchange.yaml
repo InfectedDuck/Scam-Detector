@@ -1,0 +1,69 @@
+# Golden end-to-end fixtures: cn.currency_exchange. Constructed examples; the
+# WeChat ids are invented. The rules-only engine has no way to see "private
+# exchange" as such, so suspicious is the realistic ceiling for most cases.
+playbook_id: cn.currency_exchange
+cases:
+  - id: zh_group_chat_rate_better_than_bank_pay_first
+    lang_hint: zh
+    channel: wechat
+    text: >-
+      同学们好，本人长期换汇，人民币兑坚戈汇率比银行高，手续费全免，稳赚不亏零风险。
+      需要的私聊或加我微信 kz_huanhui_000，先转人民币到我支付宝，五分钟内坚戈到账 Kaspi。
+    expect:
+      band_in: [scam, suspicious]
+      playbook_id: cn.currency_exchange
+      must_hit_families: [D, H]
+      evidence_contains: ["私聊", "加我微信"]
+    note: >-
+      The student-group exchange offer in Chinese: pay first, better-than-bank rate,
+      no risk. Only D1 has Chinese phrases today.
+    xfail: >-
+      Rule gap: H1 has no Chinese phrases (零风险, 稳赚不亏, 汇率比银行高) and E2 has none
+      (先转...到我, 先付款). D1 alone scores 0.12, below the suspicious threshold.
+
+  - id: zh_wechat_send_me_your_card_number
+    lang_hint: zh
+    channel: wechat
+    text: >-
+      群里有人要换汇的找我，坚戈、卢布换人民币，汇率比银行高，手续费全免，微信转账当天到账。
+      先转人民币，把你的卡号和姓名发我。加我微信 exchange_kz_000 私聊，勿在群里回复。
+    expect:
+      band_in: [scam, suspicious]
+      playbook_id: cn.currency_exchange
+      must_hit_families: [A, D]
+      evidence_contains: ["卡号", "加我微信"]
+    note: >-
+      Same offer with the card-number request that real exchangers make. A2 fires on
+      "卡号" (a broad rule, and here the ask is genuine), D1 on the messenger push.
+
+  - id: ru_student_chat_yuan_for_tenge_pay_first
+    lang_hint: ru
+    channel: telegram
+    text: >-
+      Ребята, меняю юани на тенге и обратно, курс 1 CNY = 71 тг (в банке 78), без комиссии
+      и без риска, уже 3 года в Пекине. Переведите на карту Kaspi первым, юани сразу кидаю
+      на Alipay. Напишите мне в WeChat: kz_exchange_000
+    expect:
+      band_in: [scam, suspicious]
+      playbook_id: cn.currency_exchange
+      must_hit_families: [D, E, H]
+      evidence_contains: ["без риска", "Переведите на карту", "Напишите мне в"]
+    note: >-
+      The Russian-language version from a Kazakh student chat: H1 "без риска", E2
+      transfer-first, D1 move to WeChat. Lands at 0.62, suspicious.
+
+  - id: mixed_kk_ru_chat_exchange_no_commission
+    lang_hint: kk
+    channel: whatsapp
+    text: >-
+      Сәлем бәріңе! Юань керек пе? Меняю по курсу лучше банка, без комиссии, тәуекел жоқ.
+      Переведите на карту Kaspi, юаньді бірден Alipay-ға саламын. Напишите мне в WeChat,
+      топта жазбаңыз.
+    expect:
+      band_in: [scam, suspicious]
+      playbook_id: cn.currency_exchange
+      must_hit_families: [D, E, H]
+      evidence_contains: ["тәуекел жоқ", "Переведите на карту", "Напишите мне в"]
+    note: >-
+      Code-switched Kazakh-Russian exchange offer. H1 fires on the Kazakh "тәуекел жоқ",
+      E2 and D1 on the Russian halves. Retrieval clears the floor on the Russian tokens.

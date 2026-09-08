@@ -1,0 +1,72 @@
+# Golden end-to-end fixtures: kz.marketplace_safe_deal. Constructed examples.
+playbook_id: kz.marketplace_safe_deal
+cases:
+  - id: ru_olx_buyer_already_paid_link
+    lang_hint: ru
+    channel: marketplace
+    text: >-
+      Здравствуйте, ещё продаёте? Беру, не торгуясь. Я уже оплатил через OLX Доставку,
+      деньги у них на счету. Чтобы получить деньги, перейдите по ссылке
+      https://olx-dostavka.example/get/7781 и введите данные карты: номер, срок действия
+      и CVV, средства зачислят сразу. Давайте продолжим в WhatsApp, тут неудобно:
+      +7 700 000 00 00
+    expect:
+      band_in: [scam]
+      playbook_id: kz.marketplace_safe_deal
+      must_hit_families: [A, D, G]
+      evidence_contains: ["данные карты", "CVV", "продолжим в WhatsApp"]
+    note: >-
+      The "I already paid, collect your money here" hook: card secrets on a page that
+      debits (A2), an OLX-branded host on another domain (G5) and a push to WhatsApp (D1).
+
+  - id: ru_instagram_seller_pay_outside_platform
+    lang_hint: ru
+    channel: instagram
+    text: >-
+      Товар в наличии, отправляем сегодня. Оплата не через сайт OLX, оплатим напрямую
+      по ссылке безопасной сделки: https://olx-safe-deal.example/pay . На странице введите
+      номер вашей карты и три цифры на обороте, деньги спишутся только после получения.
+    expect:
+      band_in: [scam]
+      playbook_id: kz.marketplace_safe_deal
+      must_hit_families: [A, D, G]
+      evidence_contains: ["не через сайт", "оплатим напрямую", "номер вашей карты"]
+    note: >-
+      Seller-side variant: leaving the platform (D2) with a "safe deal" page that asks
+      for the full card number and CVV.
+
+  - id: kk_olx_chat_enter_card_number_cvv
+    lang_hint: kk
+    channel: marketplace
+    text: >-
+      Сәлеметсіз бе, тауар әлі сатылымда ма? Аламын. Мен OLX жеткізу арқылы төлеп қойдым,
+      ақшаны алу үшін мына сілтемеге өтіңіз: https://olx-kz-dostavka.example/get .
+      Картаңыздың нөмірін енгізіңіз және CVV кодты айтыңыз, ақша бірден түседі.
+      WhatsApp-қа жазыңыз: +7 700 000 00 00
+    expect:
+      band_in: [scam]
+      playbook_id: kz.marketplace_safe_deal
+      must_hit_families: [A, G]
+      evidence_contains: ["Картаңыздың нөмірін енгізіңіз", "CVV"]
+    note: >-
+      Pure Kazakh buyer message. A2 through the kk lexicon and the Latin "CVV", G5 on the
+      OLX-branded host. D1 has no Kazakh phrase ("WhatsApp-қа жазыңыз"), so it is not required.
+    xfail_playbook: >-
+      Retrieval gap: kz.marketplace_safe_deal has no Kazakh retrieval_phrases (OLX жеткізу,
+      картаңыздың нөмірін енгізіңіз, WhatsApp-қа жазыңыз). Rules alone reach the scam band.
+
+  - id: mixed_ru_kk_olx_receive_payment_link
+    lang_hint: ru
+    channel: marketplace
+    text: >-
+      Салам, объявление актуально? Мен покупаю, деньги перевёл через OLX Доставку.
+      Получите оплату по ссылке https://olx-delivery-kz.example/receive , там надо ввести
+      номер карты, срок действия и CVV. Напишите мне в вотсап +7 700 000 00 00, рақмет.
+    expect:
+      band_in: [scam]
+      playbook_id: kz.marketplace_safe_deal
+      must_hit_families: [A, D, G]
+      evidence_contains: ["CVV", "Напишите мне в"]
+    note: >-
+      Code-switched buyer chat. Same mechanics as the Russian case, with the Kazakh
+      greeting and closing that real OLX conversations in Kazakhstan carry.

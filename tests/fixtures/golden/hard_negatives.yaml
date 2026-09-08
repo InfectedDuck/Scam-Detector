@@ -1,0 +1,296 @@
+# Golden hard negatives: genuine-looking messages that must NOT be flagged.
+#
+# Constructed examples in the shape of real traffic. Codes, tracking numbers,
+# amounts and names are invented; official domains (post.kz, beeline.kz) are
+# the ones brands.yaml lists as legitimate. `band_in` is [likely_safe] unless
+# the message is genuinely ambiguous, in which case suspicious is tolerated.
+# `must_not_hit_families` names the families whose firing would be the actual
+# false positive the case guards against.
+playbook_id: null
+cases:
+  - id: kaspi_otp_sms
+    lang_hint: ru
+    channel: sms
+    text: "Kaspi.kz: код 4821 для входа в приложение. Никому не сообщайте код, даже сотрудникам банка."
+    expect:
+      band_in: [likely_safe]
+      playbook_id: null
+      must_not_hit_families: [A, C, E]
+    note: >-
+      The inversion trap from the indicator catalogue: contains "код", "сообщайте" and
+      "сотрудникам банка" and must produce zero A-family hits.
+
+  - id: halyk_transaction_push
+    lang_hint: ru
+    channel: push
+    text: "Halyk Bank: покупка 12 450 KZT, MAGNUM ALMATY, карта *0000, 14:32. Доступно 84 210 KZT. Не вы? Позвоните 7111."
+    expect:
+      band_in: [likely_safe]
+      playbook_id: null
+      must_not_hit_families: [A, B, C, E]
+    note: A genuine transaction notification with a short code to call back.
+
+  - id: kazpost_pickup_notice
+    lang_hint: ru
+    channel: sms
+    text: "Kazpost: посылка RR000000000KZ прибыла в отделение 050000, Алматы, ул. Примерная 1. Заберите в течение 7 дней. Отследить: https://post.kz/track/RR000000000KZ"
+    expect:
+      band_in: [likely_safe]
+      playbook_id: null
+      must_not_hit_families: [A, E, G]
+    note: >-
+      Real carrier, real official domain. C6 may fire on the brand word alone and stay
+      harmless; G1 and G5 must not fire on post.kz.
+
+  - id: cdek_ready_for_pickup
+    lang_hint: ru
+    channel: sms
+    text: "CDEK: заказ 1000000000 готов к выдаче в ПВЗ Астана, пр. Примерный 10. Срок хранения 5 дней. Код получения 1234."
+    expect:
+      band_in: [likely_safe]
+      playbook_id: null
+      must_not_hit_families: [A, E, G]
+    note: A pickup code that is stated, not requested.
+
+  - id: egov_1414_code_sms
+    lang_hint: ru
+    channel: sms
+    text: "1414: Код подтверждения 8391 для входа на портал eGov. Никому не сообщайте код."
+    expect:
+      band_in: [likely_safe]
+      playbook_id: null
+      must_not_hit_families: [A, E]
+    note: >-
+      The genuine 1414 message the eGov playbook is warned about. C3 fires on "eGov"
+      by design and must stay below the suspicious threshold on its own.
+
+  - id: beeline_balance_sms
+    lang_hint: ru
+    channel: sms
+    text: "Beeline: ваш баланс 1 250,00 тг. Пакет: 15 ГБ до 30.09. Пополнить: https://beeline.kz/pay"
+    expect:
+      band_in: [likely_safe]
+      playbook_id: null
+      must_not_hit_families: [A, C, E, G]
+    note: Operator balance SMS with a link to the operator's own domain.
+
+  - id: landlord_rent_reminder
+    lang_hint: ru
+    channel: whatsapp
+    text: "Асель, добрый день, напоминаю про аренду за сентябрь — 120 000 тг до 5 числа, как обычно на Kaspi по номеру. Спасибо!"
+    expect:
+      band_in: [likely_safe]
+      playbook_id: null
+      must_not_hit_families: [A, C, E, J]
+    note: A known person asking for a scheduled payment. No urgency, no card details.
+
+  - id: university_bursar_deadline
+    lang_hint: ru
+    channel: email
+    text: "Уважаемые студенты! Напоминаем, что оплата за обучение за осенний семестр должна быть внесена до 15 сентября 2026 г. Реквизиты университета и QR-код доступны в личном кабинете. Бухгалтерия."
+    expect:
+      band_in: [likely_safe]
+      playbook_id: null
+      must_not_hit_families: [A, B, E]
+    note: A payment deadline is not an advance fee; E7 must not fire on "внесена".
+
+  - id: friend_borrow_until_stipend
+    lang_hint: ru
+    channel: telegram
+    text: "Бро, займи 5к до стипендии? Кошелёк дома забыл, а тут за обед платить. Верну в пятницу, как придёт."
+    expect:
+      band_in: [likely_safe]
+      playbook_id: null
+      must_not_hit_families: [A, B, E]
+    note: >-
+      The benign twin of the hijacked-account ask: a small, unhurried loan between
+      friends. J3 may fire on the wording; the band must not move.
+
+  - id: marketplace_buyer_still_available
+    lang_hint: ru
+    channel: marketplace
+    text: "Здравствуйте, ещё актуально? Могу подъехать сегодня вечером посмотреть, район Сайран. Торг уместен?"
+    expect:
+      band_in: [likely_safe]
+      playbook_id: null
+      must_not_hit_families: [A, D, E, G]
+    note: The normal OLX buyer conversation from the indicator catalogue's negative list.
+
+  - id: bank_never_asks_warning_negated
+    lang_hint: ru
+    channel: sms
+    text: "Halyk Bank: никому не сообщайте код из СМС, CVV и пароль от приложения. Сотрудники банка никогда их не спрашивают. При подозрительном звонке положите трубку и позвоните 7111."
+    expect:
+      band_in: [likely_safe]
+      playbook_id: null
+      must_not_hit_families: [A, E]
+    note: >-
+      A bank's own anti-fraud warning in the "никому не сообщайте" form that the negation
+      window is built for. A1 and A2 must be suppressed.
+
+  - id: bank_never_asks_warning_we_never_ask
+    lang_hint: ru
+    channel: sms
+    text: "Kaspi: мы никогда не спрашиваем код из СМС, CVV или пароль от приложения. Если вам звонят «из службы безопасности банка» и просят назвать код — это мошенники. Положите трубку и позвоните 9999."
+    expect:
+      band_in: [likely_safe, suspicious]
+      playbook_id: null
+      must_not_hit_families: [A]
+    note: >-
+      The same warning in the "we never ask" form. Both phrasings are real; this one
+      exposes the negation-cue list.
+    xfail: >-
+      Rule gap: NEGATION_CUES has no "никогда не" / "не спрашива*" / "не запрашива*", so
+      A1, A2 and A3 fire inside a bank's own warning and, with C1 on the quoted
+      "служба безопасности банка", the message reaches the scam band. Fix: add those cues
+      (and treat text inside «...» quotation marks as reported speech).
+
+  - id: zh_university_tuition_notice
+    lang_hint: zh
+    channel: wechat
+    text: "【学校财务处】各位留学生同学：2026-2027学年秋季学期学费缴纳截止日期为9月15日，请通过学校官方缴费平台完成缴费，逾期将影响注册。如有疑问请联系国际学生办公室。"
+    expect:
+      band_in: [likely_safe]
+      playbook_id: null
+      must_not_hit_families: [A, B, C, E]
+    note: A Chinese university finance-office notice about a tuition deadline.
+
+  - id: zh_12306_ticket_confirmation
+    lang_hint: zh
+    channel: sms
+    text: "【铁路12306】订票成功。您已购09月20日G0000次列车，北京南站-上海虹桥站，二等座05车12F号，请凭有效证件进站乘车。"
+    expect:
+      band_in: [likely_safe]
+      playbook_id: null
+      must_not_hit_families: [A, B, C, E]
+    note: A genuine train-ticket confirmation in the 12306 format.
+
+  - id: zh_wechat_pay_receipt
+    lang_hint: zh
+    channel: wechat
+    text: "微信支付：你已成功支付58.00元（商户：校园餐厅），支付方式：零钱。查看账单详情请打开微信支付。"
+    expect:
+      band_in: [likely_safe]
+      playbook_id: null
+      must_not_hit_families: [A, B, D, E, G]
+    note: A WeChat Pay receipt line; the brand name appears without any link.
+
+  - id: kk_mother_topped_up_card
+    lang_hint: kk
+    channel: whatsapp
+    text: "Балам, картаңа 20 000 салдым, тамақ ал, ертең тағы саламын. Сабағыңды оқы, кешке қоңырау шал. Анаң."
+    expect:
+      band_in: [likely_safe]
+      playbook_id: null
+      must_not_hit_families: [A, B, E, J]
+    note: A mother in Kazakh telling her child she topped up the card.
+
+  - id: courier_downstairs
+    lang_hint: ru
+    channel: whatsapp
+    text: "Здравствуйте, курьер Wolt, я внизу у подъезда, домофон не работает. Спуститесь пожалуйста за заказом, жду 5 минут."
+    expect:
+      band_in: [likely_safe]
+      playbook_id: null
+      must_not_hit_families: [A, C, E, G]
+    note: A courier at the door. C6 must not fire on the word "курьер" alone.
+
+  - id: courier_asks_intercom_code
+    lang_hint: ru
+    channel: whatsapp
+    text: "Добрый день, курьер Яндекс Еды, стою у подъезда 3. Скажите код от домофона или спуститесь, пожалуйста."
+    expect:
+      band_in: [likely_safe]
+      playbook_id: null
+      must_not_hit_families: [A]
+    note: >-
+      The same courier asking for the intercom code — a genuine request that uses the
+      exact verb-plus-noun A1 is built on.
+    xfail: >-
+      Rule gap: A1 "скаж* код" matches "скажите код от домофона"; a critical hit on its
+      own is 0.40, exactly the suspicious threshold. Fix: exclude "код от домофона" /
+      "код от подъезда" / "код домофона" from A1 (a negative lookahead on the noun).
+
+  - id: hr_onboarding_documents
+    lang_hint: ru
+    channel: email
+    text: "Добрый день! Для оформления на работу пришлите, пожалуйста, скан удостоверения личности, ИИН и реквизиты карты для перечисления зарплаты до пятницы. С уважением, HR-отдел."
+    expect:
+      band_in: [likely_safe]
+      playbook_id: null
+      must_not_hit_families: [A, B, C]
+    note: >-
+      A legitimate request for card details (for payroll). "реквизиты карты" is not one of
+      A2's secret-request phrases and must stay that way.
+
+  - id: charity_appeal
+    lang_hint: ru
+    channel: telegram
+    text: "Друзья, собираем на операцию для Айгерим (5 лет, порок сердца). Нужно 2 400 000 тг, собрано 1 100 000. Фонд «Пример» — реквизиты на сайте фонда, отчёты публикуем еженедельно. Спасибо за репост!"
+    expect:
+      band_in: [likely_safe]
+      playbook_id: null
+      must_not_hit_families: [A, B, E, J]
+    note: A charity appeal that names a fund and points to its own site, without a card number.
+
+  - id: promo_sms_real_shop_link
+    lang_hint: ru
+    channel: sms
+    text: "Sulpak: -30% на технику до 15.09! Только по промокоду SEPT30. Подробнее: https://sulpak.kz/promo"
+    expect:
+      band_in: [likely_safe, suspicious]
+      playbook_id: null
+      must_not_hit_families: [A, E, G]
+    note: A retailer's promotional SMS with a link to its own domain. At most suspicious.
+
+  - id: scam_warning_headline_pasted
+    lang_hint: ru
+    channel: telegram
+    text: "Полиция Алматы предупреждает: мошенники звонят от имени «службы безопасности банка» и просят перевести деньги на «безопасный счёт». Ни один банк так не делает."
+    expect:
+      band_in: [likely_safe]
+      playbook_id: null
+      must_not_hit_families: [A]
+    note: >-
+      A user pastes a news headline about the scam. Every keyword of the script is present
+      as reported speech.
+    xfail: >-
+      Rule gap: the catalogue cannot tell a description of a scam from the scam itself.
+      C2 "полиция" + E1 "безопасный счёт" score 0.65 (suspicious); it would be scam if C1
+      matched the genitive "службы безопасности". Fix: treat text inside «...» quotation
+      marks and after "предупреждает:" as reported speech.
+
+  - id: en_classmate_group_project
+    lang_hint: en
+    channel: whatsapp
+    text: "Hey, are we still meeting at the library at 6 for the group project? I've done the slides for part 2, can you send me your section by tonight so I can merge everything?"
+    expect:
+      band_in: [likely_safe]
+      playbook_id: null
+      must_not_hit_families: [A, B, D, E, J]
+    note: An English message between classmates with a "send me" that is not a code.
+
+  - id: olx_genuine_safe_deal_instruction
+    lang_hint: ru
+    channel: marketplace
+    text: "OLX Доставка: покупатель оплатил заказ 000000000. Деньги зарезервированы на OLX. Передайте товар в отделение Kazpost в течение 3 дней; после доставки средства поступят на карту, указанную в профиле. Все действия выполняются только в приложении OLX. Никому не сообщайте данные карты и код из СМС — OLX не запрашивает их в мессенджерах."
+    expect:
+      band_in: [likely_safe, suspicious]
+      playbook_id: null
+      must_not_hit_families: [A, D, G]
+    note: >-
+      The hardest negative: the platform's own safe-deal instruction shares its
+      vocabulary with the scam. C6 fires on "Kazpost"; the card-details and code
+      warnings must be read as negated. With "мы никогда не просим данные карты" instead
+      of "никому не сообщайте", A2 would fire and the C6+A2 combination would reach the
+      scam band — the same negation-cue gap as bank_never_asks_warning_we_never_ask.
+
+  - id: kk_kaspi_transfer_received
+    lang_hint: kk
+    channel: push
+    text: "Kaspi Gold: сізге Асель А. 15 000 ₸ аударды. Қолжетімді: 63 250 ₸. Аударымдар тарихы қосымшада."
+    expect:
+      band_in: [likely_safe]
+      playbook_id: null
+      must_not_hit_families: [A, B, C, E]
+    note: A genuine incoming-transfer push in Kazakh.
