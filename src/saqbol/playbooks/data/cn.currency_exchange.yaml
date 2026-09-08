@@ -1,0 +1,104 @@
+id: cn.currency_exchange
+version: 1
+region: CN
+family: illicit_exchange
+
+name:
+  ru: "Обмен валюты «по выгодному курсу» через мессенджер"
+  zh: "微信、Telegram 上的私下换汇"
+  en: "Private currency exchange over a messenger"
+
+summary:
+  ru: "Незнакомец в студенческом чате меняет тенге или рубли на юани по курсу лучше банковского. Либо юани не приходят, либо приходят краденые — и карту блокируют."
+  zh: "陌生人在留学生群里以高于银行的汇率换汇。结果要么钱不到账，要么到账的是赃款，你的银行卡随即被冻结。"
+  en: "A stranger in a student chat offers a better-than-bank rate. Either the yuan never arrive, or they arrive stolen and your card is frozen."
+
+# Phrases used ONLY for embedding/retrieval. Not shown to users. Written the
+# way a student describes it afterwards, including the second harm — the frozen
+# card — which is usually what they come asking about.
+retrieval_phrases:
+  - "предложили обменять юани по выгодному курсу"
+  - "меняла из студенческого чата"
+  - "обмен валюты через WeChat без банка"
+  - "курс лучше чем в банке и без комиссии"
+  - "перевёл тенге а юани не пришли"
+  - "просят перевести первым потом отправят юани"
+  - "деньги пришли с карты незнакомого человека"
+  - "после обмена заблокировали карту в Китае"
+  - "банк заморозил счёт и вызвали в полицию"
+  - "не могу пользоваться картой после перевода"
+  - "меняют наличные юани на руки"
+  - "юаньді тиімді бағаммен айырбастауды ұсынды"
+  - "картамды бұғаттап тастады"
+  - "群里有人说可以换汇"
+  - "汇率比银行高 手续费全免"
+  - "私下换汇 微信转账"
+  - "换汇之后银行卡被冻结"
+  - "收到的钱是赃款 被公安调查"
+
+expected_indicators:
+  - D1.move_to_messenger
+  - H1.guaranteed_returns
+  - E2.transfer_to_person
+
+stages:
+  contact:
+    ru: "В студенческом чате или в личные сообщения пишет незнакомый человек, предлагающий обмен."
+    zh: "陌生人在留学生群里或私聊中主动提出可以换汇。"
+    en: "A stranger offers an exchange in a student group chat or by direct message."
+  hook:
+    ru: "Обещает курс заметно выгоднее банковского, без комиссии и без очереди."
+    zh: "承诺汇率明显高于银行，不收手续费，也不用排队。"
+    en: "They promise a rate well above the bank's, with no fee and no queue."
+  trust:
+    ru: "Показывает скриншоты прошлых обменов и отзывы «постоянных клиентов», иногда честно меняет небольшую сумму."
+    zh: "发来以往换汇的截图和“老客户”的好评，有时先小额兑换一次让你放心。"
+    en: "They show screenshots of past exchanges and reviews, and sometimes honour one small exchange first."
+  pressure:
+    ru: "Торопит: курс держится только сегодня, желающих много."
+    zh: "催促你尽快决定：这个汇率只有今天有效，想换的人很多。"
+    en: "They rush you: the rate holds only today and other people are waiting."
+  extraction:
+    ru: "Вы переводите свои деньги первым — на карту частного лица или на криптокошелёк."
+    zh: "你先把钱转出去，收款方是个人银行卡或加密钱包。"
+    en: "You transfer first, to a personal card or a crypto wallet."
+  cashout:
+    ru: "Либо вы не получаете ничего, либо вам приходят чужие похищенные деньги, и ваш счёт замораживают в рамках дела."
+    zh: "要么你什么也收不到，要么收到的是他人被骗的钱，你的账户随即在案件中被冻结。"
+    en: "Either you get nothing, or you receive someone else's stolen money and your account is frozen as part of a case."
+
+red_flags:
+  ru:
+    - "Частный обмен валюты в Китае незаконен: риск не только потерять деньги, но и оказаться фигурантом дела."
+    - "Курс лучше банковского оплачивает не меняла, а следующая жертва."
+    - "Если юани приходят с карты постороннего человека — это признак отмывания, и объясняться в полиции придётся вам."
+    - "Просьба перевести первым и уйти из банковского канала — это и есть схема, а не удобство."
+  zh:
+    - "在中国私下买卖外汇本身违法，风险不只是丢钱，还可能被卷入案件。"
+    - "高于银行的汇率不是换汇人贴钱，而是下一个受害者在付。"
+    - "如果人民币是从陌生人的卡转来的，那是洗钱的迹象，最后要去公安局解释的是你。"
+    - "要求你先转账、并且绕开银行渠道，这本身就是骗局的核心。"
+  en:
+    - "Private currency exchange is illegal in China: you risk both the money and a criminal file."
+    - "The better-than-bank rate is paid by the next victim, not by the exchanger."
+    - "Yuan arriving from a stranger's card is a laundering signal — and you are the one who will have to explain it."
+    - "Being asked to send first and to leave the banking channel is the scheme itself."
+
+action:
+  key: action.exchange_through_bank
+  ru: "Меняйте валюту только в банке или у лицензированного оператора. Если обмен уже состоялся и на карту пришли чужие деньги, немедленно свяжитесь с банком и позвоните 96110: заявление, поданное вами, меняет вашу роль в деле."
+  zh: "只通过银行或有牌照的机构换汇。如果已经换了、并且收到来路不明的钱，请立即联系发卡银行并拨打 96110 报备：主动报案会改变你在案件中的位置。"
+  en: "Exchange only through a bank or a licensed operator. If it already happened and unknown money reached your card, call your bank at once and dial 96110 — reporting it yourself changes your standing in the case."
+
+hotline: "96110"
+hotlines:
+  - { name: "Линия предупреждения о мошенничестве (Китай) / 反诈预警专线", number: "96110" }
+  - { name: "Полиция Китая / 报警电话", number: "110" }
+  - { name: "Консульский отдел Посольства РК в Пекине / 哈萨克斯坦驻华使馆领事处", number: "+86 10 6532 3382" }
+  - { name: "eGov Казахстан, обращение из-за рубежа через egov.kz", number: "1414" }
+
+sources:
+  - https://nagoya.china-consulate.gov.cn/lsfw/lsbh/202407/t20240717_11454991.htm
+  - https://dusseldorf.china-consulate.gov.cn/lsyw/tztg/202403/t20240311_11257521.htm
+  - https://jsj.moe.gov.cn/n2/12119/12119/1384.shtml
+  - https://www.eol.cn/news/yaowen/202504/t20250430_2666694.shtml

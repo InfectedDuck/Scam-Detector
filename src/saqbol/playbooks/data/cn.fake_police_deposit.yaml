@@ -1,0 +1,113 @@
+id: cn.fake_police_deposit
+version: 1
+region: CN
+family: authority_impersonation
+
+name:
+  ru: "Поддельный звонок из полиции или консульства в Китае"
+  zh: "冒充公安、检察院或使领馆的电话诈骗"
+  en: "Fake police, prosecutor or embassy call in China"
+
+summary:
+  ru: "Звонят «из полиции», «прокуратуры» или «из консульства»: на ваше имя якобы нашли посылку или счёт в деле об отмывании денег, и требуют залог для проверки."
+  zh: "来电自称公安、检察院或使领馆，说你的包裹涉及违禁品、身份被用于洗钱，要求缴纳“保证金”自证清白。"
+  en: "A caller claiming to be police, a prosecutor or your embassy says your parcel or identity is tied to a criminal case and demands a deposit to prove your innocence."
+
+# Phrases used ONLY for embedding/retrieval. Not shown to users. Most are
+# written the way a victim describes the call afterwards, because that is what
+# arrives in the chat: a frightened retelling, not a copy of the script.
+retrieval_phrases:
+  - "позвонили из полиции Китая"
+  - "сказали что на меня открыто уголовное дело"
+  - "сказали что мою посылку задержали на таможне"
+  - "звонили из консульства и сказали что аннулируют визу"
+  - "назвали номер дела и мои паспортные данные"
+  - "прислали постановление об аресте в WeChat"
+  - "показали удостоверение по видеосвязи"
+  - "требуют залог чтобы доказать невиновность"
+  - "просят перевести деньги на проверку происхождения средств"
+  - "сказали никому не рассказывать даже родителям"
+  - "запретили класть трубку"
+  - "угрожают депортацией из Китая"
+  - "звонок был с номера 96110"
+  - "Қытай полициясынан қоңырау шалды дейді"
+  - "маған қылмыстық іс ашылған деп қорқытты"
+  - "кепілдік ақша аударуды талап етеді"
+  - "自称公安局打来电话"
+  - "说我的包裹里有违禁品"
+  - "让我把钱转到安全账户"
+  - "要交保证金证明自己清白"
+  - "不许我告诉任何人"
+
+expected_indicators:
+  - C2.police_prosecutor
+  - C5.embassy_immigration
+  - B3.criminal_threat
+  - E6.guarantee_deposit
+  - E1.safe_account
+  - J1.secrecy
+  - D3.dont_hang_up
+  - I1.foreign_number_local_claim
+
+stages:
+  contact:
+    ru: "Входящий звонок или сообщение в WeChat с номера, который определяется как государственный."
+    zh: "接到来电或微信消息，来电显示为公检法或使领馆的号码。"
+    en: "An incoming call or WeChat message from a number that displays as an official one."
+  hook:
+    ru: "Говорят, что на ваше имя пришла посылка с запрещённым грузом, что визу аннулируют или что ваши документы всплыли в деле об отмывании денег."
+    zh: "声称有一件寄给你的包裹含违禁品、你的签证将被注销，或你的证件出现在一起洗钱案中。"
+    en: "They say a parcel in your name held contraband, your visa is being cancelled, or your documents surfaced in a money-laundering case."
+  trust:
+    ru: "Называют номер дела, присылают «постановление» в мессенджер и включают видеосвязь из кабинета с человеком в форме."
+    zh: "报出案件编号，通过微信发来“逮捕令”，并用视频通话展示穿制服的人和布置好的办公室。"
+    en: "They quote a case number, send a warrant over a messenger, and open a video call from a staged office with a uniform."
+  pressure:
+    ru: "Угрожают арестом и депортацией, требуют молчать и не класть трубку."
+    zh: "以逮捕和遣返相威胁，要求你保密并且不许挂断电话。"
+    en: "They threaten arrest and deportation, demand secrecy, and insist you stay on the line."
+  extraction:
+    ru: "Просят перевести «залог» на «безопасный счёт» — якобы чтобы проверить происхождение ваших денег."
+    zh: "要求把“保证金”转入所谓的“安全账户”，说是为了核查资金来源。"
+    en: "They ask for a guarantee deposit to a safe account, supposedly so your funds can be checked."
+  cashout:
+    ru: "Деньги за несколько минут уходят дальше по цепочке чужих счетов."
+    zh: "钱在几分钟内经过多层他人账户被转走。"
+    en: "The money moves on through a chain of other accounts within minutes."
+
+red_flags:
+  ru:
+    - "Полиция Китая не ведёт дела по телефону и не собирает деньги: «безопасного счёта» не существует."
+    - "Настоящее дело не ведут в мессенджере — ордера и постановления через WeChat не присылают."
+    - "Требование молчать и не класть трубку нужно не следствию, а тому, кто боится, что вы перепроверите."
+    - "96110 сам предупреждает о мошенничестве и никогда не просит перевести деньги, а его номер к тому же подделывают."
+  zh:
+    - "公安机关不会通过电话办案，更不存在所谓的“安全账户”。"
+    - "真正的办案不会用微信发逮捕令或冻结令。"
+    - "要求你保密、不许挂断电话，本身就是骗局的一部分。"
+    - "96110 只会提醒你可能被骗，绝不会要求你转账；而且这个号码也会被伪造。"
+  en:
+    - "Chinese police do not run cases by phone and do not collect money: there is no such thing as a safe account."
+    - "A real case is not conducted over a messenger — warrants are not sent through WeChat."
+    - "Being told to keep silent and not hang up serves the caller, not an investigation."
+    - "96110 warns you about fraud and never asks for a transfer — and its number gets spoofed too."
+
+action:
+  key: action.hang_up_dial_96110
+  ru: "Положите трубку и сами наберите 96110 — линию предупреждения о мошенничестве. Не перезванивайте на номер, с которого звонили. Потом отдельно свяжитесь с международным отделом университета и с консульским отделом посольства Казахстана в Пекине, набрав их номера сами."
+  zh: "立即挂断，然后自己拨打 96110 反诈预警专线，不要回拨来电号码。之后再自行联系学校国际学生办公室和哈萨克斯坦驻华使馆领事处核实。"
+  en: "Hang up and dial 96110 yourself. Do not call back the number that called you. Then contact your university's international office and the Kazakhstan embassy consular section separately, dialling their numbers yourself."
+
+hotline: "96110"
+hotlines:
+  - { name: "Линия предупреждения о мошенничестве (Китай) / 反诈预警专线", number: "96110" }
+  - { name: "Полиция Китая / 报警电话", number: "110" }
+  - { name: "Консульский отдел Посольства РК в Пекине / 哈萨克斯坦驻华使馆领事处", number: "+86 10 6532 3382" }
+  - { name: "Дежурный Посольства РК в Пекине / 使馆值班", number: "+86 10 6532 6182" }
+  - { name: "eGov Казахстан, обращение из-за рубежа через egov.kz", number: "1414" }
+
+sources:
+  - https://khonkaen.china-consulate.gov.cn/zytz/202507/t20250715_11670771.htm
+  - https://www.szlhq.gov.cn/bmxxgk/gafj/dtxx_124565/gzdt_124566/content/post_11111482.html
+  - https://www.mfa.gov.cn/web/lbfw_673061/wgzhslgjgxx/201704/t20170425_7562689.shtml
+  - https://xinwen.bjd.com.cn/content/s66bc3e35e4b0e75a1b903859.html

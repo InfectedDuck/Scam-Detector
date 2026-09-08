@@ -1,0 +1,105 @@
+id: cn.part_time_task_job
+version: 1
+region: CN
+family: fake_employment
+
+name:
+  ru: "Подработка «на заданиях» с предоплатой"
+  zh: "刷单返利与虚假兼职"
+  en: "Task-commission work and fake part-time jobs"
+
+summary:
+  ru: "Лёгкая подработка с телефона: первые задания оплачивают сразу, дальше просят выкупать заказы на свои деньги, а вывод не проходит."
+  zh: "轻松的手机兼职：前几单立刻返利，之后要求你自己垫资做“大单”，最后无法提现。"
+  en: "Easy phone work: the first tasks pay out at once, then you are asked to fund larger orders yourself and withdrawals stop working."
+
+# Phrases used ONLY for embedding/retrieval. Not shown to users. The victim
+# usually writes in at the moment the withdrawal fails, so those phrasings
+# carry more weight here than the recruitment text.
+retrieval_phrases:
+  - "предложили подработку в телеграме для студентов"
+  - "платят за отзывы и лайки"
+  - "работа с телефона несколько сотен юаней в день"
+  - "первые задания оплатили сразу"
+  - "потом попросили вносить свои деньги"
+  - "просят выкупить заказ и обещают вернуть с процентом"
+  - "не могу вывести деньги с сайта заданий"
+  - "говорят нужно выполнить ещё одно задание чтобы вывести"
+  - "требуют пополнить счёт чтобы разблокировать вывод"
+  - "просят оплатить налог перед выводом"
+  - "куратор пишет в WhatsApp про вакансию"
+  - "написал выпускник нашего университета и предложил работу"
+  - "оңай қосымша жұмыс ұсынды"
+  - "ақшамды шығара алмай отырмын"
+  - "刷单兼职 日结工资"
+  - "垫付本金 返还佣金"
+  - "做任务提现失败"
+  - "客服说要再做一单才能提现"
+  - "在校学生兼职 手机操作即可"
+
+expected_indicators:
+  - H4.easy_job
+  - E7.upfront_fee
+  - D1.move_to_messenger
+  - H1.guaranteed_returns
+
+stages:
+  contact:
+    ru: "Предложение о подработке приходит в Telegram, WhatsApp или WeChat, иногда «от выпускника вашего университета»."
+    zh: "兼职信息通过 Telegram、WhatsApp 或微信发来，有时自称是你学校的学长学姐。"
+    en: "A job offer arrives on Telegram, WhatsApp or WeChat, sometimes from a supposed alumnus of your university."
+  hook:
+    ru: "Обещают несколько сотен юаней в день за простые задания с телефона, без опыта и без рабочей визы."
+    zh: "承诺每天几百元，只需用手机做简单任务，不要求经验，也不问签证。"
+    en: "They promise a few hundred yuan a day for simple phone tasks, with no experience and no work permit needed."
+  trust:
+    ru: "Первые два-три задания действительно оплачивают, и деньги приходят на карту."
+    zh: "前两三单确实返利，钱真的到了你的卡上。"
+    en: "The first two or three tasks really do pay, and the money reaches your card."
+  pressure:
+    ru: "Куратор в групповом чате торопит, показывает чужие выплаты и говорит, что задание вот-вот «сгорит»."
+    zh: "群里的“导师”不断催促，晒出别人的收款截图，说这个任务马上就过期。"
+    en: "A handler in the group chat rushes you, posts other people's payouts, and says the task is about to expire."
+  extraction:
+    ru: "Задания становятся «оптовыми»: нужно оплатить заказ своими деньгами, чтобы получить комиссию."
+    zh: "任务升级为“大单”，需要你先用自己的钱垫付订单才能拿到佣金。"
+    en: "The tasks become bulk orders: you must fund the order yourself to earn the commission."
+  cashout:
+    ru: "Вывод не проходит: требуют новых пополнений — «налог», «разблокировка счёта», «незавершённое задание»."
+    zh: "提现失败，对方以“缴税”“解冻账户”“任务未完成”为由要求继续充值。"
+    en: "Withdrawal fails and more payments are demanded: tax, account unfreezing, an unfinished task."
+
+red_flags:
+  ru:
+    - "Настоящая работа не требует платить за право работать."
+    - "Первые честные выплаты — это вложение мошенников, а не доказательство надёжности."
+    - "Любое «пополните счёт, чтобы вывести деньги» означает, что вывода не будет."
+    - "Накрутка заказов и отзывов в Китае незаконна сама по себе, поэтому жертвы стесняются идти в полицию — на это и рассчитывают."
+  zh:
+    - "正规工作不会要求你先付钱才能上班。"
+    - "前几单如实返利是骗子的成本，不是可信的证明。"
+    - "凡是“先充值才能提现”，就说明提现永远不会到账。"
+    - "刷单本身在中国就是违法的，受害者因此不敢报警，骗子正是吃准了这一点。"
+  en:
+    - "Real work never requires you to pay for the right to work."
+    - "The honest first payouts are the scammers' investment, not proof of good faith."
+    - "Any \"top up to withdraw\" means the withdrawal will never happen."
+    - "Brushing orders is itself illegal in China, so victims hesitate to go to the police — which is exactly what the scheme counts on."
+
+action:
+  key: action.stop_paying_report_96110
+  ru: "Прекратите пополнения: следующее тоже не вернётся. Сохраните переписку, чеки и реквизиты получателей, позвоните 96110 и сообщите в международный отдел университета."
+  zh: "立刻停止充值，下一笔同样拿不回来。保存聊天记录、转账凭证和收款账号，拨打 96110，并告知学校国际学生办公室。"
+  en: "Stop paying — the next payment will not come back either. Keep the chat logs, receipts and recipient details, dial 96110, and tell your university's international office."
+
+hotline: "96110"
+hotlines:
+  - { name: "Линия предупреждения о мошенничестве (Китай) / 反诈预警专线", number: "96110" }
+  - { name: "Полиция Китая / 报警电话", number: "110" }
+  - { name: "Консульский отдел Посольства РК в Пекине / 哈萨克斯坦驻华使馆领事处", number: "+86 10 6532 3382" }
+  - { name: "eGov Казахстан, обращение из-за рубежа через egov.kz", number: "1414" }
+
+sources:
+  - https://saintdenis.china-consulate.gov.cn/chn/lsfw/lstx/202607/W020260709800424778142.pdf
+  - https://zj.chinadaily.com.cn/a/202502/26/WS67beb618a310510f19ee8b1c.html
+  - https://m.bjnews.com.cn/detail/165224373414734.html
