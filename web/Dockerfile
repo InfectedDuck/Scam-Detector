@@ -23,7 +23,9 @@ ENV SAQBOL_I18N_DIR=/app/backend/i18n \
     SAQBOL_PLAYBOOKS_DIR=/app/backend/playbooks \
     NEXT_TELEMETRY_DISABLED=1
 # Prerendering must not call the API: SAQBOL_API_BASE is deliberately unset here.
-RUN npm run build && npm prune --omit=dev
+# Dev dependencies are kept: `next start` loads next.config.ts and this image
+# is not size-constrained, so a smaller image is not worth a start-up surprise.
+RUN npm run build
 
 FROM node:24-alpine
 WORKDIR /app
