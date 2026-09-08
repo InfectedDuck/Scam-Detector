@@ -23,7 +23,15 @@ from saqbol.core.retrieval import (
     tokens,
 )
 from saqbol.core.types import Band, Lang, LLMJudgement, Stage
-from saqbol.pipeline import Analyzer, AnalyzerConfig, analyze, rules_only_analyzer
+from saqbol.pipeline import (
+    Analyzer,
+    AnalyzerConfig,
+    analyze,
+    client_from_env,
+    default_analyzer,
+    reset_default,
+    rules_only_analyzer,
+)
 from saqbol.playbooks import loader
 
 PLAYBOOKS = loader.load_all()
@@ -358,3 +366,30 @@ class TestModuleSeam:
 
     def test_config_defaults_keep_the_pipeline_offline(self):
         assert AnalyzerConfig().resolve_links is False
+
+
+class TestClientFromEnv:
+    def test_no_key_means_rules_only(self):
+        assert client_from_env("deepseek-chat", env={}) is None
+
+    def test_key_present_builds_a_client_without_calling_it(self):
+        env = {"DEEPSEEK_API_KEY": "sk-test", "SAQBOL_LLM_CACHE_DIR": ""}
+        client = client_from_env("deepseek-chat", env=env)
+        assert client is not None
+        assert hasattr(client, "structured")
+
+    def test_key_for_another_provider_does_not_count(self):
+        assert client_from_env("deepseek-chat", env={"OPENROUTER_API_KEY": "x"}) is None
+        assert client_from_env("openai/gpt-4o-mini", env={"OPENROUTER_API_KEY": "x"}) is not None
+
+    def test_default_analyzer_honours_the_model_env(self, monkeypatch):
+        monkeypatch.setenv("SAQBOL_MODEL", "qwen-plus")
+        for name in ("DEEPSEEK_API_KEY", "DASHSCOPE_API_KEY", "OPENROUTER_API_KEY"):
+            monkeypatch.delenv(name, raising=False)
+        reset_default()
+        try:
+            analyzer = default_analyzer()
+            assert analyzer.config.model == "qwen-plus"
+            assert analyzer.client is None
+        finally:
+            reset_default()

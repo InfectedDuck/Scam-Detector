@@ -20,6 +20,8 @@ which is how the deterministic baseline and CI work.
 
 from __future__ import annotations
 
+import logging
+import os
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -161,12 +163,41 @@ class Analyzer:
 
 _default: Analyzer | None = None
 
+log = logging.getLogger(__name__)
+
+#: Which model the live surfaces ask. Only the leaderboard varies it.
+MODEL_ENV = "SAQBOL_MODEL"
+
+
+def client_from_env(model: str, env: dict[str, str] | None = None) -> Any:
+    """A model client when the model's provider has a key, otherwise None.
+
+    None means the pipeline runs rules-only, which is the correct behaviour on a
+    laptop with no .env and in CI. The decision is logged once at startup so a
+    box that was meant to be hybrid and is silently deterministic gets noticed.
+    """
+    from saqbol.core.llm import LLMClient, ProviderNotConfigured, credentials, resolve
+
+    source = os.environ if env is None else env
+    try:
+        credentials(resolve(model), source)
+    except (ProviderNotConfigured, KeyError, ValueError) as exc:
+        log.warning("Running rules-only: %s", exc)
+        return None
+    log.info("Model client ready for %s", model)
+    return LLMClient(env=source)
+
 
 def default_analyzer() -> Analyzer:
-    """Process-wide analyzer. Call `reset_default()` after editing a playbook."""
+    """Process-wide analyzer. Call `reset_default()` after editing a playbook.
+
+    Hybrid when the configured model's provider key is present, rules-only
+    otherwise. SAQBOL_MODEL picks the model; the default is in AnalyzerConfig.
+    """
     global _default
     if _default is None:
-        _default = Analyzer()
+        model = os.environ.get(MODEL_ENV, "").strip() or AnalyzerConfig.model
+        _default = Analyzer(client=client_from_env(model), config=AnalyzerConfig(model=model))
     return _default
 
 
