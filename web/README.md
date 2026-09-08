@@ -20,14 +20,21 @@ that copies only `web/` must set `SAQBOL_I18N_DIR` and `SAQBOL_PLAYBOOKS_DIR`.
 |---|---|
 | `app/[locale]/layout.tsx` | Root layout. Lives inside the segment so `<html lang>` is right; there is no `app/layout.tsx`. |
 | `app/[locale]/page.tsx` | The analyze page. Server component. `?sample=<id>` renders a finished card in the HTML. |
-| `app/[locale]/actions.tsx` | The server action behind the paste box. Returns the rendered card, not data. |
+| `app/[locale]/actions.tsx` | The server action behind the paste box. Returns the rendered card, not data. Forwards the visitor's address to the API and gates the fourth check in a session behind Turnstile. |
+| `app/[locale]/stats/page.tsx` | Public numbers from `GET /api/v1/stats`: checks, devices, scam share, top scenarios, a 30-day chart. |
+| `app/[locale]/playbooks/` | The scenario library: an index grouped by region and one static page per playbook. |
+| `app/[locale]/share/[playbook_id]/page.tsx` | The page a share link lands on. Static per playbook and per band. |
+| `components/Shell.tsx` | Header, language switcher and footer shared by every page. |
+| `components/Scenario.tsx` | The scenario building blocks the share page and the library both render. |
 | `middleware.ts` | `/` → `/{locale}` from `Accept-Language`, default `ru`. |
-| `components/AnalyzeForm.tsx` | The only `"use client"` file: textarea, counter, pending state. |
+| `components/AnalyzeForm.tsx` | The only `"use client"` file: textarea, counter, pending state, and the Turnstile widget once a session has used its free checks. |
 | `components/VerdictCard.tsx` | The card. Band, evidence, advice, hotline, then the fusion breakdown. |
 | `components/HighlightedMessage.tsx` | Paints the evidence marks. |
 | `lib/highlight.ts` | Offsets → verified, flattened, overlap-aware segments. **The demo.** |
 | `lib/normalize.ts` | Stage-0 mirror (NFKC, invisible characters) and code-point helpers. |
-| `lib/api.ts` | `fetchVerdict()`. The one seam to the backend. Mock until `SAQBOL_API_BASE` is set. |
+| `lib/api.ts` | `fetchVerdict()` and `fetchStats()`. The one seam to the backend. Mock until `SAQBOL_API_BASE` is set. |
+| `lib/playbooks.ts` | Reads the playbook YAML for the share pages and the library: summary, red flags, stages, hotlines, sources. |
+| `lib/turnstile.ts` | The session check counter and the Turnstile verification. Inert without keys. |
 | `lib/types.ts` | TypeScript mirror of the `Verdict` contract. |
 | `i18n/shared.ts` | Loader for the backend's i18n and playbook YAML. Russian fallback for gaps. |
 | `i18n/ui.*.json` | Page chrome only. Nothing about a verdict is authored here. |
@@ -89,6 +96,30 @@ links and the form, including the file input, work with JavaScript disabled.
 |---|---|
 | `SAQBOL_API_BASE` | Base URL of the Python API. Unset means mock verdicts. |
 | `SAQBOL_SITE_URL` | Public origin, used for absolute share links and `og:image`. Falls back to request headers. |
+| `TURNSTILE_SITE_KEY` | Cloudflare Turnstile site key. Together with the secret, turns on the human check after the third check in a session. |
+| `TURNSTILE_SECRET_KEY` | Cloudflare Turnstile secret key. Also signs the session counter cookie. |
 
-Share pages under `/[locale]/share/[playbook_id]` are prerendered at build
-time from the playbook YAML, so a new playbook needs a rebuild.
+## Abuse protection
+
+The server action forwards the visitor's address to the API as
+`X-Forwarded-For` (first hop of the incoming `x-forwarded-for`, else
+`x-real-ip`) with `X-Saqbol-Surface: web`, so the API rate-limits each
+visitor rather than the web server as a whole. The API honours the header only
+when its own `TRUST_PROXY=1` is set; in docker-compose its port is bound to
+127.0.0.1, so only this service can reach it. The address is never logged here.
+
+Turnstile is on only when **both** `TURNSTILE_SITE_KEY` and
+`TURNSTILE_SECRET_KEY` are set. With either missing nothing about the form
+changes and the action verifies nothing. When on, a signed httpOnly cookie
+(`saqbol_n`) counts successful checks per browser session; from the fourth
+check the form renders the Cloudflare widget and the action refuses a check
+whose token is missing, rejected, or could not be verified (it fails closed).
+The widget needs JavaScript, so with scripting off the fourth check is refused
+with the same notice. A tampered cookie counts as zero; the API's per-address
+daily limit is the backstop.
+
+Share pages under `/[locale]/share/[playbook_id]` and the library under
+`/[locale]/playbooks` are prerendered at build time from the playbook YAML, so
+a new playbook needs a rebuild. The stats page is never rendered at build
+time: with an API configured it renders per request from a five-minute cache,
+and shows an "unavailable" state when the API is down.

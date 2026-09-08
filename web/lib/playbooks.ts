@@ -4,29 +4,49 @@ import { readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { parse } from "yaml";
 
-import { LOCALES, getMessages, type Locale } from "@/i18n";
+import { LOCALES, getMessages, isKnownHotline, type Locale } from "@/i18n";
 import { loadPlaybooks } from "@/i18n/shared";
-import type { Band } from "./types";
+import type { Band, Stage } from "./types";
 import { BANDS, isBand } from "./share";
 
 /**
- * What a share page says about a playbook.
+ * What a share page, and the library, say about a playbook.
  *
  * Names, advice and the hotline come through the same loader the verdict card
  * uses (i18n/shared.ts and `getMessages`), so a share page and the card that
  * linked to it can never disagree on what a scenario is called. The loader
- * does not keep the red flags or the summary, because no verdict shows them;
- * this module reads those two blocks from the same YAML files, with the same
- * directory rule and the same Russian fallback.
+ * does not keep the red flags, the summary, the stages, the sources or the
+ * hotline list, because no verdict shows them; this module reads those blocks
+ * from the same YAML files, with the same directory rule and the same Russian
+ * fallback.
  */
 
 const PLAYBOOKS_DIR =
   process.env.SAQBOL_PLAYBOOKS_DIR ??
   path.resolve(process.cwd(), "..", "src", "saqbol", "playbooks", "data");
 
+/** The two audiences the library is grouped by, in display order. */
+export const REGIONS = ["KZ", "CN"] as const;
+export type Region = (typeof REGIONS)[number];
+
+/** Contracts §3: the order a script unfolds in. Only the stages present are shown. */
+export const STAGE_ORDER: readonly Stage[] = [
+  "contact",
+  "hook",
+  "trust",
+  "pressure",
+  "extraction",
+  "cashout",
+];
+
 interface Extras {
+  region: Region;
+  family: string;
   summary: Partial<Record<Locale, string>>;
   redFlags: Partial<Record<Locale, string[]>>;
+  stages: Partial<Record<Stage, Partial<Record<Locale, string>>>>;
+  sources: string[];
+  hotlines: { name: string; number: string }[];
 }
 
 let extras: Map<string, Extras> | null = null;
@@ -56,7 +76,40 @@ function loadExtras(): Map<string, Extras> {
         if (lines.length > 0) redFlags[locale] = lines;
       }
     }
-    loaded.set(id, { summary, redFlags });
+
+    const stages: Extras["stages"] = {};
+    const stagesNode = asRecord(doc.stages);
+    for (const stage of STAGE_ORDER) {
+      const texts: Partial<Record<Locale, string>> = {};
+      const node = asRecord(stagesNode[stage]);
+      for (const locale of LOCALES) {
+        const value = node[locale];
+        if (typeof value === "string" && value.trim() && value !== "...") texts[locale] = value;
+      }
+      if (Object.keys(texts).length > 0) stages[stage] = texts;
+    }
+
+    const sources = (Array.isArray(doc.sources) ? doc.sources : []).filter(
+      (x): x is string => typeof x === "string" && /^https?:\/\//.test(x),
+    );
+
+    const hotlines = (Array.isArray(doc.hotlines) ? doc.hotlines : []).flatMap((x) => {
+      const node = asRecord(x);
+      const name = typeof node.name === "string" ? node.name.trim() : "";
+      const number = typeof node.number === "string" ? node.number.trim() : "";
+      return number ? [{ name, number }] : [];
+    });
+
+    loaded.set(id, {
+      // The schema allows two regions; anything else lands with Kazakhstan.
+      region: doc.region === "CN" ? "CN" : "KZ",
+      family: String(doc.family ?? ""),
+      summary,
+      redFlags,
+      stages,
+      sources,
+      hotlines,
+    });
   }
   extras = loaded;
   return loaded;
@@ -71,6 +124,11 @@ function asRecord(node: unknown): Record<string, unknown> {
 /** Every id a share page exists for: each playbook, then each band as the fallback. */
 export function listShareIds(): string[] {
   return [...loadPlaybooks().keys(), ...BANDS];
+}
+
+/** Every playbook id, for the library. */
+export function listPlaybookIds(): string[] {
+  return [...loadPlaybooks().keys()];
 }
 
 /** The hotline a band-only share page shows. The KZ single window, or the CN anti-fraud line. */
@@ -144,4 +202,84 @@ export function getSharePage(id: string, locale: Locale): SharePage | undefined 
   }
 
   return undefined;
+}
+
+// ---------------------------------------------------------------- library --
+
+export interface LibraryStage {
+  key: Stage;
+  /** "contact", "hook" … from the shared table, in this locale. */
+  label: string;
+  text: string;
+  /** The text, or its label, is in Russian because this locale has no translation. */
+  fellBack: boolean;
+}
+
+export interface LibraryHotline {
+  number: string;
+  /** As written in the YAML: "Kaspi Bank", "Полиция", a bilingual consulate line. */
+  name: string;
+  /** The shared table's name for the line, where it has one: "Police", "eGov contact centre". */
+  label: string | undefined;
+}
+
+/** A share page plus everything the library shows that a share page does not. */
+export interface LibraryEntry extends SharePage {
+  kind: "playbook";
+  region: Region;
+  family: string;
+  /** In script order, only the stages this playbook describes. */
+  stages: LibraryStage[];
+  sources: string[];
+  hotlines: LibraryHotline[];
+}
+
+export function getLibraryEntry(id: string, locale: Locale): LibraryEntry | undefined {
+  const page = getSharePage(id, locale);
+  if (!page || page.kind !== "playbook") return undefined;
+  const own = loadExtras().get(id);
+  if (!own) return undefined;
+  const messages = getMessages(locale);
+
+  const stages: LibraryStage[] = [];
+  for (const key of STAGE_ORDER) {
+    const texts = own.stages[key];
+    if (!texts) continue;
+    const text = texts[locale] ?? texts.ru;
+    if (!text) continue;
+    const labelKey = `stage.${key}.label`;
+    stages.push({
+      key,
+      label: messages.t(labelKey),
+      text,
+      fellBack:
+        (locale !== "ru" && texts[locale] === undefined) || messages.isFallback(labelKey),
+    });
+  }
+
+  const hotlines: LibraryHotline[] = own.hotlines.map(({ name, number }) => ({
+    number,
+    name,
+    label: isKnownHotline(number) ? messages.hotlineLabel(number) : undefined,
+  }));
+
+  return {
+    ...page,
+    kind: "playbook",
+    region: own.region,
+    family: own.family,
+    stages,
+    sources: own.sources,
+    hotlines,
+    fellBack: page.fellBack || stages.some((stage) => stage.fellBack),
+  };
+}
+
+/** Every playbook, Kazakhstan first, in the loader's (filename) order within a region. */
+export function listLibrary(locale: Locale): LibraryEntry[] {
+  const entries = listPlaybookIds().flatMap((id) => {
+    const entry = getLibraryEntry(id, locale);
+    return entry ? [entry] : [];
+  });
+  return REGIONS.flatMap((region) => entries.filter((entry) => entry.region === region));
 }

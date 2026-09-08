@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState, type ReactNode } from "react";
+import { useActionState, useEffect, useRef, useState, type ReactNode } from "react";
 
 import { MAX_TEXT_CHARS } from "@/lib/types";
 import { ImageDropZone, type ImageDropZoneStrings } from "./ImageDropZone";
@@ -16,12 +16,20 @@ import { ImageDropZone, type ImageDropZoneStrings } from "./ImageDropZone";
  * action produces one of its own. Without JavaScript, the form still posts and
  * the server still answers: the textarea and the file input are ordinary
  * fields, and React renders the form as a multipart POST.
+ *
+ * `turnstileSiteKey` arrives from the page once a session has used its free
+ * checks (lib/turnstile.ts). Only then does the form render the Cloudflare
+ * widget and load its script; the widget adds a hidden
+ * `cf-turnstile-response` field that posts with everything else. The widget
+ * needs JavaScript, so with scripting off the fourth check is refused and
+ * says why.
  */
 export function AnalyzeForm({
   action,
   strings,
   defaultValue = "",
   fallback,
+  turnstileSiteKey,
 }: {
   action: (previous: ReactNode, formData: FormData) => Promise<ReactNode>;
   /**
@@ -34,14 +42,26 @@ export function AnalyzeForm({
     submit: string;
     submitting: string;
     counter: string;
+    turnstileHint: string;
     image: ImageDropZoneStrings;
   };
   defaultValue?: string;
   fallback?: ReactNode;
+  turnstileSiteKey?: string;
 }) {
   const [result, formAction, pending] = useActionState<ReactNode, FormData>(action, null);
   const [length, setLength] = useState(defaultValue.length);
   const [preparing, setPreparing] = useState(false);
+
+  // A Turnstile token is single-use. Once a submission has come back, ask the
+  // widget for a fresh one so the next check does not fail on a spent token.
+  const wasPending = useRef(false);
+  useEffect(() => {
+    if (wasPending.current && !pending && turnstileSiteKey) {
+      (window as Window & { turnstile?: { reset(): void } }).turnstile?.reset();
+    }
+    wasPending.current = pending;
+  }, [pending, turnstileSiteKey]);
 
   return (
     <>
@@ -71,6 +91,15 @@ export function AnalyzeForm({
         </div>
 
         <ImageDropZone strings={strings.image} onBusy={setPreparing} />
+
+        {turnstileSiteKey && (
+          <div className="mt-4">
+            <p className="text-[0.8125rem] leading-relaxed text-muted">{strings.turnstileHint}</p>
+            <div className="cf-turnstile mt-2" data-sitekey={turnstileSiteKey} data-theme="auto" />
+            {/* React hoists an async script into <head> and loads it once. */}
+            <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer />
+          </div>
+        )}
 
         <div className="mt-4 flex flex-wrap items-center gap-3">
           <button

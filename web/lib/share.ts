@@ -34,6 +34,16 @@ export function sharePath(locale: Locale, id: string, ref?: ShareRef): string {
   return ref ? `${base}?ref=${ref}` : base;
 }
 
+/** The scenario library, or one scenario in it. */
+export function libraryPath(locale: Locale, id?: string): string {
+  const base = `/${locale}/playbooks`;
+  return id ? `${base}/${encodeURIComponent(id)}` : base;
+}
+
+export function statsPath(locale: Locale): string {
+  return `/${locale}/stats`;
+}
+
 /** The Open Graph image for a share page. Ends in .png so it is served as a file. */
 export function ogImagePath(id: string, locale: Locale): string {
   return `/og/${encodeURIComponent(id)}.png?locale=${locale}`;

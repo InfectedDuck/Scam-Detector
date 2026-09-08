@@ -1,0 +1,248 @@
+{
+  "total_checks": 242,
+  "unique_users": 176,
+  "scam_share": 0.512,
+  "days": [
+    {
+      "day": "2026-08-10",
+      "checks": 3,
+      "unique_actors": 2,
+      "scam_count": 1,
+      "unsure_count": 0,
+      "top_playbook": "kz.bank_security_call"
+    },
+    {
+      "day": "2026-08-11",
+      "checks": 5,
+      "unique_actors": 4,
+      "scam_count": 2,
+      "unsure_count": 1,
+      "top_playbook": "kz.bank_security_call"
+    },
+    {
+      "day": "2026-08-12",
+      "checks": 2,
+      "unique_actors": 2,
+      "scam_count": 1,
+      "unsure_count": 0,
+      "top_playbook": "kz.delivery_link"
+    },
+    {
+      "day": "2026-08-13",
+      "checks": 0,
+      "unique_actors": 0,
+      "scam_count": 0,
+      "unsure_count": 0,
+      "top_playbook": null
+    },
+    {
+      "day": "2026-08-14",
+      "checks": 4,
+      "unique_actors": 3,
+      "scam_count": 2,
+      "unsure_count": 0,
+      "top_playbook": "kz.egov_1414_code"
+    },
+    {
+      "day": "2026-08-15",
+      "checks": 7,
+      "unique_actors": 5,
+      "scam_count": 4,
+      "unsure_count": 1,
+      "top_playbook": "kz.bank_security_call"
+    },
+    {
+      "day": "2026-08-16",
+      "checks": 6,
+      "unique_actors": 4,
+      "scam_count": 3,
+      "unsure_count": 0,
+      "top_playbook": "kz.marketplace_safe_deal"
+    },
+    {
+      "day": "2026-08-17",
+      "checks": 3,
+      "unique_actors": 3,
+      "scam_count": 1,
+      "unsure_count": 1,
+      "top_playbook": "kz.delivery_link"
+    },
+    {
+      "day": "2026-08-18",
+      "checks": 8,
+      "unique_actors": 6,
+      "scam_count": 5,
+      "unsure_count": 0,
+      "top_playbook": "kz.bank_security_call"
+    },
+    {
+      "day": "2026-08-19",
+      "checks": 5,
+      "unique_actors": 4,
+      "scam_count": 2,
+      "unsure_count": 1,
+      "top_playbook": "kz.egov_1414_code"
+    },
+    {
+      "day": "2026-08-20",
+      "checks": 4,
+      "unique_actors": 3,
+      "scam_count": 2,
+      "unsure_count": 0,
+      "top_playbook": "kz.bank_security_call"
+    },
+    {
+      "day": "2026-08-21",
+      "checks": 1,
+      "unique_actors": 1,
+      "scam_count": 0,
+      "unsure_count": 0,
+      "top_playbook": null
+    },
+    {
+      "day": "2026-08-22",
+      "checks": 0,
+      "unique_actors": 0,
+      "scam_count": 0,
+      "unsure_count": 0,
+      "top_playbook": null
+    },
+    {
+      "day": "2026-08-23",
+      "checks": 6,
+      "unique_actors": 5,
+      "scam_count": 3,
+      "unsure_count": 1,
+      "top_playbook": "cn.fake_police_deposit"
+    },
+    {
+      "day": "2026-08-24",
+      "checks": 9,
+      "unique_actors": 7,
+      "scam_count": 5,
+      "unsure_count": 1,
+      "top_playbook": "kz.bank_security_call"
+    },
+    {
+      "day": "2026-08-25",
+      "checks": 11,
+      "unique_actors": 8,
+      "scam_count": 6,
+      "unsure_count": 2,
+      "top_playbook": "kz.bank_security_call"
+    },
+    {
+      "day": "2026-08-26",
+      "checks": 7,
+      "unique_actors": 6,
+      "scam_count": 3,
+      "unsure_count": 0,
+      "top_playbook": "kz.delivery_link"
+    },
+    {
+      "day": "2026-08-27",
+      "checks": 5,
+      "unique_actors": 4,
+      "scam_count": 2,
+      "unsure_count": 1,
+      "top_playbook": "kz.marketplace_safe_deal"
+    },
+    {
+      "day": "2026-08-28",
+      "checks": 8,
+      "unique_actors": 6,
+      "scam_count": 4,
+      "unsure_count": 0,
+      "top_playbook": "kz.egov_1414_code"
+    },
+    {
+      "day": "2026-08-29",
+      "checks": 12,
+      "unique_actors": 9,
+      "scam_count": 7,
+      "unsure_count": 1,
+      "top_playbook": "kz.bank_security_call"
+    },
+    {
+      "day": "2026-08-30",
+      "checks": 10,
+      "unique_actors": 7,
+      "scam_count": 5,
+      "unsure_count": 2,
+      "top_playbook": "kz.bank_security_call"
+    },
+    {
+      "day": "2026-08-31",
+      "checks": 6,
+      "unique_actors": 5,
+      "scam_count": 3,
+      "unsure_count": 0,
+      "top_playbook": "cn.fake_police_deposit"
+    },
+    {
+      "day": "2026-09-01",
+      "checks": 14,
+      "unique_actors": 10,
+      "scam_count": 8,
+      "unsure_count": 1,
+      "top_playbook": "kz.bank_security_call"
+    },
+    {
+      "day": "2026-09-02",
+      "checks": 9,
+      "unique_actors": 7,
+      "scam_count": 4,
+      "unsure_count": 1,
+      "top_playbook": "kz.delivery_link"
+    },
+    {
+      "day": "2026-09-03",
+      "checks": 11,
+      "unique_actors": 8,
+      "scam_count": 6,
+      "unsure_count": 0,
+      "top_playbook": "kz.bank_security_call"
+    },
+    {
+      "day": "2026-09-04",
+      "checks": 13,
+      "unique_actors": 9,
+      "scam_count": 7,
+      "unsure_count": 2,
+      "top_playbook": "kz.egov_1414_code"
+    },
+    {
+      "day": "2026-09-05",
+      "checks": 8,
+      "unique_actors": 6,
+      "scam_count": 4,
+      "unsure_count": 1,
+      "top_playbook": "kz.bank_security_call"
+    },
+    {
+      "day": "2026-09-06",
+      "checks": 6,
+      "unique_actors": 5,
+      "scam_count": 2,
+      "unsure_count": 1,
+      "top_playbook": "kz.marketplace_safe_deal"
+    },
+    {
+      "day": "2026-09-07",
+      "checks": 15,
+      "unique_actors": 11,
+      "scam_count": 9,
+      "unsure_count": 1,
+      "top_playbook": "kz.bank_security_call"
+    },
+    {
+      "day": "2026-09-08",
+      "checks": 7,
+      "unique_actors": 5,
+      "scam_count": 4,
+      "unsure_count": 0,
+      "top_playbook": "cn.fake_police_deposit"
+    }
+  ],
+  "updated_at": "2026-09-08T09:05:00Z"
+}

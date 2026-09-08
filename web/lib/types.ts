@@ -117,7 +117,39 @@ export const IMAGE_TYPES = ["image/png", "image/jpeg", "image/webp"] as const;
 export type ImageType = (typeof IMAGE_TYPES)[number];
 export const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 
-/** POST /api/v1/analyze, 422 — the backend cannot read screenshots yet. */
+/**
+ * POST /api/v1/analyze, 422 — screenshot outcomes. `image_not_supported` when
+ * the API has no vision provider configured; `image_no_text` when the
+ * screenshot held no readable message text (and nothing was typed alongside).
+ * A 502 `image_unreadable` means the vision provider failed on the image.
+ */
 export interface ImageNotSupported {
-  error: "image_not_supported";
+  error: "image_not_supported" | "image_no_text" | "invalid_image";
+}
+
+/** GET /api/v1/stats — one row of `stats_daily`. Counts only, never text. */
+export interface StatsDay {
+  /** "YYYY-MM-DD" */
+  day: string;
+  checks: number;
+  unique_actors: number;
+  scam_count: number;
+  unsure_count: number;
+  top_playbook: string | null;
+}
+
+/** GET /api/v1/stats, 200 (docs/02_DATA_CONTRACTS.md §5). */
+export interface Stats {
+  total_checks: number;
+  /**
+   * The SUM of each day's distinct actors, so a device that returns on another
+   * day is counted again. The page says so; do not label this "users".
+   */
+  unique_users: number;
+  /** 0..1 */
+  scam_share: number;
+  /** The last 30 days, ascending. */
+  days: StatsDay[];
+  /** ISO 8601 */
+  updated_at: string;
 }

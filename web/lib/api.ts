@@ -1,9 +1,11 @@
 import "server-only";
 
-import type { AnalysisInput, AnalyzeResult, Band, Verdict } from "./types";
+import { connection } from "next/server";
+
+import type { AnalysisInput, AnalyzeResult, Band, Stats, Verdict } from "./types";
 import { SEVERITY_WEIGHT } from "./types";
 import { normalize } from "./normalize";
-import { FIXTURES, SAMPLES } from "@/mock";
+import { FIXTURES, MOCK_STATS, SAMPLES } from "@/mock";
 
 /**
  * The one seam between this app and the backend.
@@ -24,7 +26,13 @@ export const USING_MOCK = !API_BASE;
 
 export class ApiError extends Error {
   constructor(
-    readonly code: "rate_limited" | "too_large" | "image_not_supported" | "failed",
+    readonly code:
+      | "rate_limited"
+      | "too_large"
+      | "image_not_supported"
+      | "image_no_text"
+      | "image_unreadable"
+      | "failed",
     readonly retryAfter?: number,
   ) {
     super(code);
@@ -32,12 +40,29 @@ export class ApiError extends Error {
   }
 }
 
-export async function fetchVerdict(input: AnalysisInput): Promise<AnalyzeResult> {
+/**
+ * Who is asking, as far as this server can tell.
+ *
+ * The action runs on the server, so without this every web visitor would
+ * reach the API from one address and share one rate limit. The address is
+ * forwarded, never logged here, and the API honours `X-Forwarded-For` only
+ * when its own TRUST_PROXY=1 is set: in docker-compose the API port is bound
+ * to 127.0.0.1, so only the web service can reach it and the header cannot be
+ * forged from outside.
+ */
+export interface ClientInfo {
+  ip?: string;
+}
+
+export async function fetchVerdict(
+  input: AnalysisInput,
+  client: ClientInfo = {},
+): Promise<AnalyzeResult> {
   const normalized = normalize(input.text ?? "");
 
-  // The backend cannot OCR yet and the mock has no image path at all, so a
-  // screenshot gets the same answer here that the real API gives it: the 422
-  // below. The caller then falls back to the text, if any, and says so.
+  // The mock has no image path, so a screenshot gets the answer the real API
+  // gives when no vision provider is configured: the 422 below. The caller
+  // then falls back to the text, if any, and says so.
   if (!API_BASE) {
     if (input.image_b64) throw new ApiError("image_not_supported");
     return mockVerdict(normalized);
@@ -47,7 +72,11 @@ export async function fetchVerdict(input: AnalysisInput): Promise<AnalyzeResult>
   try {
     response = await fetch(`${API_BASE}/api/v1/analyze`, {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers: {
+        "content-type": "application/json",
+        "X-Saqbol-Surface": "web",
+        ...(client.ip ? { "X-Forwarded-For": client.ip } : {}),
+      },
       body: JSON.stringify(input),
       cache: "no-store",
     });
@@ -62,8 +91,14 @@ export async function fetchVerdict(input: AnalysisInput): Promise<AnalyzeResult>
   if (response.status === 413) throw new ApiError("too_large");
   if (response.status === 422) {
     const body = (await response.json().catch(() => null)) as { error?: string } | null;
-    throw new ApiError(body?.error === "image_not_supported" ? "image_not_supported" : "failed");
+    const code = body?.error;
+    throw new ApiError(
+      code === "image_not_supported" || code === "image_no_text" ? code : "failed",
+    );
   }
+  // The vision provider could not read the screenshot. Distinct from "failed"
+  // so the form can suggest pasting the text instead of retrying blindly.
+  if (response.status === 502) throw new ApiError("image_unreadable");
   if (!response.ok) throw new ApiError("failed");
 
   const verdict = (await response.json()) as Verdict & { normalized_text?: string };
@@ -80,6 +115,39 @@ export async function fetchVerdict(input: AnalysisInput): Promise<AnalyzeResult>
      */
     normalized_text: verdict.normalized_text ?? normalized,
   };
+}
+
+/**
+ * `GET /api/v1/stats`, or the fixture when no API is configured.
+ *
+ * Returns null when the API cannot be reached or answers with something that
+ * is not a stats document; the page then shows an "unavailable" state rather
+ * than a broken chart. The response is cached for five minutes in the fetch
+ * data cache, which is the same interval the backend rolls its daily table.
+ *
+ * Never called at build time: `connection()` defers the render of any page
+ * that calls this until a request arrives, so `next build` does not need a
+ * running API. The mock path stays static.
+ */
+export async function fetchStats(): Promise<Stats | null> {
+  if (!API_BASE) return MOCK_STATS;
+
+  await connection();
+  try {
+    const response = await fetch(`${API_BASE}/api/v1/stats`, { next: { revalidate: 300 } });
+    if (!response.ok) return null;
+    const body = (await response.json()) as Partial<Stats> | null;
+    if (!body || typeof body.total_checks !== "number" || !Array.isArray(body.days)) return null;
+    return {
+      total_checks: body.total_checks,
+      unique_users: Number(body.unique_users ?? 0),
+      scam_share: Number(body.scam_share ?? 0),
+      days: body.days,
+      updated_at: String(body.updated_at ?? ""),
+    };
+  } catch {
+    return null;
+  }
 }
 
 // --------------------------------------------------------------------------

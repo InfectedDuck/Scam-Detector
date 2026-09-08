@@ -117,6 +117,11 @@ export function getMessages(locale: Locale): Messages {
   };
 }
 
+/** Whether `hotlineLabel(number)` names the line, rather than returning the generic label. */
+export function isKnownHotline(number: string): boolean {
+  return number in HOTLINE_KIND;
+}
+
 /** Which `hotline.*` label a number gets. Anything else is `hotline.generic`. */
 const HOTLINE_KIND: Record<string, string> = {
   "102": "police",
