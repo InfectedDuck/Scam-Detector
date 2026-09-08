@@ -212,7 +212,7 @@ class Deps:
     """Everything a handler is allowed to reach for.
 
     Handlers receive this as an aiogram middleware value. They import no module
-    another lane owns, which is what makes them testable with no network, no
+    outside the bot package, which is what makes them testable with no network, no
     token and no database.
     """
 
@@ -222,7 +222,7 @@ class Deps:
     analyze: Analyze
     render_card: RenderCard
     now: Callable[[], datetime] = utcnow
-    #: True while the corresponding lane has not landed. Surfaced in `/help`, so
+    #: True while the real implementation is unavailable. Surfaced in `/help`, so
     #: a tester is never shown a fixture verdict without being told.
     analyze_is_stub: bool = False
     renderer_is_stub: bool = False
@@ -271,7 +271,7 @@ def build_deps(
 ) -> Deps:
     """Resolve the real implementations, falling back to the stubs.
 
-    Import failure is the expected path until the two lanes land, so it is
+    Import failure is an expected path during development, so it is
     logged at info rather than treated as an error. `db` defaults to whatever
     `build_db` finds in the environment.
     """

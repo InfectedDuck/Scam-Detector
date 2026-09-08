@@ -1,7 +1,7 @@
 """Command, message and button handlers.
 
 One router, registered in order. Handlers reach the outside world only through
-`Deps`, so this module imports nothing that another lane owns and the whole set
+`Deps`, so this module imports nothing outside the bot package and the whole set
 runs against a fake transport with no token, no network and no database server.
 
 **Logging rule for this file, and it is not negotiable:** a raw Telegram user id

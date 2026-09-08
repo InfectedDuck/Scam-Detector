@@ -6,7 +6,7 @@ placeholder for the database:
 * The rate limit has to survive a restart or it is not a rate limit. A process
   redeploy would otherwise hand every actor a fresh allowance.
 * None of this is relational, and none of it is the research data. The Postgres
-  tables from the database lane hold checks, feedback and dataset candidates;
+  tables in saqbol.db hold checks, feedback and dataset candidates;
   this file holds only the few facts the bot needs to answer the next message.
 
 Keys are HMACs from `actors.py`. No raw Telegram id is written here, so the file

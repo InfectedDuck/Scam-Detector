@@ -57,7 +57,7 @@
 #    is the deliberate trade: this family's false positives land on the most
 #    common legitimate message in the corpus.
 #    The proper fix is Kazakh cues in registry.NEGATION_CUES — a suffix set,
-#    not a word list — which this lane does not own. Until that exists, adding
+#    not a word list — which lives outside this file. Until that exists, adding
 #    a bare noun here is a regression, and tests/test_indicators_kk.py
 #    (test_kazakh_prohibitive_forms_do_not_fire_family_a) will say so.
 
@@ -144,7 +144,7 @@ phrases:
     # Code-switched: the Russian noun "пароль" carrying Kazakh suffixes. There
     # is deliberately NO bare "парол*" line — it would fire on any Russian
     # message containing "пароль", including a genuine "ваш пароль изменён",
-    # and this lane must not change Russian behaviour.
+    # and this file must not change Russian behaviour.
     - "парол* айтыңыз*"         # парольді айтыңыз
     - "парол* енгізіңіз*"       # парольді енгізіңіз
     - "парол* жіберіңіз*"

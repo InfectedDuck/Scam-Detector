@@ -1130,7 +1130,7 @@ def test_build_deps_falls_back_to_stubs_when_a_lane_is_missing(
     """The bot has to start before the pipeline and the renderer exist.
 
     `sys.modules[name] = None` is the documented way to make an import of that
-    name raise, which is what the absent lane looks like from in here.
+    name raise, which is what an absent module looks like from in here.
     """
     monkeypatch.setitem(sys.modules, "saqbol.pipeline", None)
     monkeypatch.setitem(sys.modules, "saqbol.core.render", None)
@@ -1158,7 +1158,7 @@ def test_build_deps_wires_the_real_lanes_once_they_land(
 
 
 def test_the_real_card_satisfies_the_card_protocol() -> None:
-    """The seam holds: whatever the renderer lane shipped, `cards.py` can lay out."""
+    """The seam holds: whatever the renderer ships, `cards.py` can lay out."""
     render = pytest.importorskip("saqbol.core.render")
     verdict = asyncio.run(stub_analyze("назовите код из СМС", locale=Lang.RU, surface="telegram"))
     card = render.render_card(verdict, Lang.RU)

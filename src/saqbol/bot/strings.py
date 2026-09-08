@@ -1,7 +1,7 @@
 """Every string the bot itself says.
 
 This is bot chrome — consent, commands, refusals, the section headers around a
-verdict. The *content* of a verdict is localized by the renderer lane in
+verdict. The *content* of a verdict is localized by the renderer in
 `src/saqbol/i18n/*.yaml`; nothing here duplicates it.
 
 Two rules for the text below.

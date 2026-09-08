@@ -2,7 +2,7 @@
 
 The renderer decides *what* a verdict says in the user's language. This module
 only decides how it is laid out in a chat bubble, which is why it is here and
-not in the renderer lane.
+not in the renderer.
 
 Sent as plain text with no `parse_mode`. Evidence quotes are fragments of an
 attacker-supplied message, and every markup mode Telegram offers would either

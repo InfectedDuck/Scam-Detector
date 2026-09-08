@@ -321,7 +321,7 @@ def test_a_full_kazakh_scam_still_clears_the_threshold():
 
 @pytest.mark.parametrize("name", sorted(HARD_NEGATIVES))
 def test_no_kazakh_phrase_matches_a_russian_hard_negative(name):
-    """The lane may add Kazakh recall; it may not spend Russian precision.
+    """The lexicon may add Kazakh recall; it may not spend Russian precision.
 
     Checked directly against the phrase lists rather than through the score, so
     it fails on the first Kazakh phrase that reaches Russian text even if the

@@ -280,7 +280,7 @@ def test_zero_width_insertion_is_undone_by_stage_zero():
         "Live gap in stage 0. U+034F, U+180E and U+FE00-FE0F are invisible, "
         "survive NFKC, and are not in normalize.INVISIBLE, so they defeat every "
         "phrase rule in the catalogue while the message still reads normally. "
-        "normalize.py is not this lane's to change; adding those ranges to "
+        "normalize.py is not changed by this suite; adding those ranges to "
         "INVISIBLE closes it, and this test then XPASSes and fails strictly so "
         "the recall table above gets updated."
     ),
@@ -445,7 +445,7 @@ def test_kazakh_in_latin_script_loses_almost_every_detection():
     growing number of people write gets a system that sees nothing. Measured at
     0.0% on the Kazakh fixtures at seed 7, against 14.8% on the Russian ones.
 
-    The bound is 0.25 rather than 0.0 so that Lane 10 adding Latin-script
+    The bound is 0.25 rather than 0.0 so that adding Latin-script
     patterns improves the number without breaking the build. If it climbs past
     that, this claim is stale and the report says so.
     """
