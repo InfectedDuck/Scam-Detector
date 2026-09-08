@@ -38,3 +38,29 @@ jobs:
           python -m saqbol.eval run --config eval/configs/smoke.yaml --out /tmp/evalrun --run-id ci
           python -m saqbol.eval leaderboard --results /tmp/evalrun/ci/results.json --out /tmp/evalrun/ci/leaderboard.md
           test -s /tmp/evalrun/ci/leaderboard.md
+
+  # The web app builds against the same playbook and i18n files the backend
+  # ships, with no API configured, so the prerendered pages are proven on
+  # every commit without a server.
+  web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Install
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Build
+        run: npm run build
