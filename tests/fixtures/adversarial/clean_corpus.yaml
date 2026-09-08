@@ -1,0 +1,196 @@
+# Clean seed corpus for the obfuscation recall measurement.
+#
+# These are the messages `obfuscation.measure_recall` rewrites. Each one is
+# written to fire a handful of indicators cleanly, so that a recall drop after
+# a transform is attributable to the transform rather than to a fixture that
+# never matched anything in the first place.
+#
+# `must_fire` is a floor, not a full expectation. It exists so that a change to
+# the catalogue that silently stops a fixture matching fails the suite instead
+# of quietly shrinking the denominator and making every attack look harmless.
+# Additional hits beyond `must_fire` are welcome and are counted.
+#
+# These are paraphrases written for testing, in the shape the scripts described
+# in docs/03_INDICATORS.md take. They are not corpus rows: nothing here is a
+# quotation from a real message, nothing carries provenance, and none of it is
+# eligible for KazScam. The dataset has its own collection procedure in
+# docs/05_EVAL_PROTOCOL.md section 2 and this file is not part of it.
+
+messages:
+  - id: adv.ru.bank_security_otp
+    lang: ru
+    must_fire: [C1.bank_security, A1.otp_request, B1.urgency]
+    note: The core bank-security script. Impersonation plus a code request.
+    text: |
+      Здравствуйте, это служба безопасности банка. По вашей карте зафиксирована
+      подозрительная операция. Срочно назовите код из СМС, чтобы мы отменили
+      списание.
+
+  - id: adv.ru.safe_account
+    lang: ru
+    must_fire: [E1.safe_account, B2.account_block_threat]
+    note: The safe-account fiction under time pressure.
+    text: |
+      Ваш счет будет заблокирован в течение часа. Переведите средства на
+      безопасный счет, который я вам продиктую, немедленно.
+
+  - id: adv.ru.remote_access_loan
+    lang: ru
+    must_fire: [F1.remote_access_app, E3.take_a_loan]
+    note: Remote access plus a loan. The Latin app name is what the homoglyph
+      transform attacks from the other direction.
+    text: |
+      Установите AnyDesk из магазина приложений и продиктуйте мне номер сессии.
+      Затем оформите кредит в приложении, это техническая процедура для защиты
+      ваших денег.
+
+  - id: adv.ru.police_secrecy
+    lang: ru
+    must_fire: [C2.police_prosecutor, B3.criminal_threat, J1.secrecy]
+    note: Criminal threat plus enforced silence.
+    text: |
+      Вас беспокоит следователь департамента полиции. На вас заведено уголовное
+      дело по факту отмывания средств. Никому не говорите об этом разговоре,
+      это тайна следствия.
+
+  - id: adv.ru.delivery_link
+    lang: ru
+    must_fire: [C6.courier_post]
+    note: The delivery-link pattern. Carries a lookalike host so a G-family hit
+      is in the corpus alongside the phrase rules.
+    text: |
+      Ваша посылка задержана на таможне. Оплатите пошлину по ссылке
+      https://kaspi-secure.ru/parcel/track, иначе отправление будет возвращено.
+
+  - id: adv.ru.marketplace_offplatform
+    lang: ru
+    must_fire: [D2.leave_platform, D1.move_to_messenger]
+    note: OLX deal pulled off the platform.
+    text: |
+      Давайте оплатим напрямую, не через сайт, так быстрее. Напишите мне в
+      WhatsApp, я скину реквизиты.
+
+  - id: adv.ru.relative_in_trouble
+    lang: ru
+    must_fire: [J2.relative_in_trouble, E2.transfer_to_person]
+    note: The hijacked-account relative ask.
+    text: |
+      Мама, я попал в аварию, срочно нужны деньги на больницу. Переведите на
+      карту 20000 тенге, я потом все объясню.
+
+  - id: adv.ru.apk_install
+    lang: ru
+    must_fire: [F2.apk_attachment, F4.disable_protection]
+    note: Sideloaded application. The file name is Latin inside Russian text.
+    text: |
+      Скачайте файл Halyk_security_update.apk по ссылке и установите его.
+      Отключите Play Protect, иначе установка не пройдет.
+
+  - id: adv.ru.investment_pitch
+    lang: ru
+    must_fire: [H1.guaranteed_returns]
+    note: The deepfake investment funnel.
+    text: |
+      Гарантированный доход 30% в месяц без риска. Платформа работает под
+      патронажем известного бизнесмена, вход от 50000 тенге.
+
+  - id: adv.ru.mule_rental
+    lang: ru
+    must_fire: [E5.mule_recruitment]
+    note: Card rental. The recruitment side of the ecosystem, not the victim side.
+    text: |
+      Нужна ваша карта Kaspi в аренду, переводы за процент. Работа простая,
+      платим сразу.
+
+  - id: adv.ru.dont_hang_up
+    lang: ru
+    must_fire: [D3.dont_hang_up, C1.bank_security]
+    note: Isolation from a second opinion.
+    text: |
+      Не кладите трубку, я сотрудник банка и сейчас переключу вас на
+      специалиста по безопасности.
+
+  - id: adv.ru.card_secrets
+    lang: ru
+    must_fire: [A2.card_secrets]
+    note: Card secrets. Includes a Latin acronym for the homoglyph transform.
+    text: |
+      Для отмены операции продиктуйте полный номер карты, срок действия и три
+      цифры на обороте, это CVV.
+
+  - id: adv.kk.bank_security
+    lang: kk
+    must_fire: [C1.bank_security, B2.account_block_threat, E1.safe_account]
+    note: Kazakh bank-security script. The Latin-script transforms are aimed
+      squarely at fixtures like this one.
+    text: |
+      Сәлеметсіз бе, бұл банк қауіпсіздік қызметі. Сіздің шотыңыз бұғатталады.
+      Ақшаны қауіпсіз шотқа аударыңыз.
+
+  - id: adv.kk.otp_urgent
+    lang: kk
+    must_fire: [A1.otp_request, B1.urgency]
+    note: Kazakh code request.
+    text: |
+      Шұғыл, кодты айтыңыз, әйтпесе шотыңыз жабылады.
+
+  - id: adv.kk.egov
+    lang: kk
+    must_fire: [C3.egov_1414]
+    note: eGov impersonation in Kazakh.
+    text: |
+      Электрондық үкімет порталы сізден растауды сұрайды, жедел жауап беріңіз.
+
+  - id: adv.en.otp_urgent
+    lang: en
+    must_fire: [A1.otp_request, B2.account_block_threat]
+    note: English carrier. All-Latin text, so the homoglyph transform pushes
+      the other way here.
+    text: |
+      This is the bank security department. Your account will be blocked.
+      Please send me the code we sent to your phone immediately.
+
+  - id: adv.zh.fake_police
+    lang: zh
+    must_fire: [C2.police_prosecutor, E1.safe_account]
+    note: The fake-police script in Chinese. Han text has no homoglyph or
+      transliteration attack surface, which is itself a result worth reporting.
+    text: |
+      我是公安局的警官。您涉嫌洗钱，请立即将资金转入安全账户，并缴纳保证金。
+
+  - id: adv.mixed.ru_kk
+    lang: mixed
+    must_fire: [C1.bank_security, A1.otp_request]
+    note: Code-switched. A Kazakh greeting on a Russian script, which is the
+      most common real shape.
+    text: |
+      Сәлеметсіз бе! Это служба безопасности банка, срочно назовите код из СМС,
+      мы отменим подозрительную операцию.
+
+# Legitimate messages. They contribute nothing to the recall denominator, since
+# almost nothing fires on them, and everything to the spurious-hit count. An
+# obfuscation transform that manufactures indicator hits on a genuine bank SMS
+# would be a false-positive source, and leetspeak digits are the obvious
+# candidate: they turn letters into digit runs that look like short codes.
+negatives:
+  - id: adv.neg.kaspi_otp
+    lang: ru
+    note: Genuine one-time-password SMS. Must not fire family A, clean or not.
+    text: |
+      Kaspi.kz: код подтверждения 4821. Никому не сообщайте этот код,
+      сотрудники банка его не спрашивают.
+
+  - id: adv.neg.kazpost_tracking
+    lang: ru
+    note: Genuine tracking notification with a real host.
+    text: |
+      Kazpost: ваше отправление RB123456789KZ прибыло в отделение. Отследить
+      можно на post.kz.
+
+  - id: adv.neg.halyk_login
+    lang: ru
+    note: Genuine suspicious-login alert. Mentions a suspicious operation, which
+      is exactly what B4 detects, and must stay below the scam threshold alone.
+    text: |
+      Halyk Bank: зафиксирован вход в приложение с нового устройства. Если это
+      были не вы, обратитесь в отделение банка.
