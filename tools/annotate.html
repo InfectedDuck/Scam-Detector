@@ -1,0 +1,1142 @@
+<title>KazScam Annotator</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=Noto+Sans:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap">
+
+<style>
+/* ── tokens ───────────────────────────────────────────────────────────── */
+:root {
+  --ground:      #eef2f5;
+  --surface:     #ffffff;
+  --surface-2:   #f6f9fb;
+  --line:        #d4dde4;
+  --line-soft:   #e5ecf1;
+  --ink:         #10191f;
+  --ink-2:       #47585f;
+  --muted:       #6d818b;
+
+  --accent:      #00768f;
+  --accent-soft: #d7edf3;
+  --gold:        #b3861f;
+
+  --scam:        #b23a26;
+  --scam-soft:   #fbe4de;
+  --legit:       #1f6f4f;
+  --legit-soft:  #dcf0e6;
+  --unsure:      #7d6a2e;
+  --unsure-soft: #f5eed6;
+
+  --shadow: 0 1px 2px rgba(16,25,31,.05), 0 8px 24px -12px rgba(16,25,31,.18);
+
+  --f-ui:   "Golos Text", "Segoe UI", system-ui, sans-serif;
+  --f-msg:  "Noto Sans", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", monospace;
+
+  --step--1: .8125rem;
+  --step-0:  .9375rem;
+  --step-1:  1.0625rem;
+  --step-2:  1.375rem;
+  --step-3:  1.875rem;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ground:      #0d1418;
+    --surface:     #151f25;
+    --surface-2:   #1b262d;
+    --line:        #2b3a43;
+    --line-soft:   #223038;
+    --ink:         #e4edf2;
+    --ink-2:       #a9bcc6;
+    --muted:       #7f939e;
+
+    --accent:      #3fb9d6;
+    --accent-soft: #12333d;
+    --gold:        #d9ab48;
+
+    --scam:        #e8806b;
+    --scam-soft:   #3a201a;
+    --legit:       #5cbb92;
+    --legit-soft:  #14301f;
+    --unsure:      #c9b163;
+    --unsure-soft: #302912;
+
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 28px -14px rgba(0,0,0,.7);
+  }
+}
+:root[data-theme="dark"] {
+  --ground:      #0d1418;
+  --surface:     #151f25;
+  --surface-2:   #1b262d;
+  --line:        #2b3a43;
+  --line-soft:   #223038;
+  --ink:         #e4edf2;
+  --ink-2:       #a9bcc6;
+  --muted:       #7f939e;
+  --accent:      #3fb9d6;
+  --accent-soft: #12333d;
+  --gold:        #d9ab48;
+  --scam:        #e8806b;
+  --scam-soft:   #3a201a;
+  --legit:       #5cbb92;
+  --legit-soft:  #14301f;
+  --unsure:      #c9b163;
+  --unsure-soft: #302912;
+  --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 28px -14px rgba(0,0,0,.7);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--f-ui);
+  font-size: var(--step-0);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ── progress rail ────────────────────────────────────────────────────── */
+#rail {
+  position: fixed; inset: 0 0 auto 0; height: 3px;
+  background: var(--line-soft); z-index: 40;
+}
+#rail-fill {
+  height: 100%; width: 0%;
+  background: linear-gradient(90deg, var(--accent), var(--gold));
+  transition: width .35s cubic-bezier(.4,0,.2,1);
+}
+
+/* ── shell ────────────────────────────────────────────────────────────── */
+.shell {
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 28px 20px 72px;
+  display: flex; flex-direction: column; gap: 20px;
+}
+
+header.top { display: flex; flex-direction: column; gap: 14px; }
+
+.brandrow { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.brand {
+  font-size: var(--step-2); font-weight: 700; letter-spacing: -.02em;
+  text-wrap: balance; margin: 0;
+}
+.brand em { font-style: normal; color: var(--accent); }
+.tagline { color: var(--muted); font-size: var(--step--1); }
+
+.toolbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.spacer { flex: 1 1 auto; }
+
+/* ── controls ─────────────────────────────────────────────────────────── */
+button, .btn {
+  font: inherit; font-family: var(--f-ui);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  border-radius: 8px;
+  padding: 7px 12px;
+  cursor: pointer;
+  transition: background .12s, border-color .12s, transform .08s;
+}
+button:hover:not(:disabled) { background: var(--surface-2); border-color: var(--muted); }
+button:active:not(:disabled) { transform: translateY(1px); }
+button:disabled { opacity: .45; cursor: not-allowed; }
+
+.ghost { background: transparent; border-color: transparent; color: var(--muted); padding: 6px 9px; }
+.ghost:hover:not(:disabled) { background: var(--surface-2); color: var(--ink); border-color: transparent; }
+
+input[type="text"] {
+  font: inherit; font-family: var(--f-ui);
+  background: var(--surface); color: var(--ink);
+  border: 1px solid var(--line); border-radius: 8px;
+  padding: 7px 11px; min-width: 0;
+}
+input[type="text"]::placeholder { color: var(--muted); }
+
+kbd {
+  font-family: var(--f-mono); font-size: .7rem;
+  border: 1px solid var(--line); border-bottom-width: 2px;
+  border-radius: 4px; padding: 1px 5px;
+  background: var(--surface-2); color: var(--muted);
+  white-space: nowrap;
+}
+
+/* ── identity strip ───────────────────────────────────────────────────── */
+.identity {
+  display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: 10px; padding: 10px 12px;
+}
+.identity label { font-size: var(--step--1); color: var(--muted); font-weight: 500; }
+.who { font-weight: 600; }
+.who .code { font-family: var(--f-mono); font-size: var(--step--1); color: var(--muted); }
+
+/* ── stats ────────────────────────────────────────────────────────────── */
+.stats { display: flex; gap: 22px; flex-wrap: wrap; align-items: baseline; }
+.stat { display: flex; flex-direction: column; gap: 1px; }
+.stat b {
+  font-size: var(--step-2); font-weight: 700;
+  font-variant-numeric: tabular-nums; letter-spacing: -.02em; line-height: 1.1;
+}
+.stat span {
+  font-size: .7rem; text-transform: uppercase; letter-spacing: .07em;
+  color: var(--muted); font-weight: 600;
+}
+
+/* ── message card ─────────────────────────────────────────────────────── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.card-head {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--line-soft);
+  background: var(--surface-2);
+  font-size: var(--step--1);
+}
+.chip {
+  font-family: var(--f-mono); font-size: .7rem;
+  color: var(--muted); background: var(--ground);
+  border: 1px solid var(--line-soft); border-radius: 5px; padding: 1px 6px;
+}
+.chip.warn { color: var(--gold); border-color: var(--gold); }
+
+.bubble-wrap { padding: 22px 18px 20px; }
+.bubble {
+  position: relative;
+  background: var(--surface-2);
+  border: 1px solid var(--line-soft);
+  border-radius: 4px 14px 14px 14px;
+  padding: 15px 17px;
+  font-family: var(--f-msg);
+  font-size: var(--step-1);
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 46vh; overflow-y: auto;
+}
+.bubble::before {
+  content: ""; position: absolute; top: -1px; left: -7px;
+  width: 8px; height: 14px;
+  background: var(--surface-2);
+  border-left: 1px solid var(--line-soft); border-top: 1px solid var(--line-soft);
+  border-radius: 4px 0 0 0;
+}
+.received {
+  font-size: .7rem; text-transform: uppercase; letter-spacing: .07em;
+  color: var(--muted); font-weight: 600; margin: 0 0 8px 2px;
+}
+
+/* ── question blocks ──────────────────────────────────────────────────── */
+.q { display: flex; flex-direction: column; gap: 9px; }
+.q-label { font-size: var(--step--1); font-weight: 600; color: var(--ink-2); }
+
+.verdicts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; }
+@media (max-width: 520px) { .verdicts { grid-template-columns: 1fr; } }
+
+.vbtn {
+  display: flex; align-items: center; justify-content: center; gap: 9px;
+  padding: 15px 12px; border-radius: 10px; font-weight: 600;
+  font-size: var(--step-1); border-width: 1.5px;
+}
+.vbtn[data-v="scam"]   { color: var(--scam);   border-color: color-mix(in srgb, var(--scam) 40%, var(--line)); }
+.vbtn[data-v="legit"]  { color: var(--legit);  border-color: color-mix(in srgb, var(--legit) 40%, var(--line)); }
+.vbtn[data-v="unsure"] { color: var(--unsure); border-color: color-mix(in srgb, var(--unsure) 40%, var(--line)); }
+.vbtn[data-v="scam"]:hover:not(:disabled)   { background: var(--scam-soft); }
+.vbtn[data-v="legit"]:hover:not(:disabled)  { background: var(--legit-soft); }
+.vbtn[data-v="unsure"]:hover:not(:disabled) { background: var(--unsure-soft); }
+.vbtn[aria-pressed="true"][data-v="scam"]   { background: var(--scam-soft);   border-color: var(--scam); }
+.vbtn[aria-pressed="true"][data-v="legit"]  { background: var(--legit-soft);  border-color: var(--legit); }
+.vbtn[aria-pressed="true"][data-v="unsure"] { background: var(--unsure-soft); border-color: var(--unsure); }
+
+.pb-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 7px; }
+.pbtn {
+  text-align: left; padding: 9px 11px; border-radius: 8px;
+  display: flex; flex-direction: column; gap: 1px; line-height: 1.35;
+}
+.pbtn b { font-weight: 600; font-size: var(--step-0); }
+.pbtn small { color: var(--muted); font-size: .74rem; }
+.pbtn[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); }
+.pbtn .num {
+  font-family: var(--f-mono); font-size: .68rem; color: var(--muted);
+  border: 1px solid var(--line); border-radius: 3px; padding: 0 4px;
+  margin-right: 6px;
+}
+
+.region { display: inline-block; font-family: var(--f-mono); font-size: .66rem;
+  letter-spacing: .04em; color: var(--accent); }
+
+/* ── footer actions ───────────────────────────────────────────────────── */
+.actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.hint { color: var(--muted); font-size: var(--step--1); }
+
+.saving { font-size: var(--step--1); color: var(--muted); display: flex; align-items: center; gap: 6px; }
+.dot { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); }
+.dot.ok { background: var(--legit); }
+.dot.pending { background: var(--gold); }
+.dot.err { background: var(--scam); }
+
+/* ── notices ──────────────────────────────────────────────────────────── */
+.notice {
+  border: 1px solid var(--line); border-left: 3px solid var(--accent);
+  background: var(--surface); border-radius: 0 10px 10px 0;
+  padding: 12px 15px; font-size: var(--step--1); color: var(--ink-2);
+}
+.notice.warn { border-left-color: var(--gold); }
+.notice b { color: var(--ink); }
+
+/* ── panel (guideline / admin) ────────────────────────────────────────── */
+details.panel {
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: 10px; overflow: hidden;
+}
+details.panel > summary {
+  cursor: pointer; padding: 11px 14px; font-weight: 600;
+  font-size: var(--step--1); list-style: none;
+  display: flex; align-items: center; gap: 8px;
+}
+details.panel > summary::-webkit-details-marker { display: none; }
+details.panel > summary::before { content: "▸"; color: var(--muted); font-size: .8em; }
+details.panel[open] > summary::before { content: "▾"; }
+.panel-body {
+  padding: 4px 14px 16px; border-top: 1px solid var(--line-soft);
+  display: flex; flex-direction: column; gap: 13px;
+}
+
+.gl { display: flex; flex-direction: column; gap: 3px; }
+.gl h4 { margin: 10px 0 2px; font-size: var(--step-0); }
+.gl p { margin: 0; color: var(--ink-2); font-size: var(--step--1); }
+.gl ul { margin: 3px 0; padding-left: 18px; color: var(--ink-2); font-size: var(--step--1); }
+.gl li { margin: 2px 0; }
+
+table.grid { border-collapse: collapse; width: 100%; font-size: var(--step--1); }
+table.grid th, table.grid td {
+  text-align: left; padding: 6px 9px; border-bottom: 1px solid var(--line-soft);
+}
+table.grid th { font-size: .7rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+table.grid td.num { font-variant-numeric: tabular-nums; font-family: var(--f-mono); }
+.scroll-x { overflow-x: auto; }
+
+textarea {
+  font-family: var(--f-mono); font-size: var(--step--1);
+  background: var(--surface-2); color: var(--ink);
+  border: 1px solid var(--line); border-radius: 8px;
+  padding: 9px 11px; width: 100%; min-height: 120px; resize: vertical;
+}
+
+.done {
+  text-align: center; padding: 40px 20px;
+  display: flex; flex-direction: column; gap: 12px; align-items: center;
+}
+.done h2 { margin: 0; font-size: var(--step-3); letter-spacing: -.02em; }
+.done p { margin: 0; color: var(--ink-2); max-width: 46ch; }
+
+.fade { animation: fade .22s cubic-bezier(.4,0,.2,1); }
+@keyframes fade { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .fade { animation: none; }
+  #rail-fill { transition: none; }
+}
+</style>
+
+<div id="rail"><div id="rail-fill"></div></div>
+
+<div class="shell">
+  <header class="top">
+    <div class="brandrow">
+      <h1 class="brand">KazScam <em>Annotator</em></h1>
+      <span class="tagline" id="tagline">Разметка сообщений для открытого казахстанского корпуса</span>
+    </div>
+
+    <div class="toolbar">
+      <div class="stats">
+        <div class="stat"><b id="s-done">0</b><span id="l-done">размечено вами</span></div>
+        <div class="stat"><b id="s-left">—</b><span id="l-left">осталось</span></div>
+        <div class="stat"><b id="s-total">—</b><span id="l-total">всего в корпусе</span></div>
+      </div>
+      <div class="spacer"></div>
+      <button class="ghost" id="btn-lang" title="Русский / English">RU / EN</button>
+      <button class="ghost" id="btn-theme" title="Light / dark">◐</button>
+    </div>
+
+    <div class="identity">
+      <label for="who-input" id="l-who">Ваше имя</label>
+      <input type="text" id="who-input" placeholder="Айгерим" autocomplete="off" spellcheck="false" size="16">
+      <button id="btn-who">OK</button>
+      <span class="who" id="who-display" hidden></span>
+      <div class="spacer"></div>
+      <div class="saving"><span class="dot" id="save-dot"></span><span id="save-text">не подключено</span></div>
+    </div>
+  </header>
+
+  <div id="notice-slot"></div>
+
+  <main id="stage"></main>
+
+  <details class="panel" id="guide">
+    <summary id="l-guide">Инструкция и категории</summary>
+    <div class="panel-body gl" id="guide-body"></div>
+  </details>
+
+  <details class="panel" id="admin">
+    <summary id="l-admin">Управление корпусом (для организатора)</summary>
+    <div class="panel-body" id="admin-body"></div>
+  </details>
+</div>
+
+<script>
+"use strict";
+
+/* ── label set: mirrors docs/04_PLAYBOOKS.md exactly ──────────────────── */
+const PLAYBOOKS = [
+  { id: "kz.bank_security_call",      region: "KZ", ru: "«Служба безопасности банка»", en: "Fake bank security call",
+    dru: "Звонок якобы из банка: «с вашего счёта пытаются списать»", den: "Caller claims money is being taken from your account" },
+  { id: "kz.egov_1414_code",          region: "KZ", ru: "Код eGov / 1414", en: "eGov / 1414 code phishing",
+    dru: "Выманивают код подтверждения, часто ради кредита", den: "Extracts the confirmation code, often toward a loan" },
+  { id: "kz.delivery_link",           region: "KZ", ru: "Посылка и ссылка на оплату", en: "Parcel payment link",
+    dru: "Почта, таможня, доставка: небольшая доплата по ссылке", den: "Post, customs, delivery: small fee via a link" },
+  { id: "kz.marketplace_safe_deal",   region: "KZ", ru: "«Безопасная сделка» на OLX", en: "Marketplace safe deal",
+    dru: "Покупатель или продавец присылает ссылку «для перевода»", den: "A link sent to supposedly receive money" },
+  { id: "kz.mule_account_rental",     region: "KZ", ru: "Аренда карты (дроп)", en: "Card rental, money mule",
+    dru: "Предлагают сдать карту или счёт за процент", den: "Offers to rent your card or account for a cut" },
+  { id: "kz.investment_deepfake",     region: "KZ", ru: "Инвестиции и дипфейк-реклама", en: "Investment, deepfake ad",
+    dru: "Известное лицо или банк «рекомендует» платформу", den: "A public figure or bank appears to endorse a platform" },
+  { id: "kz.hijacked_account_relative", region: "KZ", ru: "Взломанный аккаунт близкого", en: "Hijacked relative account",
+    dru: "Знакомый просит срочно перевести деньги", den: "A known contact urgently asks for a transfer" },
+  { id: "kz.apk_install",             region: "KZ", ru: "APK-файл в переписке", en: "APK sent in chat",
+    dru: "«Обновление банка», «документ суда» как файл .apk", den: "A bank update or court file sent as an .apk" },
+  { id: "kz.fake_store",              region: "KZ", ru: "Фальшивый магазин", en: "Fake online store",
+    dru: "Предоплата за товар, затем тишина", den: "Prepayment for goods, then silence" },
+  { id: "kz.remote_access_loan",      region: "KZ", ru: "Удалённый доступ и кредит", en: "Remote access, then a loan",
+    dru: "AnyDesk или TeamViewer «для защиты счёта»", den: "AnyDesk or TeamViewer to protect the account" },
+  { id: "cn.fake_police_deposit",     region: "CN", ru: "«Полиция» или посольство в Китае", en: "Fake police or embassy",
+    dru: "Обвинение и «гарантийный взнос» на безопасный счёт", den: "Accusation and a guarantee deposit" },
+  { id: "cn.currency_exchange",       region: "CN", ru: "Обмен валюты в мессенджере", en: "Messenger currency exchange",
+    dru: "Частный обмен, риск заморозки карты", den: "Private exchange, risk of a frozen card" },
+  { id: "cn.part_time_task_job",      region: "CN", ru: "Подработка и «задания»", en: "Task-commission job",
+    dru: "Мелкие задания, потом крупная предоплата", den: "Small paid tasks, then large prepaid ones" },
+  { id: "other_scam",                 region: "—",  ru: "Другой скам", en: "Some other scam",
+    dru: "Явный обман, но не подходит ни к одной категории", den: "Clearly a scam, but fits no category above" },
+];
+
+/* ── copy ─────────────────────────────────────────────────────────────── */
+const I18N = {
+  ru: {
+    tagline: "Разметка сообщений для открытого казахстанского корпуса",
+    done: "размечено вами", left: "осталось", total: "всего в корпусе",
+    who: "Ваше имя", guide: "Инструкция и категории", admin: "Управление корпусом (для организатора)",
+    received: "Полученное сообщение",
+    q1: "Это мошенничество?", q2: "Какой это сценарий?",
+    scam: "Мошенничество", legit: "Обычное", unsure: "Не уверен",
+    skip: "Пропустить", back: "Назад", flag: "Проблема с текстом",
+    dontknow: "Не знаю, какой именно",
+    filter: "Поиск по категориям…",
+    saved: "сохранено", pending: "сохраняю…", offline: "не подключено", failed: "ошибка сохранения",
+    nameFirst: "Введите имя, чтобы начать",
+    allDone: "Всё размечено",
+    allDoneBody: "Вы прошли весь корпус. Спасибо — ваше имя войдёт в карточку датасета и в отчёт.",
+    empty: "Корпус пуст",
+    emptyBody: "Организатор ещё не загрузил сообщения. Откройте раздел управления ниже, чтобы добавить их.",
+    noDb: "Нет соединения с хранилищем",
+    noDbBody: "Страница открыта вне claude.ai или доступ не выдан. Разметка не сохранится, поэтому кнопки отключены.",
+    change: "сменить",
+  },
+  en: {
+    tagline: "Labelling messages for an open Kazakhstani corpus",
+    done: "you labelled", left: "remaining", total: "in the corpus",
+    who: "Your name", guide: "Guideline and categories", admin: "Corpus management (organiser)",
+    received: "Message received",
+    q1: "Is this a scam?", q2: "Which script is it?",
+    scam: "Scam", legit: "Legitimate", unsure: "Not sure",
+    skip: "Skip", back: "Back", flag: "Problem with this text",
+    dontknow: "I don't know which",
+    filter: "Search categories…",
+    saved: "saved", pending: "saving…", offline: "not connected", failed: "save failed",
+    nameFirst: "Enter your name to start",
+    allDone: "All done",
+    allDoneBody: "You finished the corpus. Thank you — your name goes in the dataset card and the report.",
+    empty: "The corpus is empty",
+    emptyBody: "The organiser has not loaded any messages yet. Open corpus management below to add them.",
+    noDb: "No connection to storage",
+    noDbBody: "This page is open outside claude.ai, or access was not granted. Labels cannot be saved, so the buttons are disabled.",
+    change: "change",
+  },
+};
+
+/* ── state ────────────────────────────────────────────────────────────── */
+const LS = {
+  who:   "kazscam.annotator",
+  lang:  "kazscam.lang",
+  theme: "kazscam.theme",
+  buf:   "kazscam.buffer",
+};
+
+const state = {
+  lang: "ru",
+  db: null,
+  downloads: null,
+  items: [],
+  labels: {},
+  who: null,
+  index: 0,
+  verdict: null,
+  playbook: null,
+  shownAt: 0,
+  filter: "",
+  saveState: "offline",
+  pending: {},
+  flushTimer: null,
+};
+
+const $ = (id) => document.getElementById(id);
+const t = (k) => I18N[state.lang][k];
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) =>
+  ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+function store(key, val) {
+  try {
+    if (val === undefined) return localStorage.getItem(key);
+    localStorage.setItem(key, val);
+  } catch { return null; }
+}
+
+/* ── theme ────────────────────────────────────────────────────────────── */
+function applyTheme(mode) {
+  if (mode === "light" || mode === "dark") document.documentElement.setAttribute("data-theme", mode);
+  else document.documentElement.removeAttribute("data-theme");
+}
+applyTheme(store(LS.theme) || "system");
+
+$("btn-theme").addEventListener("click", () => {
+  const order = ["system", "light", "dark"];
+  const now = store(LS.theme) || "system";
+  const next = order[(order.indexOf(now) + 1) % order.length];
+  store(LS.theme, next);
+  applyTheme(next);
+});
+
+/* ── language ─────────────────────────────────────────────────────────── */
+state.lang = store(LS.lang) === "en" ? "en" : "ru";
+$("btn-lang").addEventListener("click", () => {
+  state.lang = state.lang === "ru" ? "en" : "ru";
+  store(LS.lang, state.lang);
+  renderChrome();
+  renderGuide();
+  renderStage();
+  renderAdmin();
+});
+
+function renderChrome() {
+  $("tagline").textContent = t("tagline");
+  $("l-done").textContent = t("done");
+  $("l-left").textContent = t("left");
+  $("l-total").textContent = t("total");
+  $("l-who").textContent = t("who");
+  $("l-guide").textContent = t("guide");
+  $("l-admin").textContent = t("admin");
+  $("save-text").textContent = t(state.saveState === "offline" ? "offline"
+    : state.saveState === "pending" ? "pending"
+    : state.saveState === "failed" ? "failed" : "saved");
+  $("save-dot").className = "dot " + (state.saveState === "saved" ? "ok"
+    : state.saveState === "pending" ? "pending"
+    : state.saveState === "failed" ? "err" : "");
+}
+
+/* ── identity ─────────────────────────────────────────────────────────── */
+function slug(name) {
+  const base = name.trim().toLowerCase()
+    .replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-+|-+$/g, "").slice(0, 24);
+  return base || "annotator";
+}
+
+function setWho(record) {
+  state.who = record;
+  store(LS.who, JSON.stringify(record));
+  $("who-input").hidden = true;
+  $("btn-who").hidden = true;
+  $("l-who").hidden = true;
+  const el = $("who-display");
+  el.hidden = false;
+  el.innerHTML = esc(record.name) + ' <span class="code">' + esc(record.id) + "</span> "
+    + '<button class="ghost" id="btn-change">' + esc(t("change")) + "</button>";
+  $("btn-change").addEventListener("click", () => {
+    store(LS.who, "");
+    location.reload();
+  });
+  loadMyLabels();
+}
+
+$("btn-who").addEventListener("click", commitName);
+$("who-input").addEventListener("keydown", (e) => { if (e.key === "Enter") commitName(); });
+
+function commitName() {
+  const raw = $("who-input").value.trim();
+  if (!raw) { $("who-input").focus(); return; }
+  const suffix = Math.random().toString(36).slice(2, 6);
+  setWho({ name: raw, id: slug(raw) + "-" + suffix });
+  renderStage();
+}
+
+/* ── storage ──────────────────────────────────────────────────────────── */
+async function connect() {
+  let db = null;
+  try { db = await claude.use("db"); } catch { db = null; }
+  state.db = db;
+
+  claude.use("downloads")
+    .then((d) => { state.downloads = d; renderAdmin(); })
+    .catch(() => {});
+  if (!db) { state.saveState = "offline"; renderChrome(); renderStage(); renderAdmin(); return; }
+
+  state.saveState = "saved";
+  renderChrome();
+
+  try {
+    db.collection("corpus").onSnapshot((snap) => {
+      const items = [];
+      snap.docs.forEach((d) => {
+        const body = d.data() || {};
+        (body.items || []).forEach((it) => { if (it && it.id && it.text) items.push(it); });
+      });
+      items.sort((a, b) => String(a.id).localeCompare(String(b.id)));
+      state.items = items;
+      if (state.index >= items.length) state.index = 0;
+      advanceToUnlabelled();
+      renderStage();
+      renderAdmin();
+    }, () => { renderStage(); });
+  } catch { /* design for absence */ }
+
+  await loadMyLabels();
+  flushBuffer();
+}
+
+async function loadMyLabels() {
+  if (!state.db || !state.who) return;
+  try {
+    const snap = await state.db.doc("labels/" + state.who.id).get();
+    state.labels = (snap.exists && (snap.data() || {}).labels) || {};
+  } catch { state.labels = {}; }
+  const local = JSON.parse(store(LS.buf) || "{}");
+  Object.assign(state.labels, local[state.who.id] || {});
+  advanceToUnlabelled();
+  renderStage();
+  renderAdmin();
+}
+
+function bufferLocally() {
+  const all = JSON.parse(store(LS.buf) || "{}");
+  all[state.who.id] = Object.assign(all[state.who.id] || {}, state.pending);
+  store(LS.buf, JSON.stringify(all));
+}
+
+function queueSave(itemId, record) {
+  state.pending[itemId] = record;
+  bufferLocally();
+  state.saveState = "pending";
+  renderChrome();
+  clearTimeout(state.flushTimer);
+  state.flushTimer = setTimeout(flushBuffer, 900);
+}
+
+async function flushBuffer() {
+  if (!state.db || !state.who) return;
+  const batch = state.pending;
+  if (!Object.keys(batch).length) return;
+  state.pending = {};
+  const ref = state.db.doc("labels/" + state.who.id);
+  const payload = { labels: batch, name: state.who.name, updatedAt: new Date().toISOString() };
+  try {
+    await ref.update(payload);
+  } catch {
+    // update rejects when the document does not exist yet; create it whole.
+    try {
+      await ref.set({ name: state.who.name, updatedAt: payload.updatedAt,
+                      labels: Object.assign({}, state.labels) });
+    } catch {
+      Object.assign(state.pending, batch);
+      state.saveState = "failed";
+      renderChrome();
+      return;
+    }
+  }
+  const all = JSON.parse(store(LS.buf) || "{}");
+  delete all[state.who.id];
+  store(LS.buf, JSON.stringify(all));
+  state.saveState = "saved";
+  renderChrome();
+}
+
+/* ── navigation ───────────────────────────────────────────────────────── */
+function advanceToUnlabelled() {
+  if (!state.items.length) return;
+  let i = state.index;
+  for (let n = 0; n < state.items.length; n++) {
+    const item = state.items[(i + n) % state.items.length];
+    if (!state.labels[item.id]) { state.index = (i + n) % state.items.length; return; }
+  }
+  state.index = state.items.length;
+}
+
+function current() { return state.items[state.index] || null; }
+
+function submit(skipped) {
+  const item = current();
+  if (!item || !state.who) return;
+  const record = {
+    verdict: skipped ? "skip" : state.verdict,
+    playbook: skipped ? null : (state.verdict === "scam" ? state.playbook : null),
+    ms: Date.now() - state.shownAt,
+    at: new Date().toISOString(),
+  };
+  state.labels[item.id] = record;
+  queueSave(item.id, record);
+  state.verdict = null;
+  state.playbook = null;
+  state.filter = "";
+  state.index += 1;
+  advanceToUnlabelled();
+  renderStage();
+}
+
+function goBack() {
+  for (let i = state.index - 1; i >= 0; i--) {
+    if (state.labels[state.items[i].id]) {
+      state.index = i;
+      const prev = state.labels[state.items[i].id];
+      state.verdict = prev.verdict === "skip" ? null : prev.verdict;
+      state.playbook = prev.playbook || null;
+      renderStage();
+      return;
+    }
+  }
+}
+
+/* ── render: stage ────────────────────────────────────────────────────── */
+function renderStage() {
+  const stage = $("stage");
+  const slot = $("notice-slot");
+  slot.innerHTML = "";
+
+  const labelled = Object.values(state.labels).filter((l) => l.verdict !== "skip").length;
+  $("s-done").textContent = labelled;
+  $("s-total").textContent = state.items.length || "—";
+  $("s-left").textContent = state.items.length ? Math.max(0, state.items.length - Object.keys(state.labels).length) : "—";
+  $("rail-fill").style.width =
+    (state.items.length ? (Object.keys(state.labels).length / state.items.length) * 100 : 0) + "%";
+
+  if (!state.db) {
+    slot.innerHTML = '<div class="notice warn"><b>' + esc(t("noDb")) + "</b><br>" + esc(t("noDbBody")) + "</div>";
+  }
+  if (!state.items.length) {
+    stage.innerHTML = '<div class="card"><div class="done"><h2>' + esc(t("empty")) + "</h2><p>"
+      + esc(t("emptyBody")) + "</p></div></div>";
+    return;
+  }
+
+  const item = current();
+  if (!item) {
+    stage.innerHTML = '<div class="card fade"><div class="done"><h2>' + esc(t("allDone")) + "</h2><p>"
+      + esc(t("allDoneBody")) + "</p></div></div>";
+    return;
+  }
+
+  state.shownAt = Date.now();
+  const ready = Boolean(state.who) && Boolean(state.db);
+  const dis = ready ? "" : " disabled";
+
+  let html = '<div class="card fade">';
+  html += '<div class="card-head">';
+  html += '<span class="chip">' + esc(item.id) + "</span>";
+  if (item.source) {
+    html += '<span class="chip' + (item.source === "synthetic_seed" ? " warn" : "") + '">' + esc(item.source) + "</span>";
+  }
+  if (item.channel) html += '<span class="chip">' + esc(item.channel) + "</span>";
+  html += '<div class="spacer"></div>';
+  html += '<span class="hint">' + (state.index + 1) + " / " + state.items.length + "</span>";
+  html += "</div>";
+
+  html += '<div class="bubble-wrap">';
+  html += '<p class="received">' + esc(t("received")) + "</p>";
+  html += '<div class="bubble">' + esc(item.text) + "</div>";
+  html += "</div>";
+  html += "</div>";
+
+  html += '<div class="q" style="margin-top:16px">';
+  html += '<div class="q-label">' + esc(t("q1")) + "</div>";
+  html += '<div class="verdicts">';
+  [["scam", "1"], ["legit", "2"], ["unsure", "3"]].forEach(([v, key]) => {
+    html += '<button class="vbtn" data-v="' + v + '" aria-pressed="' + (state.verdict === v) + '"' + dis + ">"
+      + "<span>" + esc(t(v)) + "</span><kbd>" + key + "</kbd></button>";
+  });
+  html += "</div></div>";
+
+  if (state.verdict === "scam") {
+    html += '<div class="q fade" style="margin-top:14px">';
+    html += '<div class="q-label">' + esc(t("q2")) + "</div>";
+    html += '<input type="text" id="pb-filter" placeholder="' + esc(t("filter")) + '" value="' + esc(state.filter) + '">';
+    html += '<div class="pb-grid">';
+    const needle = state.filter.trim().toLowerCase();
+    const shown = PLAYBOOKS.filter((p) => !needle
+      || (p[state.lang] + " " + p["d" + state.lang] + " " + p.id).toLowerCase().includes(needle));
+    shown.forEach((p, i) => {
+      html += '<button class="pbtn" data-pb="' + p.id + '" aria-pressed="' + (state.playbook === p.id) + '">'
+        + "<b>" + (i < 9 ? '<span class="num">' + (i + 1) + "</span>" : "") + esc(p[state.lang]) + "</b>"
+        + "<small>" + esc(p["d" + state.lang]) + '</small></button>';
+    });
+    html += "</div>";
+    html += '<button id="pb-skip" class="ghost" style="align-self:flex-start">' + esc(t("dontknow")) + " <kbd>0</kbd></button>";
+    html += "</div>";
+  }
+
+  html += '<div class="actions" style="margin-top:16px">';
+  html += '<button id="btn-skip"' + dis + ">" + esc(t("skip")) + " <kbd>S</kbd></button>";
+  html += '<button id="btn-back" class="ghost">' + esc(t("back")) + " <kbd>←</kbd></button>";
+  html += '<div class="spacer"></div>';
+  if (!state.who) html += '<span class="hint">' + esc(t("nameFirst")) + "</span>";
+  html += "</div>";
+
+  stage.innerHTML = html;
+
+  stage.querySelectorAll(".vbtn").forEach((b) => {
+    b.addEventListener("click", () => {
+      state.verdict = b.dataset.v;
+      state.playbook = null;
+      if (state.verdict !== "scam") submit(false);
+      else renderStage();
+    });
+  });
+  stage.querySelectorAll(".pbtn").forEach((b) => {
+    b.addEventListener("click", () => { state.playbook = b.dataset.pb; submit(false); });
+  });
+  const skipPb = $("pb-skip");
+  if (skipPb) skipPb.addEventListener("click", () => { state.playbook = null; submit(false); });
+  const filter = $("pb-filter");
+  if (filter) {
+    filter.addEventListener("input", () => {
+      state.filter = filter.value;
+      const pos = filter.selectionStart;
+      renderStage();
+      const again = $("pb-filter");
+      if (again) { again.focus(); again.setSelectionRange(pos, pos); }
+    });
+  }
+  $("btn-skip").addEventListener("click", () => submit(true));
+  $("btn-back").addEventListener("click", goBack);
+}
+
+/* ── keyboard ─────────────────────────────────────────────────────────── */
+document.addEventListener("keydown", (e) => {
+  const tag = (e.target.tagName || "").toLowerCase();
+  const typing = tag === "input" || tag === "textarea";
+  if (typing && e.target.id !== "pb-filter") return;
+  if (!state.who || !state.db || !current()) return;
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+
+  if (state.verdict === "scam") {
+    if (e.key >= "1" && e.key <= "9") {
+      const needle = state.filter.trim().toLowerCase();
+      const shown = PLAYBOOKS.filter((p) => !needle
+        || (p[state.lang] + " " + p["d" + state.lang] + " " + p.id).toLowerCase().includes(needle));
+      const pick = shown[Number(e.key) - 1];
+      if (pick) { e.preventDefault(); state.playbook = pick.id; submit(false); }
+      return;
+    }
+    if (e.key === "0") { e.preventDefault(); state.playbook = null; submit(false); return; }
+    if (e.key === "Escape") { e.preventDefault(); state.verdict = null; state.filter = ""; renderStage(); return; }
+    if (typing) return;
+  }
+
+  if (typing) return;
+  if (e.key === "1") { e.preventDefault(); state.verdict = "scam"; renderStage(); }
+  else if (e.key === "2") { e.preventDefault(); state.verdict = "legit"; submit(false); }
+  else if (e.key === "3") { e.preventDefault(); state.verdict = "unsure"; submit(false); }
+  else if (e.key.toLowerCase() === "s") { e.preventDefault(); submit(true); }
+  else if (e.key === "ArrowLeft") { e.preventDefault(); goBack(); }
+  else if (e.key === "?") { e.preventDefault(); $("guide").open = !$("guide").open; }
+});
+
+/* ── render: guideline ────────────────────────────────────────────────── */
+function renderGuide() {
+  const ru = state.lang === "ru";
+  let html = "";
+  html += "<p>" + (ru
+    ? "Вы читаете сообщение так, как его увидел получатель, и отвечаете на один вопрос: попытка обмана это или нет. Если да — выбираете сценарий."
+    : "You read the message as its recipient saw it and answer one question: is this an attempt to defraud. If yes, you pick the script.") + "</p>";
+
+  html += "<h4>" + (ru ? "Три правила" : "Three rules") + "</h4><ul>";
+  [ru ? "Судите по самому сообщению, а не по тому, попался ли кто-то. Настоящее банковское СМС с кодом — обычное сообщение, даже если выглядит тревожно."
+      : "Judge the message itself, not whether anyone fell for it. A genuine bank SMS carrying a code is legitimate, even when it looks alarming.",
+   ru ? "«Не уверен» — это нормальный ответ. Он полезнее, чем угаданный. Мы измеряем согласие между разметчиками, и выдуманная уверенность портит цифру."
+      : "\"Not sure\" is a real answer and more useful than a guess. We measure agreement between annotators, and invented confidence corrupts that number.",
+   ru ? "Если обман очевиден, но сценарий не подходит ни к одному — берите «Другой скам». Не подгоняйте под ближайшую категорию."
+      : "If it is clearly a scam but fits no script, choose \"Some other scam\". Do not force it into the nearest category."]
+    .forEach((s) => { html += "<li>" + esc(s) + "</li>"; });
+  html += "</ul>";
+
+  html += "<h4>" + (ru ? "Что считается обычным сообщением" : "What counts as legitimate") + "</h4><ul>";
+  [ru ? "Настоящий код от банка или eGov с припиской «никому не сообщайте»"
+      : "A real bank or eGov code with a \"never share this\" warning",
+   ru ? "Трек-номер и ссылка на настоящий сайт Казпочты"
+      : "A tracking number and a link to the real post office site",
+   ru ? "Уведомление о входе в приложение с нового устройства"
+      : "A notification about a login from a new device",
+   ru ? "Рекламная рассылка банка или магазина, где вы клиент"
+      : "A promotional message from a bank or shop you use",
+   ru ? "Обычная переписка на OLX о товаре" : "An ordinary marketplace conversation about an item"]
+    .forEach((s) => { html += "<li>" + esc(s) + "</li>"; });
+  html += "</ul>";
+
+  html += "<h4>" + (ru ? "Категории" : "Categories") + "</h4>";
+  html += '<div class="scroll-x"><table class="grid"><thead><tr><th>'
+    + (ru ? "Регион" : "Region") + "</th><th>" + (ru ? "Сценарий" : "Script") + "</th><th>"
+    + (ru ? "Признак" : "Tell") + "</th></tr></thead><tbody>";
+  PLAYBOOKS.forEach((p) => {
+    html += '<tr><td><span class="region">' + esc(p.region) + "</span></td><td><b>"
+      + esc(p[state.lang]) + "</b></td><td>" + esc(p["d" + state.lang]) + "</td></tr>";
+  });
+  html += "</tbody></table></div>";
+
+  html += "<h4>" + (ru ? "Клавиши" : "Keys") + "</h4><p>"
+    + "<kbd>1</kbd> " + esc(t("scam")) + " &nbsp; <kbd>2</kbd> " + esc(t("legit"))
+    + " &nbsp; <kbd>3</kbd> " + esc(t("unsure")) + " &nbsp; <kbd>S</kbd> " + esc(t("skip"))
+    + " &nbsp; <kbd>←</kbd> " + esc(t("back")) + " &nbsp; <kbd>?</kbd> "
+    + (ru ? "эта инструкция" : "this guideline") + "</p>";
+
+  $("guide-body").innerHTML = html;
+}
+
+/* ── render: admin ────────────────────────────────────────────────────── */
+function kappa(a, b, keyOf) {
+  const shared = Object.keys(a).filter((k) => b[k]);
+  const cats = new Set();
+  const pairs = [];
+  shared.forEach((k) => {
+    const x = keyOf(a[k]); const y = keyOf(b[k]);
+    if (x == null || y == null) return;
+    cats.add(x); cats.add(y);
+    pairs.push([x, y]);
+  });
+  if (pairs.length < 2) return { n: pairs.length, k: null, agree: null };
+  let agree = 0;
+  const m1 = {}; const m2 = {};
+  pairs.forEach(([x, y]) => {
+    if (x === y) agree++;
+    m1[x] = (m1[x] || 0) + 1;
+    m2[y] = (m2[y] || 0) + 1;
+  });
+  const n = pairs.length;
+  const po = agree / n;
+  let pe = 0;
+  cats.forEach((c) => { pe += ((m1[c] || 0) / n) * ((m2[c] || 0) / n); });
+  const k = pe === 1 ? null : (po - pe) / (1 - pe);
+  return { n, k, agree: po };
+}
+
+async function renderAdmin() {
+  const ru = state.lang === "ru";
+  const body = $("admin-body");
+  let html = "";
+
+  html += '<div class="notice"><b>' + (ru ? "Как это работает" : "How this works") + "</b><br>"
+    + esc(ru
+      ? "Сообщения хранятся партиями по 40. Разметка каждого человека лежит в отдельном документе, и в интерфейсе никто не видит чужих ответов — это условие честного согласия между разметчиками."
+      : "Messages are stored in batches of 40. Each person's labels live in their own document, and nobody sees anyone else's answers in the interface, which is what keeps inter-annotator agreement honest.")
+    + "</div>";
+
+  html += "<div><b>" + (ru ? "Добавить сообщения" : "Add messages") + "</b>"
+    + '<p class="hint" style="margin:4px 0 8px">'
+    + esc(ru ? "По одному сообщению на строку. Пустая строка разделяет многострочные сообщения — используйте --- на отдельной строке."
+             : "One message per line. For multi-line messages, separate them with --- on its own line.")
+    + "</p>"
+    + '<textarea id="import-box" placeholder="' + esc(ru ? "Вставьте сюда собранные сообщения…" : "Paste collected messages here…") + '"></textarea>'
+    + '<div class="actions" style="margin-top:8px">'
+    + '<input type="text" id="import-source" placeholder="source, напр. press" size="14" value="press">'
+    + '<button id="btn-import">' + (ru ? "Загрузить" : "Import") + "</button>"
+    + '<span class="hint" id="import-msg"></span>'
+    + "</div></div>";
+
+  if (state.downloads) {
+    html += '<div class="actions"><button id="btn-export">'
+      + (ru ? "Скачать разметку (JSON)" : "Download labels (JSON)") + "</button>"
+      + '<button id="btn-export-csv">' + (ru ? "Скачать CSV" : "Download CSV") + "</button>"
+      + '<span class="hint" id="export-msg"></span></div>';
+  }
+
+  let sets = [];
+  if (state.db) {
+    try {
+      const snap = await state.db.collection("labels").get();
+      snap.docs.forEach((d) => {
+        const b = d.data() || {};
+        sets.push({ id: d.id, name: b.name || d.id, labels: b.labels || {} });
+      });
+    } catch { /* ignore */ }
+  }
+
+  if (sets.length) {
+    html += "<div><b>" + (ru ? "Разметчики" : "Annotators") + "</b>"
+      + '<div class="scroll-x"><table class="grid"><thead><tr><th>'
+      + (ru ? "Имя" : "Name") + "</th><th>" + (ru ? "Размечено" : "Labelled")
+      + "</th><th>" + (ru ? "Скам" : "Scam") + "</th><th>" + (ru ? "Не уверен" : "Unsure")
+      + "</th><th>" + (ru ? "Медиана, с" : "Median s") + "</th></tr></thead><tbody>";
+    sets.forEach((s) => {
+      const vals = Object.values(s.labels);
+      const real = vals.filter((v) => v.verdict !== "skip");
+      const times = real.map((v) => v.ms || 0).filter(Boolean).sort((a, b) => a - b);
+      const med = times.length ? (times[Math.floor(times.length / 2)] / 1000).toFixed(1) : "—";
+      html += "<tr><td>" + esc(s.name) + '</td><td class="num">' + real.length
+        + '</td><td class="num">' + real.filter((v) => v.verdict === "scam").length
+        + '</td><td class="num">' + real.filter((v) => v.verdict === "unsure").length
+        + '</td><td class="num">' + med + "</td></tr>";
+    });
+    html += "</tbody></table></div></div>";
+  }
+
+  if (sets.length >= 2) {
+    html += "<div><b>" + (ru ? "Согласие между разметчиками" : "Inter-annotator agreement") + "</b>"
+      + '<p class="hint" style="margin:4px 0 8px">'
+      + esc(ru ? "Каппа Коэна по вердикту и по сценарию, только на пересечении размеченных пар. Ниже 0.4 — категории спорные, ниже 0.2 — инструкцию нужно переписать."
+               : "Cohen's kappa on the verdict and on the script, over overlapping pairs only. Below 0.4 the categories are contested; below 0.2 the guideline needs rewriting.")
+      + "</p>"
+      + '<div class="scroll-x"><table class="grid"><thead><tr><th>'
+      + (ru ? "Пара" : "Pair") + "</th><th>n</th><th>"
+      + (ru ? "Согласие" : "Agreement") + "</th><th>κ " + (ru ? "вердикт" : "verdict")
+      + "</th><th>κ " + (ru ? "сценарий" : "script") + "</th></tr></thead><tbody>";
+    for (let i = 0; i < sets.length; i++) {
+      for (let j = i + 1; j < sets.length; j++) {
+        const kv = kappa(sets[i].labels, sets[j].labels,
+          (l) => (l.verdict === "skip" ? null : l.verdict));
+        const kp = kappa(sets[i].labels, sets[j].labels,
+          (l) => (l.verdict === "scam" && l.playbook ? l.playbook : null));
+        html += "<tr><td>" + esc(sets[i].name) + " · " + esc(sets[j].name) + "</td>"
+          + '<td class="num">' + kv.n + "</td>"
+          + '<td class="num">' + (kv.agree == null ? "—" : (kv.agree * 100).toFixed(0) + "%") + "</td>"
+          + '<td class="num">' + (kv.k == null ? "—" : kv.k.toFixed(2)) + "</td>"
+          + '<td class="num">' + (kp.k == null ? "—" : kp.k.toFixed(2)) + "</td></tr>";
+      }
+    }
+    html += "</tbody></table></div></div>";
+  }
+
+  body.innerHTML = html;
+
+  const btnImport = $("btn-import");
+  if (btnImport) btnImport.addEventListener("click", doImport);
+  const btnExport = $("btn-export");
+  if (btnExport) btnExport.addEventListener("click", () => doExport(sets, "json"));
+  const btnCsv = $("btn-export-csv");
+  if (btnCsv) btnCsv.addEventListener("click", () => doExport(sets, "csv"));
+}
+
+async function doImport() {
+  const ru = state.lang === "ru";
+  const msg = $("import-msg");
+  if (!state.db) { msg.textContent = t("noDb"); return; }
+  const raw = $("import-box").value;
+  const source = ($("import-source").value || "press").trim();
+  const chunks = raw.split(/^---$/m).map((s) => s.trim()).filter(Boolean);
+  const texts = chunks.length > 1 ? chunks
+    : raw.split("\n").map((s) => s.trim()).filter(Boolean);
+  if (!texts.length) { msg.textContent = ru ? "Пусто" : "Nothing to import"; return; }
+
+  const existing = new Set(state.items.map((i) => i.text));
+  const fresh = texts.filter((x) => !existing.has(x));
+  if (!fresh.length) { msg.textContent = ru ? "Все уже есть" : "All already present"; return; }
+
+  const stamp = Date.now().toString(36);
+  const items = fresh.map((text, i) => ({
+    id: "ks-" + stamp + "-" + String(i).padStart(3, "0"),
+    text, source, addedAt: new Date().toISOString(),
+  }));
+
+  msg.textContent = ru ? "Загружаю…" : "Importing…";
+  try {
+    for (let i = 0; i < items.length; i += 40) {
+      const slice = items.slice(i, i + 40);
+      await state.db.doc("corpus/batch-" + stamp + "-" + (i / 40)).set({
+        items: slice, source, createdAt: new Date().toISOString(),
+      });
+    }
+    $("import-box").value = "";
+    msg.textContent = (ru ? "Добавлено: " : "Added ") + items.length;
+  } catch (err) {
+    msg.textContent = (ru ? "Ошибка: " : "Failed: ") + (err && err.code ? err.code : "unknown");
+  }
+}
+
+async function doExport(sets, kind) {
+  const ru = state.lang === "ru";
+  const msg = $("export-msg");
+  if (!state.downloads) { if (msg) msg.textContent = ru ? "Скачивание недоступно" : "Downloads unavailable"; return; }
+
+  const rows = [];
+  sets.forEach((s) => {
+    Object.entries(s.labels).forEach(([itemId, l]) => {
+      const item = state.items.find((i) => i.id === itemId);
+      rows.push({
+        item_id: itemId,
+        text: item ? item.text : "",
+        source: item ? item.source || "" : "",
+        annotator: s.name,
+        annotator_id: s.id,
+        verdict: l.verdict,
+        playbook: l.playbook || "",
+        seconds: l.ms ? (l.ms / 1000).toFixed(1) : "",
+        at: l.at || "",
+      });
+    });
+  });
+  if (!rows.length) { if (msg) msg.textContent = ru ? "Пока нечего выгружать" : "Nothing to export yet"; return; }
+
+  let data;
+  let filename;
+  if (kind === "csv") {
+    const cols = ["item_id", "annotator", "annotator_id", "verdict", "playbook", "seconds", "at", "source", "text"];
+    const q = (v) => '"' + String(v == null ? "" : v).replace(/"/g, '""') + '"';
+    // Byte-order mark so Excel opens Cyrillic correctly.
+    data = "﻿" + [cols.join(",")]
+      .concat(rows.map((r) => cols.map((c) => q(r[c])).join(","))).join("\r\n");
+    filename = "kazscam-labels.csv";
+  } else {
+    data = JSON.stringify({ exportedAt: new Date().toISOString(), rows }, null, 2);
+    filename = "kazscam-labels.json";
+  }
+
+  if (msg) msg.textContent = ru ? "Готовлю файл…" : "Preparing…";
+  try {
+    await state.downloads.save({ filename, data });
+    if (msg) msg.textContent = rows.length + (ru ? " строк выгружено" : " rows exported");
+  } catch (err) {
+    const code = err && err.code ? err.code : "unknown";
+    if (msg) {
+      msg.textContent = code === "declined"
+        ? (ru ? "Отменено" : "Cancelled")
+        : (ru ? "Не удалось: " : "Failed: ") + code;
+    }
+  }
+}
+
+/* ── boot ─────────────────────────────────────────────────────────────── */
+renderChrome();
+renderGuide();
+renderStage();
+renderAdmin();
+
+try {
+  const saved = JSON.parse(store(LS.who) || "null");
+  if (saved && saved.id) setWho(saved);
+} catch { /* ignore */ }
+
+connect();
+window.addEventListener("beforeunload", () => { flushBuffer(); });
+</script>

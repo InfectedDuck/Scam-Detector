@@ -1,0 +1,223 @@
+{
+  "items": [
+    {
+      "id": "ks-pilot-001",
+      "text": "Здравствуйте! Вас беспокоит служба безопасности банка. С вашего счёта пытаются списать 480 000 тг. Чтобы отменить операцию, назовите код из СМС, который сейчас придёт. Не кладите трубку, я остаюсь на линии.",
+      "source": "synthetic_seed",
+      "channel": "whatsapp"
+    },
+    {
+      "id": "ks-pilot-002",
+      "text": "Сәлеметсіз бе! Бұл банктің қауіпсіздік қызметі. Сіздің шотыңыздан ақша алуға тырысып жатыр. Қазір келген кодты айтыңыз, әйтпесе кеш болады.",
+      "source": "synthetic_seed",
+      "channel": "call"
+    },
+    {
+      "id": "ks-pilot-003",
+      "text": "На ваше имя подана заявка на кредит через eGov. Если это не вы, срочно продиктуйте код подтверждения оператору для отмены заявки.",
+      "source": "synthetic_seed",
+      "channel": "sms"
+    },
+    {
+      "id": "ks-pilot-004",
+      "text": "Казпочта: ваша посылка задержана на таможне. Для получения оплатите таможенный сбор 1 200 тг по ссылке kazpost-dostavka.info/pay",
+      "source": "synthetic_seed",
+      "channel": "sms"
+    },
+    {
+      "id": "ks-pilot-005",
+      "text": "Здравствуйте, я по объявлению на OLX. Уже оплатил через сервис безопасной сделки, получите деньги по ссылке olx-payout.site и введите данные карты.",
+      "source": "synthetic_seed",
+      "channel": "whatsapp"
+    },
+    {
+      "id": "ks-pilot-006",
+      "text": "Ищем людей от 18 лет. Нужна ваша карта Kaspi для переводов, платим 15% с каждой суммы. Работа простая, деньги сразу. Пиши в личку.",
+      "source": "synthetic_seed",
+      "channel": "telegram"
+    },
+    {
+      "id": "ks-pilot-007",
+      "text": "Национальный банк запустил государственную инвестиционную программу. Гарантированный доход 40% в месяц без риска. С вами свяжется личный менеджер для открытия счёта.",
+      "source": "synthetic_seed",
+      "channel": "instagram"
+    },
+    {
+      "id": "ks-pilot-008",
+      "text": "Привет, это я, у меня новый номер. Срочно нужны деньги, попал в неприятную ситуацию. Скинь 150 000 тг на эту карту, я потом верну, только никому не говори пока.",
+      "source": "synthetic_seed",
+      "channel": "whatsapp"
+    },
+    {
+      "id": "ks-pilot-009",
+      "text": "Внимание! Обновите приложение банка до 20 числа, иначе доступ будет закрыт. Скачайте файл Kaspi_update_2026.apk и отключите Play Protect перед установкой.",
+      "source": "synthetic_seed",
+      "channel": "telegram"
+    },
+    {
+      "id": "ks-pilot-010",
+      "text": "Финальная распродажа! iPhone 17 за 180 000 тг, осталось 3 штуки. Предоплата 100% на карту, отправка сегодня. Магазин работает 2 дня.",
+      "source": "synthetic_seed",
+      "channel": "instagram"
+    },
+    {
+      "id": "ks-pilot-011",
+      "text": "Чтобы защитить ваш счёт, установите приложение AnyDesk и продиктуйте номер на экране. Я подключусь и сам оформлю заявку на закрытие кредита.",
+      "source": "synthetic_seed",
+      "channel": "call"
+    },
+    {
+      "id": "ks-pilot-012",
+      "text": "您好，我是深圳市公安局的警官。您的身份涉嫌一起洗钱案件，需要立即配合调查。请将资金转入安全账户缴纳保证金，否则将被逮捕。不要告诉家人，这是保密案件。",
+      "source": "synthetic_seed",
+      "channel": "wechat"
+    },
+    {
+      "id": "ks-pilot-013",
+      "text": "This is the immigration office. Your student visa has been cancelled due to a case in your name. You must pay a guarantee deposit today to a safe account or you will be deported. Do not tell anyone, this is a confidential investigation.",
+      "source": "synthetic_seed",
+      "channel": "whatsapp"
+    },
+    {
+      "id": "ks-pilot-014",
+      "text": "换汇，汇率比银行好，人民币换坚戈。先转给我，我马上转你。老客户很多，放心。加我微信私聊。",
+      "source": "synthetic_seed",
+      "channel": "wechat"
+    },
+    {
+      "id": "ks-pilot-015",
+      "text": "招聘兼职刷单，日结工资，无需经验，手机就能做。先做小单返现，做大单赚更多。名额有限，速来。",
+      "source": "synthetic_seed",
+      "channel": "wechat"
+    },
+    {
+      "id": "ks-pilot-016",
+      "text": "Поздравляем! Ваш номер выиграл 2 000 000 тг в национальной лотерее. Для получения приза оплатите налог 25 000 тг по ссылке loto-kz-prize.top",
+      "source": "synthetic_seed",
+      "channel": "sms"
+    },
+    {
+      "id": "ks-pilot-017",
+      "text": "Здравствуйте, я Айгуль, преподаю трейдинг. Начинала как вы, сейчас доход 3 000 долларов в месяц. Мой брокер даёт бонус новичкам. Могу научить зарабатывать, напишите мне.",
+      "source": "synthetic_seed",
+      "channel": "telegram"
+    },
+    {
+      "id": "ks-pilot-018",
+      "text": "Сәлеметсіз бе! Сіздің атыңызға несие рәсімделіп жатыр. Тоқтату үшін келген кодты жедел айтыңыз. Ешкімге айтпаңыз.",
+      "source": "synthetic_seed",
+      "channel": "sms"
+    },
+    {
+      "id": "ks-pilot-019",
+      "text": "Мама, привет, у меня разбился телефон, пишу с другого номера. Можешь срочно перевести 80 000 на этот номер? Потом всё объясню.",
+      "source": "synthetic_seed",
+      "channel": "whatsapp"
+    },
+    {
+      "id": "ks-pilot-020",
+      "text": "Сәлем! Мне позвонили из банка, сказали что на меня оформляют кредит, срочно нужно перевести деньги на безопасный счёт. Помоги, скинь код который придёт.",
+      "source": "synthetic_seed",
+      "channel": "telegram"
+    },
+    {
+      "id": "ks-pilot-021",
+      "text": "Никому не сообщайте код 4821. Kaspi Bank",
+      "source": "synthetic_seed",
+      "channel": "sms"
+    },
+    {
+      "id": "ks-pilot-022",
+      "text": "Код подтверждения 8391 для входа в eGov. Никому не сообщайте код.",
+      "source": "synthetic_seed",
+      "channel": "sms"
+    },
+    {
+      "id": "ks-pilot-023",
+      "text": "Казпочта: ваше отправление AB123456789KZ прибыло в отделение. Отследить: https://post.kz/track/AB123456789KZ",
+      "source": "synthetic_seed",
+      "channel": "sms"
+    },
+    {
+      "id": "ks-pilot-024",
+      "text": "Halyk Bank: зафиксирован вход в приложение с нового устройства. Если это были не вы, позвоните в банк по номеру на обороте карты.",
+      "source": "synthetic_seed",
+      "channel": "sms"
+    },
+    {
+      "id": "ks-pilot-025",
+      "text": "Kaspi Bonus: вам начислено 500 бонусов за покупки в июле. Потратить можно в приложении.",
+      "source": "synthetic_seed",
+      "channel": "push"
+    },
+    {
+      "id": "ks-pilot-026",
+      "text": "Здравствуйте! Товар ещё продаётся? Могу подъехать завтра после обеда, если удобно.",
+      "source": "synthetic_seed",
+      "channel": "olx"
+    },
+    {
+      "id": "ks-pilot-027",
+      "text": "Уважаемый клиент! Банк никогда не просит код из СМС и не предлагает перевести деньги на «безопасный счёт». Если вам позвонили с такой просьбой — положите трубку. Это мошенники.",
+      "source": "synthetic_seed",
+      "channel": "sms"
+    },
+    {
+      "id": "ks-pilot-028",
+      "text": "Ваш заказ №44821 передан курьеру. Ожидайте доставку сегодня с 14:00 до 18:00.",
+      "source": "synthetic_seed",
+      "channel": "push"
+    },
+    {
+      "id": "ks-pilot-029",
+      "text": "Зачисление зарплаты 420 000 тг. Доступный остаток 512 300 тг. Halyk Bank",
+      "source": "synthetic_seed",
+      "channel": "sms"
+    },
+    {
+      "id": "ks-pilot-030",
+      "text": "Құрметті клиент! Сіздің шотыңызға 25 000 теңге түсті. Қолжетімді қалдық: 143 500 теңге.",
+      "source": "synthetic_seed",
+      "channel": "sms"
+    },
+    {
+      "id": "ks-pilot-031",
+      "text": "Напоминание: срок оплаты за электроэнергию истекает 25 числа. Оплатить можно в приложении или в отделении.",
+      "source": "synthetic_seed",
+      "channel": "sms"
+    },
+    {
+      "id": "ks-pilot-032",
+      "text": "Уважаемые студенты! Регистрация на весенний семестр открыта до 15 октября. Расписание доступно в личном кабинете.",
+      "source": "synthetic_seed",
+      "channel": "email"
+    },
+    {
+      "id": "ks-pilot-033",
+      "text": "Your GitHub verification code is 903812. Never share this code with anyone.",
+      "source": "synthetic_seed",
+      "channel": "sms"
+    },
+    {
+      "id": "ks-pilot-034",
+      "text": "【中国银行】您尾号1234的账户于09月08日入账人民币3,500.00元，余额12,480.55元。",
+      "source": "synthetic_seed",
+      "channel": "sms"
+    },
+    {
+      "id": "ks-pilot-035",
+      "text": "Здравствуйте! Мы обновляем данные клиентов. Подтвердите, пожалуйста, ваше ФИО и дату рождения для сверки.",
+      "source": "synthetic_seed",
+      "channel": "whatsapp"
+    },
+    {
+      "id": "ks-pilot-036",
+      "text": "Требуются сотрудники на удалённую работу, 3-4 часа в день, оплата ежедневно. Подробности в личных сообщениях.",
+      "source": "synthetic_seed",
+      "channel": "telegram"
+    }
+  ],
+  "source": "synthetic_seed",
+  "note": "Pilot set for T406. Constructed to exercise the guideline and every category, NOT collected data. Replace with press-sourced rows before any release.",
+  "createdAt": "2026-09-08"
+}
