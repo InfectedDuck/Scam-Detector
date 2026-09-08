@@ -12,6 +12,7 @@ makes the code-phishing playbook recognisable when a request accompanies it.
 
 from __future__ import annotations
 
+from saqbol.core.indicators.kk_lexicon import kk
 from saqbol.core.indicators.registry import keyword_indicator
 from saqbol.core.types import Severity
 
@@ -28,8 +29,8 @@ keyword_indicator(
         "финансов* мониторинг",
         "bank security department",
         "fraud department",
-        # kk — TODO-kk
-        "банк қауіпсіздік қызмет*",
+        # kk
+        *kk("C1.bank_security"),
     ],
 )
 
@@ -62,8 +63,8 @@ keyword_indicator(
         "егов",
         "электронн* правительств*",
         "портал госуслуг",
-        # kk — TODO-kk
-        "электронд* үкімет",
+        # kk
+        *kk("C3.egov_1414"),
     ],
 )
 
@@ -75,8 +76,8 @@ keyword_indicator(
         "национальн* банк*",
         "нацбанк",
         "national bank of kazakhstan",
-        # kk — TODO-kk
-        "ұлттық банк",
+        # kk
+        *kk("C4.national_bank"),
     ],
 )
 
@@ -117,8 +118,10 @@ keyword_indicator(
         "оплатите доставку",
         "customs fee",
         "delivery failed",
-        # kk — TODO-kk
-        "жеткізу",
+        # kk. The draft here was the bare word "жеткізу" (delivery), which
+        # every genuine Kazpost SMS contains; kk_lexicon.yaml records why it
+        # was replaced with the delivery-problem phrasings instead.
+        *kk("C6.courier_post"),
     ],
 )
 

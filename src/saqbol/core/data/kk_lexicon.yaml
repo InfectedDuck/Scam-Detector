@@ -1,0 +1,374 @@
+# Kazakh phrase lexicon for the deterministic indicator layer.
+#
+# TOKTAR / NATIVE REVIEWER: this is the only file you have to read.
+# Every Kazakh pattern in the rules lives here. Nothing Kazakh is hard-coded in
+# Python. Reviewing this file reviews the whole Kazakh side of the rules-only
+# baseline, which is the `kk` row on the leaderboard.
+#
+# How to review
+# -------------
+# Read each phrase and ask two questions:
+#   1. Would a scammer actually write this? (Not: is it a correct translation
+#      of the Russian line. A dictionary translation nobody says is a dead
+#      pattern that costs recall and buys nothing.)
+#   2. Would a BANK, Kazpost or eGov ever write this to a real customer? If
+#      yes, delete it. A false positive on a genuine message costs more than a
+#      missed scam here, because the hard-negative rate is a headline metric.
+# Grep for `VERIFY-kk` — those are the lines the author was unsure about, each
+# with a note saying exactly what to check.
+#
+# Pattern syntax (identical to the Russian lists, see registry.compile_phrase)
+# ---------------------------------------------------------------------------
+#   "код* айтыңыз*"   words separated by one space, matched across any run of
+#                     whitespace, and only at word boundaries.
+#   trailing "*"      allows UP TO FOUR more letters. This is the suffix
+#                     tolerance Kazakh needs: "код*" covers код, кодты, коды,
+#                     кодына, кодыңыз — but NOT "кодыңызды", which is six
+#                     letters past the stem. That is why both "код*" and
+#                     "кодыңыз*" are listed. When you add a phrase whose suffix
+#                     chain can stack, add the longer stem as its own line.
+#   adjacency         words must be next to each other. "кодты айтыңыз" matches;
+#                     "кодты маған айтыңыз" needs its own line. The common
+#                     intervening words (маған, бізге) are listed where they
+#                     matter.
+#
+# Two decisions that shaped this file
+# -----------------------------------
+# 1. CODE-SWITCHING. A real Kazakh scam message keeps the Russian banking noun:
+#    счет, карта, кредит, код, операция, блокировка. Patterns therefore attach
+#    Kazakh grammar to Russian stems ("счетыңыз бұғатталады", "кредит
+#    рәсімдеңіз") as well as to the Kazakh word ("шотыңыз"). Both are listed
+#    wherever both are real.
+# 2. NEGATION. registry.NEGATION_CUES is what stops family A firing on a
+#    genuine one-time-password SMS — but every cue in it is Russian, English or
+#    Chinese. Kazakh negates with a VERB SUFFIX (-ма/-ме/-ба/-бе/-па/-пе), not
+#    a separate word, so that guard cannot see "кодты ешкімге айтпаңыз".
+#    Family A phrases are therefore written with the POSITIVE imperative
+#    spelled out ("айтыңыз*", never a bare "айт*"), so the prohibitive form
+#    cannot match. Do not "simplify" them back to a bare stem: that is what
+#    makes a real Kaspi SMS fire the highest-severity rule in the catalogue.
+#
+#    The same reasoning bans BARE NOUNS in family A. The Russian list can
+#    afford "номер вашей карты" on its own because "не сообщайте" sits in
+#    NEGATION_CUES; the Kazakh equivalent cannot, because "Картаңыздың нөмірін
+#    ешкімге айтпаңыз" is a real bank warning and would score 40. So every
+#    family-A phrase below names the noun AND a request verb. The cost is
+#    recall on requests that separate the two by more than one word, and that
+#    is the deliberate trade: this family's false positives land on the most
+#    common legitimate message in the corpus.
+#    The proper fix is Kazakh cues in registry.NEGATION_CUES — a suffix set,
+#    not a word list — which this lane does not own. Until that exists, adding
+#    a bare noun here is a regression, and tests/test_indicators_kk.py
+#    (test_kazakh_prohibitive_forms_do_not_fire_family_a) will say so.
+
+version: 1
+
+phrases:
+
+  # ======================================================================
+  # Family A — credential and secret extraction (CRITICAL)
+  # Request-shaped only. See decision 2 in the header.
+  # ======================================================================
+
+  # "Tell me the code" / "send me the code" / "what code came?"
+  "A1.otp_request":
+    - "код* айтыңыз*"           # кодты айтыңыз / кодты айтыңызшы
+    - "код* айтшы*"             # кодты айтшы (informal)
+    - "код* айта аласыз*"       # кодты айта аласыз ба
+    - "код* жіберіңіз*"         # кодты жіберіңіз
+    - "код* жіберші*"           # кодты жіберші
+    - "код* оқыңыз*"            # кодты оқыңыз
+    - "код* хабарлаңыз*"        # кодты хабарлаңыз
+    - "код* маған айтыңыз*"     # кодты маған айтыңыз
+    - "код* маған жіберіңіз*"   # кодты маған жіберіңіз
+    # "кодыңызды" is six letters past "код" and the wildcard allows four, so
+    # the long stem needs its own lines. This is the pair the header warns
+    # about; deleting it turns "кодты"/"кодыңызды" into two rules' worth of
+    # misses.
+    - "кодыңыз* айтыңыз*"       # кодыңызды айтыңыз
+    - "кодыңыз* жіберіңіз*"     # кодыңызды жіберіңіз
+    - "кодыңыз* маған айтыңыз*" # кодыңызды маған айтыңыз
+    - "кодыңыз* маған жіберіңіз*"
+    - "қандай код*"             # қандай код келді (mirrors ru "какой код")
+    - "код* қандай"             # кодыңыз қандай
+    - "маған код* керек"        # маған код керек
+    - "маған кодыңыз* керек"    # маған кодыңыз керек
+
+  # Card number, PIN, CVV, expiry.
+  # Verb-anchored throughout — see the bare-noun paragraph in the header. The
+  # first draft of this list carried "картаңыз* нөмір*" on its own and fired on
+  # "Картаңыздың нөмірін ешкімге айтпаңыз", which is a bank's own warning.
+  # Two card-number stems are needed: "картаңыздың" is six letters past
+  # "карта", one more than the wildcard reaches.
+  "A2.card_secrets":
+    - "карта нөмір* айтыңыз*"       # карта нөмірін айтыңыз
+    - "карта* нөмір* айтыңыз*"      # картаның нөмірін айтыңыз
+    - "карта* нөмір* енгізіңіз*"
+    - "карта* нөмір* жіберіңіз*"
+    - "карта* нөмір* маған айтыңыз*"
+    - "картаңыз* нөмір* айтыңыз*"   # картаңыздың нөмірін айтыңыз
+    - "картаңыз* нөмір* енгізіңіз*"
+    - "картаңыз* нөмір* жіберіңіз*"
+    - "картаңыз* нөмір* маған айтыңыз*"
+    - "толық нөмір* айтыңыз*"       # толық нөмірін айтыңыз
+    - "толық нөмір* енгізіңіз*"
+    - "пин код* айтыңыз*"           # пин кодты айтыңыз
+    - "пин код* енгізіңіз*"
+    - "пин кодыңыз* айтыңыз*"       # пин кодыңызды айтыңыз — the ru "пин код"
+                                    # line cannot reach this form, it carries
+                                    # no suffix tolerance
+    - "пин кодыңыз* енгізіңіз*"
+    - "пин кодыңыз* жіберіңіз*"
+    - "пин-кодыңыз* айтыңыз*"
+    - "карта* деректер* айтыңыз*"   # картаның деректерін айтыңыз
+    - "картаңыз* деректер* айтыңыз*"
+    - "жарамдылық мерзім* айтыңыз*" # картаның жарамдылық мерзімін айтыңыз
+    # VERIFY-kk: how a caller asks for the CVV out loud. "үш сан" is the
+    # phrasing the author has seen, but the word for "digit" may in practice be
+    # the Russian "цифра". Both are listed; drop whichever the corpus does not
+    # show. Note these are the digits ON THE BACK, so they are only ever asked
+    # for — no legitimate message names them.
+    - "үш сан* айтыңыз*"            # артқы жағындағы үш санды айтыңыз
+    - "үш цифр* айтыңыз*"
+    - "үш сан* маған айтыңыз*"
+
+  # Password / banking-app login.
+  "A3.password_request":
+    - "құпия сөз* айтыңыз*"     # құпия сөзді айтыңыз
+    - "құпия сөзіңіз* айтыңыз*" # құпия сөзіңізді айтыңыз
+    - "құпия сөз* енгізіңіз*"   # құпия сөзді енгізіңіз
+    - "құпия сөзіңіз* енгізіңіз*"
+    - "құпия сөзіңіз* жіберіңіз*"
+    - "құпиясөзіңіз* айтыңыз*"  # written solid; both spellings occur
+    - "құпия сөзіңіз* керек"
+    # Code-switched: the Russian noun "пароль" carrying Kazakh suffixes. There
+    # is deliberately NO bare "парол*" line — it would fire on any Russian
+    # message containing "пароль", including a genuine "ваш пароль изменён",
+    # and this lane must not change Russian behaviour.
+    - "парол* айтыңыз*"         # парольді айтыңыз
+    - "парол* енгізіңіз*"       # парольді енгізіңіз
+    - "парол* жіберіңіз*"
+    - "парол* маған айтыңыз*"
+    - "паролыңыз* айтыңыз*"     # паролыңызды айтыңыз
+    - "паролыңыз* енгізіңіз*"
+    - "паролыңыз* керек"
+    - "логин мен парол* айтыңыз*"
+    - "логин мен парол* енгізіңіз*"
+    # VERIFY-kk: register. "құпия сөз" is the literary term and what a bank app
+    # shows; on the phone a scammer may only ever say the Russian "пароль".
+    # Both are covered above, but if "құпия сөз" never occurs in the corpus its
+    # lines can go.
+
+  # ======================================================================
+  # Family B — urgency and fear
+  # ======================================================================
+
+  "B1.urgency":
+    - "шұғыл"
+    - "шұғыл түрде"
+    - "дереу"
+    - "жедел"                   # VERIFY-kk: bare "жедел" also means express or
+                                # ambulance ("жедел жәрдем"). Kept because the
+                                # ru side carries a bare "срочно" and B1 is
+                                # only MEDIUM, but it is the likeliest false
+                                # positive in this family.
+    - "тез арада"
+    - "дәл қазір"
+    - "кешіктірмей"
+    - "кешіктірмеңіз"
+    - "минут ішінде"            # 5 минут ішінде
+    - "сағат ішінде"
+    - "уақыт* аз"               # уақытыңыз аз
+    - "кеш болады"
+    - "кеш болып қал*"          # кеш болып қалады
+    - "үлгермей қал*"           # үлгермей қаласыз
+
+  "B2.account_block_threat":
+    - "бұғаттал*"               # бұғатталады / бұғатталды / бұғатталған
+    - "бұғаттай*"               # бұғаттаймыз / бұғаттайды
+    - "бұғаттап таста*"         # бұғаттап тастаймыз
+    - "шот* жабыл*"             # шотыңыз жабылады
+    - "қолжетімділік жабыл*"    # қолжетімділік жабылады
+    # Code-switching needs no extra lines here: "счетыңыз бұғатталады" and
+    # "картаңыз бұғатталды" both match on the Kazakh verb alone.
+
+  "B3.criminal_threat":
+    - "қылмыстық іс*"           # қылмыстық іс қозғалды / қылмыстық істі
+    - "қылмыстық жауапкершілік*"
+    - "қылмыстық жауапқа тарт*" # қылмыстық жауапқа тартыласыз
+    - "тергеуші*"               # тергеушімін
+    - "тергеу бөлім*"
+    - "қамауға ал*"             # сізді қамауға аламыз
+    - "іздеу салын*"            # іздеу салынады
+    - "іздеуге жариял*"         # іздеуге жарияланасыз
+    - "сотқа бер*"              # сотқа береміз
+    # VERIFY-kk: the money-laundering wording. "ақша жылыстату" is the phrase
+    # the author knows; official texts use "кірістерді заңдастыру". Check which
+    # one a fake investigator actually says on the phone and keep only that.
+    - "ақша жылыстату*"
+    - "заңсыз кіріс*"
+
+  "B4.money_at_risk":
+    - "күдікті операция*"       # code-switched: операция stays Russian
+    - "күдікті әрекет*"
+    - "күдікті аударым*"
+    - "рұқсатсыз кір*"          # рұқсатсыз кіру тіркелді
+    - "рұқсатсыз операция*"
+    - "рұқсатсыз аударым*"
+    - "ақша* алынып жатыр"      # ақшаңыз алынып жатыр
+    - "ақша* шешіп жатыр"       # ақшаңызды шешіп жатыр
+    - "ақша* алмақ*"            # ақшаңызды алмақшы
+
+  # ======================================================================
+  # Family C — authority impersonation
+  # ======================================================================
+
+  "C1.bank_security":
+    - "банк* қауіпсіздік қызмет*"   # банктің қауіпсіздік қызметі. The earlier
+                                    # draft had a bare "банк", which misses the
+                                    # genitive "банктің" — the form actually
+                                    # used.
+    - "қауіпсіздік қызмет*"         # mirrors the bare ru "служба безопасности"
+    - "қауіпсіздік бөлім*"
+    - "банк* қызметкер*"            # банк қызметкерімін
+    - "банк* маман*"                # банктің маманымын
+    - "алаяқтық* күрес* бөлім*"     # алаяқтықпен күресу бөлімі
+    - "қаржы мониторинг*"           # қаржы мониторингі
+    # VERIFY-kk: is the anti-fraud unit named "алаяқтықпен күресу бөлімі" in
+    # the wording callers use, or do they keep the Russian "отдел по борьбе с
+    # мошенничеством" inside a Kazakh sentence? If the latter, the ru line
+    # already covers it and this one can go.
+
+  "C3.egov_1414":
+    - "электронд* үкімет*"          # электрондық үкімет / үкіметтің
+    - "мемлекеттік қызмет* портал*" # мемлекеттік қызметтер порталы
+
+  "C4.national_bank":
+    - "ұлттық банк*"                # Қазақстан Ұлттық Банкі / банктің
+
+  "C6.courier_post":
+    - "қазпошта*"                   # Қазпошта — the Kazakh spelling of the
+                                    # brand. The ru "казпочта" cannot match it:
+                                    # different letter (қ, not к).
+    - "сәлемдеме* ұстал*"           # сәлемдемеңіз ұсталды
+    - "сәлемдеме* кеден*"           # сәлемдемеңіз кеденде
+    - "посылка* ұстал*"             # code-switched: посылкаңыз ұсталды
+    - "кеден* ұстал*"               # кеденде ұсталды
+    - "кеден* төлем*"               # кеден төлемін
+    - "жеткізу* төле*"              # жеткізуді төлеңіз
+    - "жеткізу мүмкін болмады"
+    - "жеткізе алмадық"
+    - "курьер* қызмет*"
+    # VERIFY-kk: the earlier draft was the single word "жеткізу" (delivery).
+    # Removed deliberately — every genuine Kazpost and marketplace SMS contains
+    # it, so it fired on exactly the negative class this family must stay quiet
+    # on. Replaced with the delivery-problem and pay-for-delivery phrasings
+    # above, which is what the ru side does ("посылка задержан*"). Restore the
+    # bare word only if the corpus shows it is worth the false positives.
+    # Also VERIFY: сәлемдеме vs посылка — which do real Kazakh-language
+    # delivery SMS actually use?
+
+  # ======================================================================
+  # Family D — channel migration
+  # ======================================================================
+
+  # Prohibitive forms are the SIGNAL here, unlike family A: the scam is telling
+  # you not to hang up. So -маңыз/-меңіз is spelled out on purpose.
+  "D3.dont_hang_up":
+    - "телефонды тастамаңыз*"   # VERIFY-kk: the author believes this is the
+                                # colloquial equivalent of "не кладите
+                                # трубку", but it is literally "do not throw
+                                # the phone". If it reads wrong, the safe lines
+                                # are "байланысты үзбеңіз" and "желіде
+                                # болыңыз" below.
+    - "телефонды қоймаңыз*"
+    - "тұтқаны қоймаңыз*"       # тұтқа = receiver
+    - "трубканы қоймаңыз*"      # VERIFY-kk: code-switched, and the spelling of
+                                # "трубка" inside Kazakh text is unstable.
+    - "байланысты үзбеңіз*"
+    - "телефонды өшірме*"       # телефонды өшірмеңіз
+    - "желіде бол*"             # желіде болыңыз
+    - "желіде қал*"             # желіде қалыңыз
+    - "қоңырауды аяқтама*"      # қоңырауды аяқтамаңыз
+    - "сөйлесуді аяқтама*"
+
+  # ======================================================================
+  # Family E — money movement
+  # ======================================================================
+
+  "E1.safe_account":
+    - "қауіпсіз шот*"           # қауіпсіз шотқа аударыңыз
+    - "қауіпсіз счет*"          # code-switched, and the commoner of the two in
+                                # speech: счет is rarely translated
+    - "қауіпсіз есепшот*"
+    - "резервтік шот*"
+    - "резервтік счет*"
+    - "сақтандыру шот*"         # insurance account
+    - "қорғалған шот*"          # protected account
+    - "арнайы шот* аудар*"      # арнайы шотқа аударыңыз
+
+  "E3.take_a_loan":
+    - "несие* рәсімде*"         # несиені рәсімдеңіз
+    - "несие* ресімде*"         # both orthographies are in use
+    - "кредит* рәсімде*"        # code-switched
+    - "кредит* ресімде*"
+    - "қарыз* рәсімде*"
+    - "несиеге өтінім* раста*"  # несиеге өтінімді растаңыз
+    - "кредитке өтінім* раста*"
+    - "атыңызға несие*"         # сіздің атыңызға несие рәсімделіп жатыр
+    - "атыңызға кредит*"
+    # VERIFY-kk: "несие рәсімдеңіз" is also the exact wording of legitimate
+    # bank marketing SMS in Kazakhstan. It is kept because the ru side already
+    # accepts the same exposure ("оформите кредит"), and E3 is CRITICAL, so a
+    # promotional SMS would score 40 on its own. If the corpus shows Kazakh
+    # loan adverts are common, the fix is a promo-context guard in fuse.py, not
+    # a weaker phrase list here.
+
+  # ======================================================================
+  # Family F — software installation
+  # ======================================================================
+
+  # Every download verb here is anchored to a link, a file or an application,
+  # exactly as the ru side anchors "скачайте по ссылке" and "скачайте
+  # приложение". A bare "жүктеп алыңыз" was tried and removed: a genuine eGov
+  # SMS ("анықтамаңыз дайын, жүктеп алыңыз") fired it, and together with C3 —
+  # which the catalogue says fires on real eGov traffic on purpose — that put a
+  # real government message on the scam threshold.
+  "F3.install_instruction":
+    - "қосымша* орнат*"         # қосымшаны орнатыңыз / орнатып алыңыз
+    - "бағдарлама* орнат*"      # бағдарламаны орнатыңыз
+    - "қолданба* орнат*"        # қолданбаны орнатыңыз (alternative word)
+    - "қосымша* жүктеп ал*"     # қосымшаны жүктеп алыңыз
+    - "сілтеме арқылы жүкте*"   # сілтеме арқылы жүктеңіз
+    - "сілтеме арқылы орнат*"
+    - "сілтемеден жүкте*"
+    - "файл* жүктеп ал*"        # файлды жүктеп алыңыз
+    - "файл* ашыңыз*"           # файлды ашыңыз
+    - "тіркеме* ашыңыз*"        # тіркемені ашыңыз (attachment)
+
+  # ======================================================================
+  # Family H — offers too good to be true
+  # ======================================================================
+
+  "H1.guaranteed_returns":
+    - "кепілдендірілген табыс*"
+    - "кепілдендірілген пайда*"
+    - "кепілдендірілген кіріс*"
+    - "табыс* кепілдендір*"     # табысыңыз кепілдендірілген
+    - "тәуекелсіз"              # risk-free
+    - "тәуекел жоқ"
+    - "пассив* табыс*"          # пассивті табыс
+
+  "H3.unsolicited_prize":
+    - "жеңіп алдыңыз*"
+    - "ұтып алдыңыз*"
+    - "ұттыңыз*"                # сіз ұттыңыз. Note: a bare "ұт*" does NOT work
+                                # here — "ұттыңыз" is five letters past the
+                                # stem, one more than the wildcard allows.
+    - "жеңімпаз атандыңыз*"
+    - "жеңімпаз болдыңыз*"
+    - "өтемақы* тиесілі*"       # сізге өтемақы тиесілі
+    - "төлем* тиесілі*"
+    # VERIFY-kk: "жеңіп алу" is winning by competing; "ұтып алу" is winning a
+    # draw or lottery, which is the scam shape. Both are listed; drop
+    # "жеңіп алдыңыз*" if it reads wrong for a prize message.

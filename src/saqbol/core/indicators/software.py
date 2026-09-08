@@ -8,6 +8,7 @@ as well as the Latin ones.
 
 from __future__ import annotations
 
+from saqbol.core.indicators.kk_lexicon import kk
 from saqbol.core.indicators.registry import DetectionContext, indicator, keyword_indicator
 from saqbol.core.types import IndicatorHit, Severity
 
@@ -25,8 +26,8 @@ keyword_indicator(
         "установите программу",
         "install this app",
         "download the app",
-        # kk — TODO-kk
-        "қосымшаны орнат*",
+        # kk
+        *kk("F3.install_instruction"),
     ],
 )
 

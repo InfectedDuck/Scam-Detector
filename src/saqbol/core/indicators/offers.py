@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from saqbol.core.indicators.kk_lexicon import kk
 from saqbol.core.indicators.registry import keyword_indicator
 from saqbol.core.types import Severity
 
@@ -18,8 +19,8 @@ keyword_indicator(
         "пассивн* доход",
         "guaranteed return",
         "risk-free",
-        # kk — TODO-kk
-        "кепілдендірілген табыс",
+        # kk
+        *kk("H1.guaranteed_returns"),
     ],
 )
 
@@ -52,8 +53,8 @@ keyword_indicator(
         "ваш приз",
         "you have won",
         "you are entitled to",
-        # kk — TODO-kk
-        "сіз жеңіп алдыңыз",
+        # kk
+        *kk("H3.unsolicited_prize"),
     ],
 )
 

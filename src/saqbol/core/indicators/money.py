@@ -6,6 +6,7 @@ counterpart in an unsolicited message, which is why they sit at critical.
 
 from __future__ import annotations
 
+from saqbol.core.indicators.kk_lexicon import kk
 from saqbol.core.indicators.registry import DetectionContext, indicator, keyword_indicator
 from saqbol.core.types import IndicatorHit, Severity
 
@@ -21,8 +22,9 @@ keyword_indicator(
         "специальн* счет* банка",
         "safe account",
         "secure account",
-        # kk — TODO-kk
-        "қауіпсіз шот*",
+        # kk. "қауіпсіз счетке" — Kazakh adjective, Russian noun — is the form
+        # heard most often, so both it and "шот" are carried.
+        *kk("E1.safe_account"),
         # zh
         "安全账户",
     ],
@@ -55,8 +57,8 @@ keyword_indicator(
         "подтвердите заявку на кредит",
         "кредит на ваше имя",
         "take out a loan",
-        # kk — TODO-kk
-        "несие рәсімде*",
+        # kk
+        *kk("E3.take_a_loan"),
     ],
 )
 

@@ -8,6 +8,7 @@ their own.
 
 from __future__ import annotations
 
+from saqbol.core.indicators.kk_lexicon import kk
 from saqbol.core.indicators.registry import keyword_indicator
 from saqbol.core.types import Severity
 
@@ -25,10 +26,8 @@ keyword_indicator(
         "время ограничен*",
         "истекает через",
         "у вас есть несколько минут",
-        # kk — TODO-kk
-        "жедел",
-        "шұғыл",
-        "дереу",
+        # kk
+        *kk("B1.urgency"),
         # en
         "urgently",
         "immediately",
@@ -54,8 +53,8 @@ keyword_indicator(
         "аккаунт будет удален",
         "will be blocked",
         "account suspended",
-        # kk — TODO-kk
-        "бұғатталады",
+        # kk
+        *kk("B2.account_block_threat"),
     ],
 )
 
@@ -74,8 +73,8 @@ keyword_indicator(
         "судебн* пристав*",
         "criminal case",
         "arrest warrant",
-        # kk — TODO-kk
-        "қылмыстық іс",
+        # kk
+        *kk("B3.criminal_threat"),
         # zh
         "涉嫌洗钱",
         "涉嫌犯罪",
@@ -100,7 +99,7 @@ keyword_indicator(
         "suspicious transaction",
         "unauthorised transaction",
         "unauthorized transaction",
-        # kk — TODO-kk
-        "күдікті операция",
+        # kk
+        *kk("B4.money_at_risk"),
     ],
 )

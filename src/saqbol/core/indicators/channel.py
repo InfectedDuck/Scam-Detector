@@ -8,6 +8,7 @@ legitimate use in an unsolicited call.
 
 from __future__ import annotations
 
+from saqbol.core.indicators.kk_lexicon import kk
 from saqbol.core.indicators.registry import keyword_indicator
 from saqbol.core.types import Severity
 
@@ -61,8 +62,8 @@ keyword_indicator(
         "не завершайте звонок",
         "do not hang up",
         "stay on the line",
-        # kk — TODO-kk
-        "телефонды тастамаңыз",
+        # kk. Unlike family A, the prohibitive suffix is the signal here.
+        *kk("D3.dont_hang_up"),
         # zh
         "不要挂电话",
         "保持通话",

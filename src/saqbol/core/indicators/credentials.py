@@ -8,10 +8,16 @@ The whole family respects negation. A genuine one-time-password message reads
 asks for the code. Firing on it would put the most common legitimate message in
 the corpus into the scam band, which is exactly the failure the hard-negative
 set exists to catch.
+
+That guard is word-based, and Kazakh negates with a verb suffix rather than a
+separate word, so `NEGATION_CUES` cannot see "кодты ешкімге айтпаңыз". The
+Kazakh phrases in `kk_lexicon.yaml` are written with the positive imperative
+spelled out for that reason; the file says so at length.
 """
 
 from __future__ import annotations
 
+from saqbol.core.indicators.kk_lexicon import kk
 from saqbol.core.indicators.registry import keyword_indicator
 from saqbol.core.types import Severity
 
@@ -36,9 +42,8 @@ keyword_indicator(
         "какой код",
         "код из смс",
         "код из сообщени*",
-        # kk — TODO-kk verify with a native speaker before week 3
-        "кодты айт*",
-        "кодты жібер*",
+        # kk
+        *kk("A1.otp_request"),
         # en
         "send me the code",
         "give me the code",
@@ -73,8 +78,8 @@ keyword_indicator(
         "срок действия карты",
         "card number",
         "security code",
-        # kk — TODO-kk
-        "карта нөмір*",
+        # kk
+        *kk("A2.card_secrets"),
         # zh
         "卡号",
         "银行卡密码",
@@ -94,8 +99,8 @@ keyword_indicator(
         "пароль от личного кабинета",
         "пароль от аккаунт*",
         "your password",
-        # kk — TODO-kk
-        "құпия сөз*",
+        # kk
+        *kk("A3.password_request"),
         # zh
         "登录密码",
     ],
