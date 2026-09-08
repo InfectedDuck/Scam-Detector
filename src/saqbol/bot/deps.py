@@ -1,10 +1,13 @@
 """The seam between the bot and the rest of the system.
 
-The bot needs two things it does not own: something that analyses a message and
-something that renders the result. Both are being written in parallel lanes, so
-they are declared here as protocols and satisfied by stubs until the real
-modules land. When they do, **this file is the only one that changes** — no
-handler imports `saqbol.core.render` or `saqbol.pipeline` directly.
+The bot needs three things it does not own: something that analyses a message,
+something that renders the result, and somewhere to keep the check, the votes
+on it and the messages readers donate. The first two are still being written
+elsewhere, so they are declared here as protocols and satisfied by stubs until
+the real modules land. When they do, **this file is the only one that changes**
+— no handler imports `saqbol.core.render` or `saqbol.pipeline` directly. The
+third is the shared `Store` in `saqbol.db.repo`, resolved in `build_db` below
+and optional: a laptop with nothing configured still runs.
 
 The pinned signatures are:
 
@@ -32,6 +35,7 @@ from __future__ import annotations
 
 import inspect
 import logging
+import os
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
@@ -41,6 +45,9 @@ from typing import Protocol, runtime_checkable
 from saqbol.bot.config import BotConfig
 from saqbol.bot.storage import BotStore
 from saqbol.core.types import Band, Components, EvidenceSpan, Lang, Stage, Verdict
+from saqbol.db.hashing import actor_secret
+from saqbol.db.repo import Store
+from saqbol.db.session import URL_ENV
 
 log = logging.getLogger(__name__)
 
@@ -129,12 +136,14 @@ async def stub_analyze(
 
     The evidence span is a genuine slice of the input rather than invented text,
     so the D4 invariant `text[start:end] == span.text` holds for stub output too
-    and any test asserting on it is testing something real.
+    and any test asserting on it is testing something real. The check id is 32
+    hex characters like the pipeline's `uuid4().hex`, so a stub verdict can be
+    recorded, voted on and donated exactly like a real one.
     """
     quote = text[:40]
     spans = [EvidenceSpan(start=0, end=len(quote), text=quote, indicator_id="stub")]
     return Verdict(
-        check_id=sha256(text.encode("utf-8")).hexdigest()[:16],
+        check_id=sha256(text.encode("utf-8")).hexdigest()[:32],
         band=Band.SUSPICIOUS,
         risk=0.5,
         playbook_id=None,
@@ -208,6 +217,7 @@ class Deps:
     """
 
     config: BotConfig
+    #: The bot's own state: language, consent, daily counters, open threads.
     store: BotStore
     analyze: Analyze
     render_card: RenderCard
@@ -216,18 +226,54 @@ class Deps:
     #: a tester is never shown a fixture verdict without being told.
     analyze_is_stub: bool = False
     renderer_is_stub: bool = False
+    #: The shared database: checks, votes, dataset candidates. `None` means
+    #: nothing is recorded; the buttons under a card still render, and a press
+    #: answers "not available right now" instead of failing.
+    db: Store | None = None
+
+
+def build_db() -> Store | None:
+    """The shared database, or `None` on a laptop with nothing configured.
+
+    `Store.from_env` needs `DATABASE_URL`, and every row needs the digest that
+    `hash_actor` makes from `ACTOR_HASH_SECRET`, so the secret is checked here
+    rather than on the first check. With a database configured, a secret the
+    digest refuses is a startup error: a bot that runs but records nothing
+    looks healthy from the outside. With no database configured, a usable
+    secret gets an in-memory store — checks, votes and donations live only
+    while the process runs, which is enough to press every button and see it
+    work — and an unusable one gets a warning and no recording.
+    """
+    url = os.environ.get(URL_ENV, "").strip()
+    try:
+        actor_secret()
+    except RuntimeError as exc:
+        if url:
+            raise
+        log.warning("checks will not be recorded: %s", exc)
+        return None
+    if url:
+        return Store.from_env()
+    log.warning(
+        "%s is not set; checks, votes and dataset submissions are kept in memory "
+        "and lost when the bot stops",
+        URL_ENV,
+    )
+    return Store.in_memory()
 
 
 def build_deps(
     config: BotConfig,
     *,
     store: BotStore | None = None,
+    db: Store | None = None,
     now: Callable[[], datetime] | None = None,
 ) -> Deps:
     """Resolve the real implementations, falling back to the stubs.
 
     Import failure is the expected path until the two lanes land, so it is
-    logged at info rather than treated as an error.
+    logged at info rather than treated as an error. `db` defaults to whatever
+    `build_db` finds in the environment.
     """
     analyze: Analyze = stub_analyze
     analyze_is_stub = True
@@ -257,4 +303,5 @@ def build_deps(
         now=now or utcnow,
         analyze_is_stub=analyze_is_stub,
         renderer_is_stub=renderer_is_stub,
+        db=db if db is not None else build_db(),
     )

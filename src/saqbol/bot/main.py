@@ -80,7 +80,12 @@ async def run(config: BotConfig | None = None) -> None:
     bot = Bot(config.token)
     dispatcher = build_dispatcher(deps)
     await publish_commands(bot)
-    log.info("polling, limit=%d/day, state=%s", config.daily_check_limit, config.state_path)
+    log.info(
+        "polling, limit=%d/day, state=%s, recording=%s",
+        config.daily_check_limit,
+        config.state_path,
+        "on" if deps.db is not None else "off",
+    )
     await dispatcher.start_polling(bot, allowed_updates=dispatcher.resolve_used_update_types())
 
 

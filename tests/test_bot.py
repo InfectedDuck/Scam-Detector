@@ -1,10 +1,12 @@
-"""Bot tests. No token, no network, no database.
+"""Bot tests. No token, no network, no database server.
 
 Telegram is replaced at the transport seam: `FakeSession` subclasses aiogram's
 `BaseSession` and records the API calls the bot tries to make instead of sending
 them. Everything above that seam — filters, routing, middleware, the handlers —
 is the real aiogram machinery, so these tests exercise the dispatcher rather
-than a hand-rolled imitation of it.
+than a hand-rolled imitation of it. Where a test needs the shared database it
+gets `Store.in_memory()`, the real repository over SQLite, so what a vote or a
+donation writes is asserted on actual rows.
 
 `stream_content` raises rather than returning bytes. Downloading a file is the
 one thing the size caps exist to prevent, so any test that provokes a download
@@ -15,8 +17,10 @@ from __future__ import annotations
 
 import asyncio
 import itertools
+import json
 import logging
 import sys
+import uuid
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -25,7 +29,13 @@ from typing import Any
 import pytest
 from aiogram import Bot, Dispatcher
 from aiogram.client.session.base import BaseSession
-from aiogram.methods import SendMessage, TelegramMethod
+from aiogram.methods import (
+    AnswerCallbackQuery,
+    EditMessageReplyMarkup,
+    EditMessageText,
+    SendMessage,
+    TelegramMethod,
+)
 from aiogram.types import (
     CallbackQuery,
     Chat,
@@ -38,9 +48,10 @@ from aiogram.types import (
     User,
     Voice,
 )
+from sqlalchemy import select
 
 from saqbol.bot.actors import actor_hash, chat_key, short_ref
-from saqbol.bot.cards import format_card
+from saqbol.bot.cards import format_card, share_text
 from saqbol.bot.config import BotConfig
 from saqbol.bot.deps import (
     Card,
@@ -50,15 +61,27 @@ from saqbol.bot.deps import (
     stub_analyze,
     stub_render_card,
 )
+from saqbol.bot.keyboards import (
+    CALLBACK_DATA_LIMIT,
+    VerdictAction,
+    parse_verdict_callback,
+    verdict_callback,
+)
 from saqbol.bot.main import build_dispatcher
 from saqbol.bot.storage import BotStore
 from saqbol.core.types import Lang, Verdict
+from saqbol.db.hashing import hash_actor
+from saqbol.db.models import Check, DatasetCandidate, Feedback
+from saqbol.db.repo import Store, session_for
 
 #: Distinctive so a substring search for it in a log file means something.
 USER_ID = 987654321
 #: In a private chat Telegram uses the same integer for the chat.
 CHAT_ID = USER_ID
 SECRET = "unit-test-secret-not-a-real-one"
+#: What `saqbol.db.hashing` reads from ACTOR_HASH_SECRET: long enough to pass
+#: its checks, and not the placeholder it refuses. 48 characters.
+RECORD_SECRET = "0123456789abcdef" * 3
 #: Structurally valid, deliberately not a real credential.
 TOKEN = "42:TESTTOKEN"
 
@@ -158,6 +181,7 @@ class Harness:
     store: BotStore
     clock: Clock
     analyzer: RecordingAnalyzer
+    db: Store | None = None
 
     def feed(self, update: Update) -> None:
         asyncio.run(self.dispatcher.feed_update(self.bot, update))
@@ -174,6 +198,26 @@ class Harness:
     def transcript(self) -> str:
         return "\n".join(self.session.texts)
 
+    @property
+    def keyboards(self) -> list[InlineKeyboardMarkup]:
+        return [
+            call.reply_markup
+            for call in self.session.sent
+            if isinstance(call.reply_markup, InlineKeyboardMarkup)
+        ]
+
+    @property
+    def edits(self) -> list[EditMessageReplyMarkup | EditMessageText]:
+        return [
+            call
+            for call in self.session.calls
+            if isinstance(call, EditMessageReplyMarkup | EditMessageText)
+        ]
+
+    @property
+    def toasts(self) -> list[str | None]:
+        return [call.text for call in self.session.calls if isinstance(call, AnswerCallbackQuery)]
+
     def clear(self) -> None:
         self.session.calls.clear()
         self.analyzer.calls.clear()
@@ -183,6 +227,7 @@ def make_harness(
     state_path: Path,
     *,
     clock: Clock | None = None,
+    db: Store | None = None,
     **config_overrides: Any,
 ) -> Harness:
     config = BotConfig(
@@ -202,6 +247,7 @@ def make_harness(
         now=clock,
         analyze_is_stub=True,
         renderer_is_stub=True,
+        db=db,
     )
     session = FakeSession()
     return Harness(
@@ -212,6 +258,7 @@ def make_harness(
         store=store,
         clock=clock,
         analyzer=analyzer,
+        db=db,
     )
 
 
@@ -223,6 +270,19 @@ def state_path(tmp_path: Path) -> Path:
 @pytest.fixture
 def bot(state_path: Path) -> Harness:
     return make_harness(state_path)
+
+
+@pytest.fixture
+def db_bot(state_path: Path, monkeypatch: pytest.MonkeyPatch) -> Harness:
+    """A consented chat on a bot with the shared store attached.
+
+    `hash_actor` reads ACTOR_HASH_SECRET itself, so the secret goes into the
+    environment rather than into the config the bot's own hashing uses.
+    """
+    monkeypatch.setenv("ACTOR_HASH_SECRET", RECORD_SECRET)
+    harness = make_harness(state_path, db=Store.in_memory())
+    consent(harness)
+    return harness
 
 
 # ---------------------------------------------------------------- builders
@@ -296,6 +356,25 @@ def consent(bot: Harness) -> None:
     """Put a chat through `/start` so checks are not blocked on consent."""
     bot.feed(message_update("/start"))
     bot.clear()
+
+
+def run_check(bot: Harness, text: str, **kwargs: Any) -> str:
+    """Feed one message and return the check id its card's buttons carry."""
+    bot.feed(message_update(text, **kwargs))
+    first_button = bot.keyboards[-1].inline_keyboard[0][0]
+    press = parse_verdict_callback(first_button.callback_data)
+    assert press is not None, first_button.callback_data
+    return press.check_id
+
+
+def push(bot: Harness, action: VerdictAction, check_id: str) -> None:
+    """Press one of the buttons under a card, or under the dataset prompt."""
+    bot.feed(callback_update(verdict_callback(action, check_id)))
+
+
+def rows(store: Store, model: type) -> list[Any]:
+    with session_for(store) as session:
+        return list(session.execute(select(model)).scalars())
 
 
 # ------------------------------------------------------------------- start
@@ -639,6 +718,341 @@ def test_unsupported_content_gets_an_explanation(bot: Harness) -> None:
     assert bot.analyzer.calls == []
 
 
+# ----------------------------------------------------------------- buttons
+
+
+def test_the_card_carries_the_three_buttons(db_bot: Harness) -> None:
+    check_id = run_check(db_bot, "Назовите код из СМС")
+    keyboard = db_bot.keyboards[-1]
+
+    labels = [[button.text for button in row] for row in keyboard.inline_keyboard]
+    assert labels == [
+        ["👍 Да, верно", "👎 Нет, неверно"],
+        ["📤 Переслать близким"],
+        ["➕ Добавить в набор данных"],
+    ]
+    payloads = [button.callback_data for row in keyboard.inline_keyboard for button in row]
+    assert payloads == [
+        verdict_callback(action, check_id)
+        for action in (
+            VerdictAction.VOTE_YES,
+            VerdictAction.VOTE_NO,
+            VerdictAction.SHARE,
+            VerdictAction.DATASET_ASK,
+        )
+    ]
+
+
+def test_buttons_follow_the_chosen_language(db_bot: Harness) -> None:
+    db_bot.feed(callback_update("lang:kk"))
+    run_check(db_bot, "SMS кодын айтыңыз")
+    labels = [button.text for row in db_bot.keyboards[-1].inline_keyboard for button in row]
+    assert labels == [
+        "👍 Иә, дұрыс",
+        "👎 Жоқ, қате",
+        "📤 Жақындарға жіберу",
+        "➕ Деректер жинағына қосу",
+    ]
+
+
+def test_every_button_payload_fits_the_telegram_limit() -> None:
+    """Telegram drops a keyboard whose `callback_data` exceeds 64 bytes."""
+    check_id = uuid.uuid4().hex
+    for action in VerdictAction:
+        payload = verdict_callback(action, check_id)
+        assert len(payload.encode("utf-8")) <= CALLBACK_DATA_LIMIT
+        assert parse_verdict_callback(payload) is not None
+
+
+def test_buttons_render_without_a_database_and_say_so(bot: Harness) -> None:
+    """A laptop with nothing configured still shows the card and its buttons."""
+    consent(bot)
+    check_id = run_check(bot, "Назовите код из СМС")
+    assert len(bot.keyboards[-1].inline_keyboard) == 3
+
+    for action in (VerdictAction.VOTE_YES, VerdictAction.SHARE, VerdictAction.DATASET_ASK):
+        push(bot, action, check_id)
+        assert "недоступно" in bot.last
+
+
+@pytest.mark.parametrize(
+    ("action", "expected"),
+    [(VerdictAction.VOTE_YES, True), (VerdictAction.VOTE_NO, False)],
+)
+def test_a_vote_writes_feedback_for_the_recorded_check(
+    db_bot: Harness, action: VerdictAction, expected: bool
+) -> None:
+    assert db_bot.db is not None
+    check_id = run_check(db_bot, "Назовите код из СМС")
+    push(db_bot, action, check_id)
+
+    (vote,) = rows(db_bot.db, Feedback)
+    assert vote.check_id.hex == check_id
+    assert vote.was_correct is expected
+    assert vote.comment is None
+
+
+def test_a_vote_swaps_the_pair_for_a_thanks(db_bot: Harness) -> None:
+    """The row is edited rather than left in place, so it cannot be pressed twice."""
+    check_id = run_check(db_bot, "Назовите код из СМС")
+    push(db_bot, VerdictAction.VOTE_YES, check_id)
+
+    (edit,) = db_bot.edits
+    assert isinstance(edit, EditMessageReplyMarkup)
+    assert isinstance(edit.reply_markup, InlineKeyboardMarkup)
+    labels = [[button.text for button in row] for row in edit.reply_markup.inline_keyboard]
+    assert labels[0] == ["✅ Спасибо, ответ учтён"]
+    assert labels[1:] == [["📤 Переслать близким"], ["➕ Добавить в набор данных"]]
+    assert db_bot.toasts[-1] == "Спасибо! Ваш ответ поможет боту ошибаться реже."
+
+
+def test_the_thanks_button_records_nothing(db_bot: Harness) -> None:
+    assert db_bot.db is not None
+    check_id = run_check(db_bot, "Назовите код из СМС")
+    push(db_bot, VerdictAction.VOTED, check_id)
+
+    assert rows(db_bot.db, Feedback) == []
+    assert db_bot.toasts[-1] == "Ответ уже учтён."
+
+
+def test_a_vote_on_an_unknown_check_replies_gracefully(db_bot: Harness) -> None:
+    """A button can outlive its row: an in-memory store restarted, a purge ran."""
+    assert db_bot.db is not None
+    push(db_bot, VerdictAction.VOTE_YES, uuid.uuid4().hex)
+
+    assert "уже не помню" in db_bot.last
+    assert rows(db_bot.db, Feedback) == []
+
+
+def test_a_malformed_button_payload_is_ignored(db_bot: Harness) -> None:
+    for payload in ("verdict:yes:not-a-check-id", "verdict:yes:", "verdict:explode:" + "a" * 32):
+        db_bot.feed(callback_update(payload))
+    assert db_bot.texts == []
+    assert db_bot.edits == []
+
+
+def test_adding_to_the_dataset_asks_first(db_bot: Harness) -> None:
+    assert db_bot.db is not None
+    check_id = run_check(db_bot, "Назовите код из СМС")
+    push(db_bot, VerdictAction.DATASET_ASK, check_id)
+
+    prompt = db_bot.session.sent[-1]
+    # Plain words about what is stored and who looks at it first.
+    assert "без номеров карт, кодов, телефонов" in prompt.text
+    assert "вердикт бота" in prompt.text
+    assert "посмотрит человек" in prompt.text
+    assert isinstance(prompt.reply_markup, InlineKeyboardMarkup)
+    payloads = [
+        button.callback_data for row in prompt.reply_markup.inline_keyboard for button in row
+    ]
+    assert payloads == [
+        verdict_callback(VerdictAction.DATASET_CONFIRM, check_id),
+        verdict_callback(VerdictAction.DATASET_CANCEL, check_id),
+    ]
+    # Asking wrote nothing.
+    assert rows(db_bot.db, DatasetCandidate) == []
+    (check,) = rows(db_bot.db, Check)
+    assert check.consent_dataset is False
+
+
+def test_only_the_confirmation_queues_a_pending_candidate(db_bot: Harness) -> None:
+    assert db_bot.db is not None
+    check_id = run_check(db_bot, "Назовите код из СМС")
+    push(db_bot, VerdictAction.DATASET_ASK, check_id)
+    push(db_bot, VerdictAction.DATASET_CONFIRM, check_id)
+
+    (candidate,) = rows(db_bot.db, DatasetCandidate)
+    assert candidate.check_id.hex == check_id
+    assert candidate.status == "pending"
+    assert candidate.source == "donated"
+    assert candidate.text_scrubbed == "Назовите код из СМС"
+    (check,) = rows(db_bot.db, Check)
+    assert check.consent_dataset is True
+
+    # The prompt is rewritten in place, taking its buttons with it.
+    edit = db_bot.edits[-1]
+    assert isinstance(edit, EditMessageText)
+    assert "очереди на проверку" in edit.text
+    assert edit.reply_markup is None
+
+
+def test_cancelling_the_dataset_prompt_writes_nothing(db_bot: Harness) -> None:
+    assert db_bot.db is not None
+    check_id = run_check(db_bot, "Назовите код из СМС")
+    push(db_bot, VerdictAction.DATASET_ASK, check_id)
+    push(db_bot, VerdictAction.DATASET_CANCEL, check_id)
+
+    assert rows(db_bot.db, DatasetCandidate) == []
+    (check,) = rows(db_bot.db, Check)
+    assert check.consent_dataset is False
+    edit = db_bot.edits[-1]
+    assert isinstance(edit, EditMessageText)
+    assert "Ничего не сохранено" in edit.text
+
+
+def test_a_second_confirmation_does_not_queue_a_duplicate(db_bot: Harness) -> None:
+    assert db_bot.db is not None
+    check_id = run_check(db_bot, "Назовите код из СМС")
+    for _ in range(2):
+        push(db_bot, VerdictAction.DATASET_ASK, check_id)
+        push(db_bot, VerdictAction.DATASET_CONFIRM, check_id)
+
+    assert len(rows(db_bot.db, DatasetCandidate)) == 1
+    assert "уже в очереди" in db_bot.last
+
+
+def test_the_share_text_has_the_hotline_and_nothing_personal(db_bot: Harness) -> None:
+    text = "Здравствуйте, это служба безопасности банка, назовите код"
+    check_id = run_check(db_bot, text)
+    push(db_bot, VerdictAction.SHARE, check_id)
+
+    shared = db_bot.last
+    assert "102" in shared
+    # The safety line is in both languages, whatever the reader chose.
+    assert "Проверьте, прежде чем отвечать" in shared
+    assert "Жауап бермес бұрын тексеріңіз" in shared
+    assert "Проверка SaqBol: suspicious" in shared
+    assert str(USER_ID) not in shared
+    assert text not in shared
+    assert "служба безопасности" not in shared
+    assert "Aigerim" not in shared
+    assert db_bot.toasts[-1] == "Перешлите это сообщение близким."
+
+
+def test_share_text_names_the_playbook_only_when_one_applies() -> None:
+    verdict = asyncio.run(stub_analyze("назовите код", locale=Lang.RU, surface="telegram"))
+    plain = share_text(verdict, Lang.RU, stub_render_card)
+    assert "Схема:" not in plain
+
+    with_playbook = verdict.model_copy(update={"playbook_id": "bank_security"})
+    named = share_text(with_playbook, Lang.RU, stub_render_card)
+    assert "Схема: [stub] suspicious." in named
+
+    abstained = with_playbook.model_copy(update={"abstained_because": "low_confidence"})
+    assert "Схема:" not in share_text(abstained, Lang.RU, stub_render_card)
+
+
+# ----------------------------------------------------------------- records
+
+
+def test_a_check_is_recorded_with_surface_telegram(db_bot: Harness) -> None:
+    assert db_bot.db is not None
+    text = "Назовите код из СМС"
+    check_id = run_check(db_bot, text)
+
+    (check,) = rows(db_bot.db, Check)
+    assert check.id.hex == check_id
+    assert check.surface == "telegram"
+    assert check.input_type == "text"
+    assert check.band == "suspicious"
+    assert check.text_scrubbed == text
+    assert check.consent_dataset is False
+    # The digest `saqbol.db.hashing` makes, from the environment secret — not
+    # the bot's own state-file hash, and never the id itself.
+    assert check.actor_hash == hash_actor(USER_ID, secret=RECORD_SECRET.encode())
+    assert check.actor_hash != actor_hash(SECRET, USER_ID)
+
+
+def test_a_forwarded_message_is_recorded_as_a_forward(db_bot: Harness) -> None:
+    assert db_bot.db is not None
+    run_check(
+        db_bot,
+        "Мама, у меня проблема, срочно переведи деньги",
+        forward_origin=forward_from_user(username=None),
+    )
+    (check,) = rows(db_bot.db, Check)
+    assert check.input_type == "forward"
+
+
+def test_a_failed_record_does_not_cost_the_reader_the_card(db_bot: Harness) -> None:
+    """The database is a side effect of a check, never a condition of it."""
+
+    def exploding(*args: Any, **kwargs: Any) -> None:
+        msg = "database is away"
+        raise RuntimeError(msg)
+
+    assert db_bot.db is not None
+    db_bot.db.record_check = exploding  # type: ignore[method-assign]
+    db_bot.feed(message_update("Назовите код из СМС"))
+
+    assert "[stub]" in db_bot.last
+    assert len(db_bot.keyboards[-1].inline_keyboard) == 3
+
+
+def test_no_raw_telegram_id_reaches_the_database(db_bot: Harness) -> None:
+    assert db_bot.db is not None
+    check_id = run_check(db_bot, "Назовите код из СМС")
+    push(db_bot, VerdictAction.VOTE_NO, check_id)
+    push(db_bot, VerdictAction.DATASET_ASK, check_id)
+    push(db_bot, VerdictAction.DATASET_CONFIRM, check_id)
+
+    (check,) = rows(db_bot.db, Check)
+    assert len(check.actor_hash) == 64
+    assert str(USER_ID) not in check.actor_hash
+    assert str(USER_ID) not in json.dumps(check.verdict)
+    (candidate,) = rows(db_bot.db, DatasetCandidate)
+    assert str(USER_ID) not in candidate.text_scrubbed
+
+
+def test_no_raw_telegram_id_is_logged_on_the_button_paths(
+    state_path: Path, monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+) -> None:
+    monkeypatch.setenv("ACTOR_HASH_SECRET", RECORD_SECRET)
+    bot = make_harness(state_path, db=Store.in_memory())
+    consent(bot)
+    with caplog.at_level(logging.DEBUG):
+        check_id = run_check(bot, "Назовите код из СМС")
+        push(bot, VerdictAction.VOTE_YES, check_id)
+        push(bot, VerdictAction.SHARE, check_id)
+        push(bot, VerdictAction.DATASET_ASK, check_id)
+        push(bot, VerdictAction.DATASET_CONFIRM, check_id)
+        push(bot, VerdictAction.VOTE_YES, uuid.uuid4().hex)
+
+    logged = _log_text(caplog.records)
+    assert "vote recorded" in logged
+    assert "dataset candidate queued" in logged
+    assert str(USER_ID) not in logged
+    assert short_ref(actor_hash(SECRET, USER_ID)) in logged
+
+
+def test_build_deps_keeps_checks_in_memory_without_a_database_url(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+) -> None:
+    monkeypatch.setenv("ACTOR_HASH_SECRET", RECORD_SECRET)
+    monkeypatch.delenv("DATABASE_URL", raising=False)
+    config = BotConfig(actor_hash_secret=RECORD_SECRET, state_path=tmp_path / "bot.json")
+    with caplog.at_level(logging.WARNING):
+        deps = build_deps(config)
+
+    assert isinstance(deps.db, Store)
+    assert "DATABASE_URL" in caplog.text
+
+
+def test_build_deps_records_nothing_when_the_secret_is_unusable(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, caplog: pytest.LogCaptureFixture
+) -> None:
+    """The .env.example placeholder starts the bot, but records nothing with it."""
+    monkeypatch.setenv("ACTOR_HASH_SECRET", "change_me_to_32_random_bytes")
+    monkeypatch.delenv("DATABASE_URL", raising=False)
+    config = BotConfig(actor_hash_secret="change_me", state_path=tmp_path / "bot.json")
+    with caplog.at_level(logging.WARNING):
+        deps = build_deps(config)
+
+    assert deps.db is None
+    assert "will not be recorded" in caplog.text
+
+
+def test_build_deps_refuses_a_database_with_an_unusable_secret(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """With a database configured, a bot that records nothing must not look healthy."""
+    monkeypatch.setenv("ACTOR_HASH_SECRET", "change_me_to_32_random_bytes")
+    monkeypatch.setenv("DATABASE_URL", "postgresql+psycopg://saqbol@localhost/saqbol")
+    config = BotConfig(actor_hash_secret="change_me", state_path=tmp_path / "bot.json")
+    with pytest.raises(RuntimeError, match="ACTOR_HASH_SECRET"):
+        build_deps(config)
+
+
 # ----------------------------------------------------------------- privacy
 
 
@@ -720,6 +1134,7 @@ def test_build_deps_falls_back_to_stubs_when_a_lane_is_missing(
     """
     monkeypatch.setitem(sys.modules, "saqbol.pipeline", None)
     monkeypatch.setitem(sys.modules, "saqbol.core.render", None)
+    monkeypatch.delenv("DATABASE_URL", raising=False)
 
     config = BotConfig(actor_hash_secret=SECRET, state_path=tmp_path / "bot.json")
     deps = build_deps(config)
@@ -728,9 +1143,12 @@ def test_build_deps_falls_back_to_stubs_when_a_lane_is_missing(
     assert deps.renderer_is_stub is True
 
 
-def test_build_deps_wires_the_real_lanes_once_they_land(tmp_path: Path) -> None:
+def test_build_deps_wires_the_real_lanes_once_they_land(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     pytest.importorskip("saqbol.pipeline")
     pytest.importorskip("saqbol.core.render")
+    monkeypatch.delenv("DATABASE_URL", raising=False)
 
     config = BotConfig(actor_hash_secret=SECRET, state_path=tmp_path / "bot.json")
     deps = build_deps(config)

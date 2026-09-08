@@ -12,8 +12,9 @@ placeholder for the database:
 Keys are HMACs from `actors.py`. No raw Telegram id is written here, so the file
 can be copied into a bug report without leaking who used the bot.
 
-T206 may swap this for a database-backed object with the same methods. Handlers
-reach it only through `Deps.store`, so that swap does not touch `handlers.py`.
+The research data — checks, votes, dataset candidates — goes through the shared
+`saqbol.db.repo.Store` on `Deps.db` instead, and the two never meet: this file
+holds nothing about a check, and the database holds nothing about a chat.
 """
 
 from __future__ import annotations
