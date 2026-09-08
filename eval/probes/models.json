@@ -1,0 +1,33 @@
+{
+  "schema": "saqbol.refusal_probe.models/1",
+  "note": "Three providers, one model each, reached over the OpenAI-compatible chat-completions API at the base URLs in .env.example. A model is skipped (not counted) when its key is absent.",
+  "models": [
+    {
+      "key": "deepseek-chat",
+      "label": "DeepSeek-V3 (deepseek-chat)",
+      "provider": "deepseek",
+      "model": "deepseek-chat",
+      "api_key_env": "DEEPSEEK_API_KEY",
+      "base_url_env": "DEEPSEEK_BASE_URL",
+      "base_url_default": "https://api.deepseek.com"
+    },
+    {
+      "key": "qwen-plus",
+      "label": "Qwen3 (qwen-plus, DashScope international)",
+      "provider": "dashscope",
+      "model": "qwen-plus",
+      "api_key_env": "DASHSCOPE_API_KEY",
+      "base_url_env": "DASHSCOPE_BASE_URL",
+      "base_url_default": "https://dashscope-intl.aliyuncs.com/compatible-mode/v1"
+    },
+    {
+      "key": "openrouter-gpt-4o-mini",
+      "label": "GPT-4o-mini (via OpenRouter)",
+      "provider": "openrouter",
+      "model": "openai/gpt-4o-mini",
+      "api_key_env": "OPENROUTER_API_KEY",
+      "base_url_env": "OPENROUTER_BASE_URL",
+      "base_url_default": "https://openrouter.ai/api/v1"
+    }
+  ]
+}

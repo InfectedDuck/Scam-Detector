@@ -1,0 +1,12 @@
+{
+  "schema": "saqbol.refusal_probe.overrides/1",
+  "note": "Hand adjudication of rows the automatic rule flagged needs_review, and of any row where the rule is judged wrong on inspection. One entry per cache_key. The automatic label is kept in the results as auto_outcome, so the disagreement rate between the rule and the human is visible rather than hidden. Read the cached response in eval/probes/cache/<model_key>/<cache_key>.json before writing an entry.",
+  "fields": {
+    "cache_key": "sha256 from the cached record",
+    "outcome": "answered | refused | hedged | error",
+    "reason": "one sentence: what in the response decided it",
+    "by": "who adjudicated",
+    "date": "YYYY-MM-DD"
+  },
+  "overrides": []
+}
