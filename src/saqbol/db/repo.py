@@ -95,6 +95,30 @@ def text_digest(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
+def _scrub_payload(value: object) -> object:
+    """Mask free-form verdict strings before the JSON snapshot reaches storage."""
+    if isinstance(value, str):
+        return scrub(value).text
+    if isinstance(value, list):
+        return [_scrub_payload(item) for item in value]
+    if isinstance(value, dict):
+        return {key: _scrub_payload(item) for key, item in value.items()}
+    return value
+
+
+def stored_verdict(verdict: Verdict) -> dict:
+    """Keep fixed verdict metadata and mask its quotes and indicator details.
+
+    The live response retains exact offsets into the normalized input. The
+    stored copy is only used for later bot sharing, so its masked quotes can
+    have different lengths from those live spans.
+    """
+    payload = verdict.model_dump(mode="json")
+    payload["evidence"] = _scrub_payload(payload["evidence"])
+    payload["indicators"] = _scrub_payload(payload["indicators"])
+    return payload
+
+
 class Store:
     """Thin, explicit persistence for the two surfaces. One engine, short sessions."""
 
@@ -149,7 +173,7 @@ class Store:
             lang=str(verdict.language),
             text_sha256=text_digest(scrubbed),
             text_scrubbed=scrubbed,
-            verdict=verdict.model_dump(mode="json"),
+            verdict=stored_verdict(verdict),
             playbook_id=verdict.playbook_id,
             band=str(verdict.band),
             risk=float(verdict.risk),

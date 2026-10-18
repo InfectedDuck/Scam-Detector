@@ -9,8 +9,9 @@ placeholder for the database:
   tables in saqbol.db hold checks, feedback and dataset candidates;
   this file holds only the few facts the bot needs to answer the next message.
 
-Keys are HMACs from `actors.py`. No raw Telegram id is written here, so the file
-can be copied into a bug report without leaking who used the bot.
+Keys are HMACs from `actors.py`. No raw Telegram id is written here, but a
+recent thread can still contain sensitive context. Do not copy this file into
+bug reports. Thread entries are masked on write and expired by the bot.
 
 The research data — checks, votes, dataset candidates — goes through the shared
 `saqbol.db.repo.Store` on `Deps.db` instead, and the two never meet: this file
@@ -24,7 +25,10 @@ import logging
 import os
 import tempfile
 from dataclasses import asdict, dataclass, field
+from datetime import UTC, datetime
 from pathlib import Path
+
+from saqbol.core.privacy import scrub
 
 log = logging.getLogger(__name__)
 
@@ -107,8 +111,46 @@ class BotStore:
         )
 
     def put_profile(self, chat_key: str, profile: ChatProfile) -> None:
-        self._data["chats"][chat_key] = asdict(profile)
+        stored = asdict(profile)
+        # A thread is useful for the next verdict, but the JSON file must not
+        # keep an unmasked copy of a pasted card number or address.
+        stored["thread"] = [
+            [scrub(entry[0]).text, entry[1]]
+            for entry in profile.thread
+            if isinstance(entry, list) and len(entry) >= 2 and isinstance(entry[0], str)
+        ]
+        self._data["chats"][chat_key] = stored
         self.flush()
+
+    def purge_expired_threads(self, *, window_seconds: int, now: datetime | None = None) -> int:
+        """Drop inactive chat text even when its owner never sends another message."""
+        before = (now or datetime.now(UTC)).timestamp() - window_seconds
+        changed = 0
+        for profile in self._data["chats"].values():
+            thread = profile.get("thread") or []
+            kept = []
+            for entry in thread:
+                try:
+                    timestamp = float(entry[1])
+                except (IndexError, TypeError, ValueError):
+                    continue
+                if timestamp >= before and isinstance(entry[0], str):
+                    kept.append([scrub(entry[0]).text, timestamp])
+            if kept != thread:
+                profile["thread"] = kept
+                changed += 1
+        if changed:
+            self.flush()
+        # A killed process can leave an atomic-write scratch file behind. Old
+        # versions may have put raw thread text in it, so clear stale orphans.
+        temp_cutoff = (now or datetime.now(UTC)).timestamp() - 3600
+        for path in self.path.parent.glob(".bot-state-*.tmp"):
+            try:
+                if path.stat().st_mtime < temp_cutoff:
+                    path.unlink()
+            except FileNotFoundError:
+                continue
+        return changed
 
     # -------------------------------------------------------------- usage
 

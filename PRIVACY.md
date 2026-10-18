@@ -31,10 +31,13 @@
 | `lang` | автоматически определённый язык | бессрочно |
 | `text_scrubbed` | текст сообщения **после маскирования** | **30 дней** |
 | `text_sha256` | SHA-256 хеш сообщения | бессрочно |
-| `verdict`, `band`, `risk`, `playbook_id` | результат: вердикт, полоса риска, оценка, сценарий | бессрочно |
+| `verdict` | вердикт; цитаты из сообщения и детали индикаторов удаляются через 30 дней, остальные поля сохраняются | 30 дней для цитат; остальные поля бессрочно |
+| `band`, `risk`, `playbook_id` | полоса риска, оценка, сценарий | бессрочно |
 | `model`, `latency_ms`, `cost_usd` | какая модель отвечала, сколько заняла и стоила | бессрочно |
 | `consent_dataset` | отдали ли вы эту проверку в датасет | бессрочно |
 | `actor_hash` | HMAC от Telegram ID или IP | бессрочно |
+
+Бот также хранит в локальном файле язык, согласие, дневной счётчик и короткую цепочку сообщений. Текст в цепочке маскируется перед записью. После 15 минут без новых сообщений он удаляется при следующей ежечасной проверке или запуске бота.
 
 Маскирование — не постобработка. Персональные данные заменяются типизированными метками в момент разбора, **до** записи в базу ([`src/saqbol/core/privacy.py`](src/saqbol/core/privacy.py)):
 
@@ -51,6 +54,8 @@
 Суммы и названия банков **не маскируются** — сознательно. Это смысловое содержание сообщения; без «переведите 250 000 ₸» проверка теряет тот самый сигнал, ради которого она делается.
 
 Про `text_sha256` честно: восстановить текст из хеша нельзя, но если у вас уже есть точная копия текста, по хешу можно подтвердить, что его присылали. Хеш нужен для кеша и дедупликации и остаётся после удаления самого текста.
+
+Файлы кеша ответов модели могут содержать цитаты из сообщения; они удаляются после 30-дневного порога. Очистка выполняется раз в сутки, поэтому удаление может произойти в течение следующих 24 часов. Рабочие логи содержат идентификаторы проверок и метаданные результата, но не отправленный текст. Резервные копии должны удаляться не позднее 30 дней; после восстановления базы очистка запускается до приёма запросов.
 
 ## 2. Что не сохраняется никогда
 
@@ -94,11 +99,14 @@ KazScam — открытый корпус сообщений на казахск
 
 - Согласие даётся **на каждую отправку отдельно**. Общее «да» при первом запуске бота такого разрешения не даёт.
 - Согласованные сообщения попадают в очередь `dataset_candidates` со статусом `pending` — **никогда напрямую в датасет**.
+- Заявка `pending`, не рассмотренная за 30 дней после проверки, удаляется. Отклонённая заявка удаляется через 30 дней после решения. Одобренный материал сохраняется для корпуса.
 - Каждую строку перед публикацией читает человек и повторно проверяет очистку.
 - Строка, не прошедшая проверку, отклоняется и не публикуется.
 - Отказ ни на что не влияет: проверка работает точно так же.
 
 ## 8. Обратная связь
+
+Текст необязательного комментария удаляется через 30 дней; голос сохраняется.
 
 Голос «верно / неверно» под вердиктом сохраняется вместе с необязательным комментарием и ссылкой на проверку. Он идёт в очередь ручного разбора и никогда не попадает в датасет напрямую. Не пишите в комментарии персональные данные — это поле не маскируется.
 
@@ -120,7 +128,7 @@ KazScam — открытый корпус сообщений на казахск
 
 Эта страница живёт в репозитории, и история её изменений — это история версий файла в git. О существенных изменениях бот сообщит до того, как они вступят в силу.
 
-Последнее обновление: 8 сентября 2026 года.
+Последнее обновление: 16 сентября 2026 года.
 
 ---
 
@@ -148,10 +156,13 @@ One check is one row in the `checks` table:
 | `lang` | automatically detected language | indefinite |
 | `text_scrubbed` | the message text **after masking** | **30 days** |
 | `text_sha256` | SHA-256 hash of the message | indefinite |
-| `verdict`, `band`, `risk`, `playbook_id` | the result: verdict, risk band, score, matched script | indefinite |
+| `verdict` | the verdict; message quotes and indicator details are removed after 30 days, while summary fields remain | 30 days for quotes; summary fields indefinite |
+| `band`, `risk`, `playbook_id` | risk band, score, matched script | indefinite |
 | `model`, `latency_ms`, `cost_usd` | which model answered, how long it took, what it cost | indefinite |
 | `consent_dataset` | whether you donated this check to the dataset | indefinite |
 | `actor_hash` | HMAC of your Telegram ID or IP | indefinite |
+
+The bot also keeps language, consent, a daily count, and a short message thread in a local state file. Thread text is masked before writing. After 15 minutes of inactivity it is removed by the next hourly sweep or bot startup.
 
 Masking is not a cleanup pass. Personal data is replaced with typed placeholders at parse time, **before** anything is written ([`src/saqbol/core/privacy.py`](src/saqbol/core/privacy.py)):
 
@@ -168,6 +179,8 @@ Placeholders are typed rather than blanked so the text stays analysable: it rema
 Amounts and institution names are deliberately **not** masked. They are the semantic content of the message; without "transfer 250,000 ₸" the check loses the very signal it exists to find.
 
 About `text_sha256`, plainly: the text cannot be reconstructed from the hash, but if you already hold an exact copy of the text, the hash can confirm it was submitted. It is kept for caching and deduplication, and it survives the deletion of the text itself.
+
+Model-response cache files can contain quoted message text and are deleted after the 30-day cutoff. The purge runs daily, so deletion can take up to another 24 hours. Operational logs contain check IDs and result metadata, not submitted text; access logs must not include request bodies. Backups must expire within 30 days and a restored database must run retention before serving traffic.
 
 ## 2. What is never stored
 
@@ -211,6 +224,7 @@ KazScam is an open corpus of Kazakh and Russian messages. It is built only from 
 
 - Consent is given **per submission**. A blanket "yes" when you first start the bot does not grant it.
 - Consented messages enter the `dataset_candidates` queue with status `pending` — **never straight into the dataset**.
+- A pending donation still awaiting review 30 days after its check is deleted. A rejected donation is deleted 30 days after the decision. Approved material remains in the corpus.
 - A human reads every row before publication and re-checks the scrubbing.
 - A row that fails that check is rejected and never published.
 - Declining changes nothing: the check works exactly the same.
@@ -218,6 +232,8 @@ KazScam is an open corpus of Kazakh and Russian messages. It is built only from 
 ## 8. Feedback
 
 A "correct / incorrect" vote under a verdict is stored with an optional comment and a reference to the check. It goes to a manual review queue and never enters the dataset directly. Do not put personal data in the comment — that field is not masked.
+
+The optional comment text is removed after 30 days; the vote remains.
 
 ## 9. How to request deletion
 
@@ -237,4 +253,4 @@ Timing and limits:
 
 This page lives in the repository, and its change history is the file's git history. Material changes will be announced in the bot before they take effect.
 
-Last updated: 8 September 2026.
+Last updated: 16 September 2026.

@@ -12,7 +12,7 @@ pytest.importorskip("pgvector", reason="the persistence layer needs the 'api' ex
 
 from sqlalchemy import select
 
-from saqbol.core.types import Band, Components, Lang, Verdict
+from saqbol.core.types import Band, Components, EvidenceSpan, IndicatorHit, Lang, Severity, Verdict
 from saqbol.db.hashing import hash_actor
 from saqbol.db.models import STATUS_PENDING, Check, DatasetCandidate, Feedback
 from saqbol.db.repo import Store, UnknownCheck, session_for
@@ -60,6 +60,28 @@ class TestRecordCheck:
         assert row.verdict["band"] == "scam"
         assert row.consent_dataset is False
         assert len(row.text_sha256) == 64
+
+    def test_stored_verdict_masks_quoted_identifiers_without_changing_live_response(
+        self, store: Store
+    ) -> None:
+        v = verdict()
+        card = "4111 1111 1111 1111"
+        span = EvidenceSpan(start=0, end=len(card), text=card, indicator_id="A1")
+        v.evidence = [span]
+        v.indicators = [
+            IndicatorHit(
+                indicator_id="A1",
+                severity=Severity.HIGH,
+                spans=[span],
+                detail={"nested": [card]},
+            )
+        ]
+        store.record_check(v, actor_hash=ACTOR, text=RAW, surface="telegram")
+        row = store.get_check(v.check_id)
+        assert row is not None
+        assert card not in str(row.verdict)
+        assert "<CARD>" in str(row.verdict)
+        assert v.evidence[0].text == card
 
     def test_rules_only_verdict_gets_a_model_name(self, store: Store) -> None:
         v = verdict()

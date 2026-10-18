@@ -70,6 +70,7 @@ async def run(config: BotConfig | None = None) -> None:
         raise RuntimeError(msg)
 
     deps = build_deps(config)
+    deps.store.purge_expired_threads(window_seconds=config.thread_window_seconds)
     if deps.analyze_is_stub or deps.renderer_is_stub:
         log.warning(
             "starting with stubs (analyze=%s, renderer=%s); verdicts are fixtures",
@@ -86,7 +87,18 @@ async def run(config: BotConfig | None = None) -> None:
         config.state_path,
         "on" if deps.db is not None else "off",
     )
-    await dispatcher.start_polling(bot, allowed_updates=dispatcher.resolve_used_update_types())
+
+    async def purge_threads_periodically() -> None:
+        while True:
+            await asyncio.sleep(3600)
+            deps.store.purge_expired_threads(window_seconds=config.thread_window_seconds)
+
+    retention_task = asyncio.create_task(purge_threads_periodically())
+    try:
+        await dispatcher.start_polling(bot, allowed_updates=dispatcher.resolve_used_update_types())
+    finally:
+        retention_task.cancel()
+        await asyncio.gather(retention_task, return_exceptions=True)
 
 
 def main() -> None:

@@ -20,6 +20,7 @@ import base64
 import itertools
 import json
 import logging
+import os
 import sys
 import uuid
 from dataclasses import dataclass, field
@@ -71,7 +72,7 @@ from saqbol.bot.keyboards import (
     verdict_callback,
 )
 from saqbol.bot.main import build_dispatcher
-from saqbol.bot.storage import BotStore
+from saqbol.bot.storage import BotStore, ChatProfile
 from saqbol.core.types import Lang, Verdict
 from saqbol.db.hashing import hash_actor
 from saqbol.db.models import Check, DatasetCandidate, Feedback
@@ -580,6 +581,24 @@ def test_forward_metadata_carries_no_personal_names(bot: Harness) -> None:
 
 
 # ------------------------------------------------------------------ thread
+
+
+def test_bot_state_masks_and_expires_inactive_thread_text(state_path: Path) -> None:
+    now = datetime(2026, 9, 8, 12, 0, tzinfo=UTC)
+    card = "4111 1111 1111 1111"
+    store = BotStore(state_path)
+    store.put_profile("hashed-chat", ChatProfile(thread=[[card, now.timestamp()]]))
+    orphan = state_path.parent / ".bot-state-orphan.tmp"
+    orphan.write_text(card, encoding="utf-8")
+    stale = (now - timedelta(hours=2)).timestamp()
+    os.utime(orphan, (stale, stale))
+    assert card not in state_path.read_text(encoding="utf-8")
+    assert "<CARD>" in state_path.read_text(encoding="utf-8")
+    assert store.purge_expired_threads(window_seconds=900, now=now + timedelta(seconds=901)) == 1
+    assert store.get_profile("hashed-chat").thread == []
+    assert not orphan.exists()
+    assert card not in state_path.read_text(encoding="utf-8")
+    assert "<CARD>" not in state_path.read_text(encoding="utf-8")
 
 
 def test_consecutive_messages_assemble_into_one_thread(bot: Harness) -> None:

@@ -484,6 +484,82 @@ def test_retention_leaves_the_corpus_alone(session: Session):
     assert session.get(DatasetCandidate, candidate.id).text_scrubbed == "донат"
 
 
+def test_retention_removes_quotes_pending_donations_and_comments(session: Session):
+    now = datetime(2026, 9, 8, 12, 0, tzinfo=UTC)
+    secret_phrase = "private example phrase"
+    old = make_check(
+        created_at=now - timedelta(days=31),
+        text_scrubbed=secret_phrase,
+        verdict={
+            "check_id": str(uuid.uuid4()),
+            "band": "scam",
+            "risk": 0.94,
+            "evidence": [{"text": secret_phrase, "start": 0, "end": len(secret_phrase)}],
+            "indicators": [{"detail": {"message": secret_phrase}}],
+            "legacy_raw_text": secret_phrase,
+        },
+    )
+    recent = make_check(created_at=now - timedelta(days=2), text_scrubbed=secret_phrase)
+    session.add_all([old, recent])
+    session.flush()
+    pending = DatasetCandidate(check_id=old.id, text_scrubbed=secret_phrase, source="donated")
+    approved = DatasetCandidate(check_id=old.id, text_scrubbed=secret_phrase, source="donated")
+    session.add_all([pending, approved])
+    session.flush()
+    approved.approve("reviewer", when=now - timedelta(days=31))
+    comment = Feedback(check_id=old.id, comment=secret_phrase, created_at=now - timedelta(days=31))
+    session.add(comment)
+    session.commit()
+    pending_id, approved_id, comment_id = pending.id, approved.id, comment.id
+
+    assert retention.purge_expired_candidates(session, now=now, days=30) == 1
+    assert retention.purge_expired_text(session, now=now, days=30) == 1
+    assert retention.purge_expired_verdict_payloads(session, now=now, days=30) == 1
+    assert retention.purge_expired_feedback_comments(session, now=now, days=30) == 1
+    session.commit()
+    session.expire_all()
+
+    assert session.get(Check, old.id).text_scrubbed is None
+    assert secret_phrase not in str(session.get(Check, old.id).verdict)
+    assert session.get(Check, old.id).verdict["band"] == "scam"
+    assert session.get(Check, recent.id).text_scrubbed == secret_phrase
+    assert session.get(DatasetCandidate, pending_id) is None
+    assert session.get(DatasetCandidate, approved_id).text_scrubbed == secret_phrase
+    assert session.get(Feedback, comment_id).comment is None
+    assert retention.purge_expired_verdict_payloads(session, now=now, days=30) == 0
+
+
+def test_retention_expires_rejected_donations_and_model_cache(session: Session, tmp_path: Path):
+    now = datetime(2026, 9, 8, 12, 0, tzinfo=UTC)
+    rejected = DatasetCandidate(text_scrubbed="rejected text", source="donated")
+    session.add(rejected)
+    session.flush()
+    rejected.reject("reviewer", "unsuitable", when=now - timedelta(days=31))
+    session.commit()
+    rejected_id = rejected.id
+    assert retention.purge_expired_candidates(session, now=now, days=30) == 1
+    session.commit()
+    assert session.get(DatasetCandidate, rejected_id) is None
+
+    shard = tmp_path / "ab"
+    shard.mkdir()
+    old = shard / ("ab" * 32 + ".json")
+    fresh = shard / ("ab" + "cd" * 31 + ".json")
+    incomplete = shard / "unfinished.tmp"
+    unrelated = shard / "notes.json"
+    for path in (old, fresh, incomplete, unrelated):
+        path.write_text("private model output", encoding="utf-8")
+    stale_time = (now - timedelta(days=31)).timestamp()
+    os.utime(old, (stale_time, stale_time))
+    os.utime(incomplete, (stale_time, stale_time))
+    os.utime(unrelated, (stale_time, stale_time))
+    current_time = (now - timedelta(days=1)).timestamp()
+    os.utime(fresh, (current_time, current_time))
+    assert retention.purge_expired_cache(tmp_path, now=now, days=30) == 2
+    assert not old.exists() and not incomplete.exists()
+    assert fresh.exists() and unrelated.exists()
+
+
 def test_retention_dry_run_changes_nothing(monkeypatch: pytest.MonkeyPatch):
     monkeypatch.delenv("DATABASE_URL", raising=False)
     assert retention.main(["--dry-run", "--days", "30"]) == 0
