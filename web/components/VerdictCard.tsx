@@ -180,16 +180,19 @@ export function VerdictCard({
         <p className="mt-2 max-w-prose text-pretty text-[1.0625rem] leading-relaxed text-ink">
           {action.text}
         </p>
-        <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2">
-          <a
-            href={`tel:${verdict.hotline}`}
-            className="inline-flex min-h-11 items-center rounded-xl px-5 py-2.5 text-base font-semibold text-bg no-underline"
-            style={{ background: "var(--band-fg)" }}
-          >
-            {t("card.call", { hotline: verdict.hotline })}
-          </a>
-          {hotlineLabel && <span className="text-[0.875rem] text-muted">{hotlineLabel}</span>}
-        </div>
+        {/* A likely_safe verdict has no hotline; a bare "Call" button would dial nothing. */}
+        {verdict.hotline && (
+          <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2">
+            <a
+              href={`tel:${verdict.hotline}`}
+              className="inline-flex min-h-11 items-center rounded-xl px-5 py-2.5 text-base font-semibold text-bg no-underline"
+              style={{ background: "var(--band-fg)" }}
+            >
+              {t("card.call", { hotline: verdict.hotline })}
+            </a>
+            {hotlineLabel && <span className="text-[0.875rem] text-muted">{hotlineLabel}</span>}
+          </div>
+        )}
       </div>
 
       {/* ---- warn the next person. The loop. --------------------------- */}
@@ -213,9 +216,15 @@ export function VerdictCard({
           )}
         </dl>
         <p className="mt-3 font-mono text-[0.75rem] text-muted">
-          {verdict.model} · {t("card.meta.latency", { ms: verdict.latency_ms })}
-          {verdict.cached ? ` · ${t("card.meta.cached")}` : ""} ·{" "}
-          {t("footer.check_id", { check_id: verdict.check_id })}
+          {/* Rules-only verdicts carry no model name; skip it rather than lead with a separator. */}
+          {[
+            verdict.model,
+            t("card.meta.latency", { ms: verdict.latency_ms }),
+            verdict.cached ? t("card.meta.cached") : "",
+            t("footer.check_id", { check_id: verdict.check_id }),
+          ]
+            .filter(Boolean)
+            .join(" · ")}
         </p>
       </details>
 
