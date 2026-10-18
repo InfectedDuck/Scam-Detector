@@ -26,6 +26,9 @@ data/*.jsonl
 .cache/
 eval/cache/
 
+# Bot runtime state (language choices, daily counters)
+.state/
+
 # Node / Next.js
 node_modules/
 web/.next/
@@ -35,3 +38,6 @@ web/out/
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# Personal planning notes, kept out of the repository
+private/
