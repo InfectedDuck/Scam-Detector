@@ -3,7 +3,7 @@ services:
     image: pgvector/pgvector:pg16
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-saqbol}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change_me}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
       POSTGRES_DB: ${POSTGRES_DB:-saqbol}
     volumes:
       - pgdata:/var/lib/postgresql/data
@@ -22,12 +22,12 @@ services:
     env_file: .env
     environment:
       # Inside compose the database is reachable as `db`, whatever .env says for a laptop.
-      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-saqbol}:${POSTGRES_PASSWORD:-change_me}@db:5432/${POSTGRES_DB:-saqbol}
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-saqbol}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}@db:5432/${POSTGRES_DB:-saqbol}
       SAQBOL_LLM_CACHE_DIR: /app/.cache/llm
-      # The web service forwards each visitor's address so the daily limit is
-      # per visitor, not per web server. Safe because this port is never
-      # published beyond the loopback interface below.
-      TRUST_PROXY: "1"
+      # Enable only after the public reverse proxy strips incoming forwarded
+      # headers and writes its own client address. Loopback binding alone does
+      # not make an untrusted X-Forwarded-For value authentic.
+      TRUST_PROXY: ${TRUST_PROXY:-0}
     volumes:
       - llmcache:/app/.cache
     depends_on:
@@ -36,7 +36,8 @@ services:
     ports:
       - "127.0.0.1:8000:8000"
     healthcheck:
-      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8000/healthz"]
+      # /healthz deliberately returns HTTP 200 even when its JSON says db=false.
+      test: ["CMD", "python", "-c", "import json, sys, urllib.request; sys.exit(0 if json.load(urllib.request.urlopen('http://127.0.0.1:8000/healthz')).get('ok') else 1)"]
       interval: 15s
       timeout: 5s
       retries: 5
@@ -48,7 +49,7 @@ services:
     command: python -m saqbol.bot.main
     env_file: .env
     environment:
-      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-saqbol}:${POSTGRES_PASSWORD:-change_me}@db:5432/${POSTGRES_DB:-saqbol}
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-saqbol}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}@db:5432/${POSTGRES_DB:-saqbol}
       SAQBOL_LLM_CACHE_DIR: /app/.cache/llm
       BOT_STATE_PATH: /app/state/bot.json
     volumes:
@@ -57,6 +58,20 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+
+  retention:
+    build: .
+    command: sh -c "set -e; while true; do python -m saqbol.db.retention; sleep 86400; done"
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-saqbol}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}@db:5432/${POSTGRES_DB:-saqbol}
+      SAQBOL_LLM_CACHE_DIR: /app/.cache/llm
+    volumes:
+      - llmcache:/app/.cache
+    depends_on:
       api:
         condition: service_healthy
     restart: unless-stopped
