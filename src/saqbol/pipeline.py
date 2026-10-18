@@ -45,7 +45,7 @@ from saqbol.playbooks.schema import Playbook
 
 @dataclass
 class AnalyzerConfig:
-    model: str = "deepseek-chat"
+    model: str = "deepseek-flash"
     top_k: int = 3
     temperature: float = 0.0
     weights: FusionWeights = field(default_factory=lambda: DEFAULT_WEIGHTS)

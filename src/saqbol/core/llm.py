@@ -2,7 +2,7 @@
 
     from saqbol.core.llm import LLMClient
     judgement, stats = await LLMClient().structured(
-        model="deepseek-chat", system=..., user=..., schema=LLMJudgement,
+        model="deepseek-flash", system=..., user=..., schema=LLMJudgement,
     )
 
 `structured` returns a validated pydantic object or raises. There is no third
@@ -152,10 +152,9 @@ def resolve(model: str) -> Provider:
     picks the direct endpoint.
 
     The slash must be checked before the prefix, and that ordering is the whole
-    reason this is a function rather than a dict lookup. ``deepseek-chat`` is
-    DeepSeek's own endpoint; ``deepseek/deepseek-chat`` is the same model rented
-    through OpenRouter for a leaderboard row. Both are used, they bill
-    separately, and only the slash tells them apart.
+    reason this is a function rather than a dict lookup. ``deepseek-flash`` is
+    DeepSeek's own endpoint; an ``vendor/model`` id uses OpenRouter. Only the
+    slash tells the two routes apart.
     """
     name = model.strip()
     if not name:

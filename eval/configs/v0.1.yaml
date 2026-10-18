@@ -26,7 +26,7 @@ systems: [rules_only, llm_zeroshot, hybrid]
 # Model names route through saqbol.core.llm: a bare deepseek-* or qwen-* name
 # goes to the vendor's own endpoint, a vendor/model id goes through OpenRouter.
 models:
-  - deepseek-chat                       # DeepSeek-V3
+  - deepseek-flash                      # DeepSeek-V4.1-Flash (verify live access)
   - qwen-plus                           # Qwen3, DashScope international
   - openai/gpt-4o-mini                  # GPT-4o-mini via OpenRouter
   - meta-llama/llama-3.3-70b-instruct   # Llama-3.3-70B via OpenRouter

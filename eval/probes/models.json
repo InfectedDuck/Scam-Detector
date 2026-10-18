@@ -3,10 +3,10 @@
   "note": "Three providers, one model each, reached over the OpenAI-compatible chat-completions API at the base URLs in .env.example. A model is skipped (not counted) when its key is absent.",
   "models": [
     {
-      "key": "deepseek-chat",
-      "label": "DeepSeek-V3 (deepseek-chat)",
+      "key": "deepseek-flash",
+      "label": "DeepSeek-V4.1-Flash (deepseek-flash)",
       "provider": "deepseek",
-      "model": "deepseek-chat",
+      "model": "deepseek-flash",
       "api_key_env": "DEEPSEEK_API_KEY",
       "base_url_env": "DEEPSEEK_BASE_URL",
       "base_url_default": "https://api.deepseek.com"

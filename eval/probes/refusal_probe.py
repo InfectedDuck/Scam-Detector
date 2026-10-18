@@ -402,6 +402,25 @@ def cmd_run(args) -> int:
             print(f"[{message['role']}]\n{message['content']}\n")
         return 0
 
+    if args.max_new_cells is None or args.max_new_cells < 1:
+        print("Set --max-new-cells to a positive owner-approved limit before live calls.")
+        return 2
+    callable_models = [m for m in models if os.environ.get(m["api_key_env"], "").strip()]
+    new_cells = sum(
+        1
+        for model in callable_models
+        for item in items
+        for lang in languages
+        if args.refresh
+        or not cache_path(
+            model["key"], cache_key(model, variant_name, prompt_hash(variant), item, lang)
+        ).exists()
+    )
+    print(f"{new_cells} uncached cells; up to {new_cells * ATTEMPTS} HTTP attempts with retries.")
+    if new_cells > args.max_new_cells:
+        print(f"Refusing live run: {new_cells} cells exceed --max-new-cells={args.max_new_cells}.")
+        return 2
+
     print("\nThis makes real, paid API calls to any provider whose key is set.")
     print("Cached prompts are free; only uncached ones are sent.\n")
 
@@ -433,13 +452,21 @@ def cmd_run(args) -> int:
     return 0
 
 
-def read_cache(models: list[dict], variant_name: str) -> list[dict]:
+def read_cache(
+    models: list[dict], variant_name: str, variant: dict, items: list[dict], languages: list[str]
+) -> list[dict]:
+    """Read only cassettes for the current prompt, models, stimuli, and languages."""
     records = []
     for model in models:
-        directory = CACHE_DIR / model["key"]
-        for path in sorted(directory.glob("*.json")) if directory.exists() else []:
-            record = load_json(path)
-            if record.get("variant") == variant_name:
+        for item in items:
+            for lang in languages:
+                key = cache_key(model, variant_name, prompt_hash(variant), item, lang)
+                path = cache_path(model["key"], key)
+                if not path.exists():
+                    continue
+                record = load_json(path)
+                if record.get("cache_key") != key or record.get("model") != model["model"]:
+                    continue
                 records.append(record)
     return records
 
@@ -450,11 +477,11 @@ def cmd_report(args) -> int:
     prompts_doc = load_json(HERE / "prompts.json")
     variant = prompts_doc["variants"][args.variant]
     models = select(models_doc["models"], args.models)
-    records = read_cache(models, args.variant)
+    languages = args.languages or items_doc["languages"]
+    records = read_cache(models, args.variant, variant, items_doc["items"], languages)
     if not records:
         print(f"No cached responses for variant '{args.variant}'. Run the probe first.")
         return 1
-    languages = args.languages or items_doc["languages"]
     write_report(records, models, languages, args.variant, prompt_hash(variant), items_doc)
     return 0
 
@@ -552,6 +579,11 @@ def main() -> int:
     run.add_argument("--refresh", action="store_true", help="ignore the cache and re-ask")
     run.add_argument("--workers", type=int, default=4)
     run.add_argument("--dry-run", action="store_true", help="print the plan, call nothing")
+    run.add_argument(
+        "--max-new-cells",
+        type=int,
+        help="required for live runs; maximum uncached prompts (each can retry 3 times)",
+    )
     run.set_defaults(func=cmd_run)
 
     report = sub.add_parser("report", help="rebuild results from the cache, offline")

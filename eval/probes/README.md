@@ -12,7 +12,7 @@ language? Write-up and interpretation: [`docs/08_REFUSAL_PROBE.md`](../../docs/0
 ```bash
 python eval/probes/refusal_probe.py selftest          # offline, no keys
 python eval/probes/refusal_probe.py run --dry-run     # prints the plan and a prompt
-python eval/probes/refusal_probe.py run               # REAL KEYS, REAL MONEY
+python eval/probes/refusal_probe.py run --max-new-cells 240  # REAL KEYS, REAL MONEY
 python eval/probes/refusal_probe.py report            # offline, rebuilds from cache
 ```
 
@@ -27,13 +27,15 @@ not counted as a zero.
 
 ### Cost and caching
 
-240 prompts per full run: 20 items x 4 languages x 3 models. Short prompts, 400
-max tokens, so a full run is cents, not dollars.
+240 prompts per full run: 20 items x 4 languages x 3 models. Each uncached
+cell may make up to three HTTP attempts. Set an account-level spend limit first;
+`--max-new-cells` prevents an unexpectedly large run but is not a dollar cap.
 
 Every response is cached under `cache/<model_key>/<cache_key>.json`, keyed by
 probe version, model, prompt variant, prompt hash, item, language and text hash.
 **A rerun costs nothing** — only uncached cells are sent. Editing a prompt or a
-stimulus changes the key, so stale answers can never be silently reused.
+stimulus changes the key, and `report` reads only cassettes matching the current
+prompt, model, stimuli, and requested languages.
 Transport errors are deliberately not cached, so an outage is retried rather than
 frozen into the results. `--refresh` re-asks everything.
 

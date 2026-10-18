@@ -109,7 +109,7 @@ hash is recorded in every result file and every cache entry.
 
 | Key | Model | Provider | Base URL from |
 |---|---|---|---|
-| `deepseek-chat` | DeepSeek-V3 | DeepSeek | `DEEPSEEK_BASE_URL` |
+| `deepseek-flash` | DeepSeek-V4.1-Flash | DeepSeek | `DEEPSEEK_BASE_URL` |
 | `qwen-plus` | Qwen3 | Alibaba DashScope international | `DASHSCOPE_BASE_URL` |
 | `openrouter-gpt-4o-mini` | `openai/gpt-4o-mini` | OpenRouter | `OPENROUTER_BASE_URL` |
 
@@ -201,12 +201,15 @@ changes the key, so a stale answer can never be silently reused.
 ```bash
 python eval/probes/refusal_probe.py selftest       # offline: 24 classifier cases
 python eval/probes/refusal_probe.py run --dry-run  # prints the plan and a prompt
-python eval/probes/refusal_probe.py run            # REAL KEYS, REAL MONEY
+python eval/probes/refusal_probe.py run --max-new-cells 240  # REAL KEYS, REAL MONEY
 python eval/probes/refusal_probe.py report         # offline, rebuilds from cache
 ```
 
 Keys come from the environment or from `<repo>/.env`, using the names in
-`.env.example`. 240 short prompts at 400 max tokens: cents, not dollars.
+`.env.example`. A full matrix is 240 prompts at 400 max output tokens each, and
+failed cells can retry up to three times. Set an owner-approved account spend
+limit before running. `--max-new-cells` is a required prompt-count guard, not
+a dollar limit; use a lower number for a smaller run.
 
 Then, in order: run it, read the `needs_review` rows and record their adjudication
 in `overrides.json`, rerun `report`, paste the table into section 7, and write the
@@ -223,7 +226,7 @@ When it has been run, the table below is the generated one from
 
 | Model | Russian (`ru`) | Kazakh (`kk`) | English (`en`) | Chinese (`zh`) |
 |---|---|---|---|---|
-| DeepSeek-V3 (deepseek-chat) | — (0/20) | — (0/20) | — (0/20) | — (0/20) |
+| DeepSeek-V4.1-Flash (deepseek-flash) | — (0/20) | — (0/20) | — (0/20) | — (0/20) |
 | Qwen3 (qwen-plus) | — (0/20) | — (0/20) | — (0/20) | — (0/20) |
 | GPT-4o-mini (via OpenRouter) | — (0/20) | — (0/20) | — (0/20) | — (0/20) |
 
@@ -232,7 +235,7 @@ tables: all 20 prompts per cell, the 10 scam prompts only, and the hedge rate on
 the 10 scam prompts.
 
 **Date of run, and the model aliases as resolved on that date, go here.** Provider
-aliases such as `deepseek-chat` move silently; a rerun in three months is a
+aliases such as `deepseek-flash` move silently; a rerun in three months is a
 different measurement, not a replication.
 
 ---
@@ -323,7 +326,7 @@ Written before the run, so they are not retrofitted to whatever comes out.
    Kazakh prompt could behave differently and is a reasonable follow-up variant.
 6. **Cue lists are substrings.** An unusually phrased refusal is missed and lands in
    `hedged`, so refusal is under-counted rather than over-counted.
-7. **One model per provider, on one date.** "DeepSeek refuses" means "`deepseek-chat`,
+7. **One model per provider, on one date.** "DeepSeek refuses" means "`deepseek-flash`,
    on the date in section 7, refused". Aliases drift.
 8. **Ten archetypes, not thirteen playbooks.** The probe is deliberately decoupled
    from the playbook set in `docs/04_PLAYBOOKS.md` so that editing playbooks does not
