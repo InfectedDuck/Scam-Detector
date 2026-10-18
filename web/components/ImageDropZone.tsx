@@ -13,10 +13,9 @@ import { IMAGE_TYPES, MAX_IMAGE_BYTES } from "@/lib/types";
  * else here is feedback: the drag state, the thumbnail, the size check with a
  * human sentence instead of a silent failure, and the remove button.
  *
- * The server action accepts a body of at most 1 MB, and phone screenshots are
- * often larger. A file above `RE_ENCODE_ABOVE` is redrawn on a canvas and
- * re-encoded as a JPEG under that size before it is submitted. Text in a
- * screenshot survives this easily; the alternative was refusing most of them.
+ * To reduce upload size, a file above `RE_ENCODE_ABOVE` is redrawn on a canvas
+ * and re-encoded as a JPEG under that size before it is submitted. Without
+ * JavaScript the server action accepts uploads up to the 5 MB image cap.
  */
 
 const ACCEPT = IMAGE_TYPES.join(",");
@@ -44,6 +43,8 @@ export function ImageDropZone({
 }) {
   const id = useId();
   const inputRef = useRef<HTMLInputElement>(null);
+  const selectionRef = useRef(0);
+  const previewRef = useRef<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -51,17 +52,33 @@ export function ImageDropZone({
   const [over, setOver] = useState(false);
 
   useEffect(() => {
-    if (!preview) return;
-    return () => URL.revokeObjectURL(preview);
-  }, [preview]);
+    return () => {
+      selectionRef.current += 1;
+      if (previewRef.current) URL.revokeObjectURL(previewRef.current);
+      previewRef.current = null;
+    };
+  }, []);
+
+  function updatePreview(next: string | null) {
+    if (previewRef.current) URL.revokeObjectURL(previewRef.current);
+    previewRef.current = next;
+    setPreview(next);
+  }
 
   function clear() {
+    selectionRef.current += 1;
     if (inputRef.current) inputRef.current.value = "";
     setFile(null);
-    setPreview(null);
+    updatePreview(null);
+    setError(null);
+    setBusy(false);
+    onBusy?.(false);
   }
 
   async function accept(candidate: File | null | undefined) {
+    // A later selection, removal, or unmount owns the field from that point on.
+    const selection = ++selectionRef.current;
+    const isCurrent = () => selection === selectionRef.current;
     setError(null);
     if (!candidate) {
       clear();
@@ -82,6 +99,7 @@ export function ImageDropZone({
     onBusy?.(true);
     try {
       const prepared = candidate.size > RE_ENCODE_ABOVE ? await shrink(candidate) : candidate;
+      if (!isCurrent()) return;
       const input = inputRef.current;
       if (input && (prepared !== candidate || input.files?.[0] !== candidate)) {
         const transfer = new DataTransfer();
@@ -89,15 +107,18 @@ export function ImageDropZone({
         input.files = transfer.files;
       }
       setFile(prepared);
-      setPreview(URL.createObjectURL(prepared));
+      updatePreview(URL.createObjectURL(prepared));
     } catch {
+      if (!isCurrent()) return;
       // Could not decode or could not get it small enough. Either way the
       // honest advice is the same as for an oversized file.
       clear();
       setError(strings.tooLarge);
     } finally {
-      setBusy(false);
-      onBusy?.(false);
+      if (isCurrent()) {
+        setBusy(false);
+        onBusy?.(false);
+      }
     }
   }
 

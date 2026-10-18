@@ -79,6 +79,16 @@ export interface Verdict {
   cached: boolean;
 }
 
+/** Exact successful response from `POST /api/v1/analyze`.
+ *
+ * Evidence offsets index `normalized_text`, not the raw submitted message.
+ * The backend declares this field as required in `AnalyzeOut` so a web client
+ * can render evidence without re-implementing the Python normalizer.
+ */
+export interface AnalyzeOut extends Verdict {
+  normalized_text: string;
+}
+
 /** docs/02_DATA_CONTRACTS.md §1 — request body for POST /api/v1/analyze */
 export interface AnalysisInput {
   text?: string | null;

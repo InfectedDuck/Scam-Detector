@@ -50,8 +50,20 @@ export function AnalyzeForm({
   turnstileSiteKey?: string;
 }) {
   const [result, formAction, pending] = useActionState<ReactNode, FormData>(action, null);
+  const formRef = useRef<HTMLFormElement>(null);
   const [length, setLength] = useState(defaultValue.length);
   const [preparing, setPreparing] = useState(false);
+
+  useEffect(() => {
+    const form = formRef.current;
+    // React resets uncontrolled fields after any fulfilled action, including
+    // an error notice. A native listener also runs during React's commit,
+    // when its synthetic event handlers are disabled. Preserve the fields so
+    // the counter and preview stay accurate and a retry sends the same input.
+    const preserveInput = (event: Event) => event.preventDefault();
+    form?.addEventListener("reset", preserveInput);
+    return () => form?.removeEventListener("reset", preserveInput);
+  }, []);
 
   // A Turnstile token is single-use. Once a submission has come back, ask the
   // widget for a fresh one so the next check does not fail on a spent token.
@@ -65,7 +77,7 @@ export function AnalyzeForm({
 
   return (
     <>
-      <form action={formAction} className="mt-6">
+      <form ref={formRef} action={formAction} className="mt-6">
         <label htmlFor="text" className="block text-sm font-medium text-ink">
           {strings.label}
         </label>

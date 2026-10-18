@@ -6,7 +6,10 @@ component.
 ```
 npm install
 npm run dev          # http://localhost:3000 → redirects to /ru, /kk, /en or /zh
+npm run test         # React form and screenshot regression tests (Node 24)
+npm run typecheck
 npm run build && npm start
+npm run test:smoke   # after build: sample pages against a failing local API
 npm run fixtures     # regenerate web/mock/*.json from mock/build-fixtures.mjs
 ```
 
@@ -19,7 +22,7 @@ that copies only `web/` must set `SAQBOL_I18N_DIR` and `SAQBOL_PLAYBOOKS_DIR`.
 | Path | Role |
 |---|---|
 | `app/[locale]/layout.tsx` | Root layout. Lives inside the segment so `<html lang>` is right; there is no `app/layout.tsx`. |
-| `app/[locale]/page.tsx` | The analyze page. Server component. `?sample=<id>` renders a finished card in the HTML. |
+| `app/[locale]/page.tsx` | The analyze page. Server component. `?sample=<id>` renders a labelled saved example in the HTML, without calling the API or spending a check. |
 | `app/[locale]/actions.tsx` | The server action behind the paste box. Returns the rendered card, not data. Forwards the visitor's address to the API and gates the fourth check in a session behind Turnstile. |
 | `app/[locale]/stats/page.tsx` | Public numbers from `GET /api/v1/stats`: checks, devices, scam share, top scenarios, a 30-day chart. |
 | `app/[locale]/playbooks/` | The scenario library: an index grouped by region and one static page per playbook. |
@@ -40,6 +43,7 @@ that copies only `web/` must set `SAQBOL_I18N_DIR` and `SAQBOL_PLAYBOOKS_DIR`.
 | `i18n/ui.*.json` | Page chrome only. Nothing about a verdict is authored here. |
 | `mock/build-fixtures.mjs` | Generates the fixtures with computed, verified offsets. |
 | `mock/verdict.json` | The canonical fixture: a `scam` verdict, seven evidence spans. |
+| `tests/` | React form retries, screenshot selection races, and production sample-page smoke checks. |
 
 ## Strings
 
@@ -73,13 +77,29 @@ It then:
 `mock/verdict.parcel.json` starts with an emoji and has two overlapping spans on
 its URL for exactly these reasons.
 
-## Contract gap
+## Form state
 
-`Verdict` carries offsets into the normalized text but not the normalized text
-itself. Until the backend adds `normalized_text` to the response, `fetchVerdict`
-normalizes locally with `lib/normalize.ts` and relies on the verification above.
-`lib/api.ts` already prefers `verdict.normalized_text` when present, so adding
-the field to the pydantic model is the whole fix.
+With JavaScript enabled, a completed check keeps the entered message and selected
+screenshot, including when the server returns an error notice. Retrying therefore
+submits the same content; the character counter and preview still describe the
+actual fields. The Remove button explicitly clears the screenshot. Selecting a
+different sample resets the form to that example.
+
+Screenshot preparation follows the most recent selection. Replacing or removing
+an image invalidates pending work, and old results cannot restore a removed file,
+change the current preview, or enable submission while a newer image is preparing.
+Preview URLs are released when replaced, removed, or unmounted.
+
+`npm run test` exercises these behaviors using React DOM and jsdom. The smoke
+check starts a temporary local API that rejects checks, then verifies all five
+sample pages in four locales still render without any analysis requests.
+
+## Evidence-text contract
+
+`POST /api/v1/analyze` returns `normalized_text` alongside the verdict. Every
+evidence span indexes that exact normalized string in Unicode code points. The
+web app renders live verdicts from it, so it does not need to duplicate the
+Python normalizer. `lib/normalize.ts` remains only for saved mock fixtures.
 
 ## Performance budget
 

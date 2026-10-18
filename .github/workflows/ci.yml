@@ -62,5 +62,11 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      - name: Form and screenshot regressions
+        run: npm run test
+
       - name: Build
         run: npm run build
+
+      - name: Sample pages with an unavailable analysis service
+        run: npm run test:smoke

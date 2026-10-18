@@ -3,8 +3,8 @@
  *
  * The authority is `src/saqbol/core/normalize.py`. This exists only because the
  * `Verdict` contract returns offsets into the normalized string without
- * returning the normalized string itself, so with a mock backend — or with a
- * real one that has not yet added the field — the browser has to derive it.
+ * returning the normalized string itself, so mock fixtures need a local copy.
+ * Live API responses provide `normalized_text` and are rendered from it.
  *
  * It is deliberately conservative: NFKC and zero-width removal, the two steps
  * named in docs/01_ARCHITECTURE.md §3. If the Python side does more (collapsing

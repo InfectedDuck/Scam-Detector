@@ -2,7 +2,7 @@ import "server-only";
 
 import { connection } from "next/server";
 
-import type { AnalysisInput, AnalyzeResult, Band, Stats, Verdict } from "./types";
+import type { AnalysisInput, AnalyzeOut, AnalyzeResult, Band, Stats, Verdict } from "./types";
 import { SEVERITY_WEIGHT } from "./types";
 import { normalize } from "./normalize";
 import { FIXTURES, MOCK_STATS, SAMPLES } from "@/mock";
@@ -101,19 +101,14 @@ export async function fetchVerdict(
   if (response.status === 502) throw new ApiError("image_unreadable");
   if (!response.ok) throw new ApiError("failed");
 
-  const verdict = (await response.json()) as Verdict & { normalized_text?: string };
+  const body = (await response.json()) as AnalyzeOut;
+  if (typeof body.normalized_text !== "string") throw new ApiError("failed");
 
   return {
-    verdict,
-    /**
-     * CONTRACT GAP, see lib/types.ts. `Verdict` publishes offsets into the
-     * normalized text but not the normalized text itself, so the only way to
-     * anchor a span today is to re-derive it here. `normalized_text` is read
-     * first so that adding the field to the pydantic model is all it takes to
-     * make this exact; until then lib/highlight.ts verifies every span and
-     * re-anchors the ones that do not line up.
-     */
-    normalized_text: verdict.normalized_text ?? normalized,
+    verdict: body,
+    // AnalyzeOut supplies the exact string whose code-point offsets the
+    // evidence indexes. Local normalization remains only for mock fixtures.
+    normalized_text: body.normalized_text,
   };
 }
 

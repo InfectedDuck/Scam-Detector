@@ -16,6 +16,7 @@
   "form.turnstile.hint": "That is a few checks in a row. Confirm you are human to keep going.",
   "form.samples.title": "Or try one of these",
   "form.samples.hint": "Real scam scripts, plus one genuine bank notification.",
+  "form.samples.result": "Saved example result. Submit the message above for a new check.",
 
   "form.image.label": "Or a screenshot",
   "form.image.hint": "Drop a screenshot here or choose a file. PNG, JPEG or WebP, up to 5 MB.",

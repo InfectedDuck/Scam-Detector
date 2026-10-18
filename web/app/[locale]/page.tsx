@@ -6,10 +6,11 @@ import { CopyLinkScript } from "@/components/ShareBar";
 import { Shell } from "@/components/Shell";
 import { VerdictCard } from "@/components/VerdictCard";
 import { getMessages, isLocale } from "@/i18n";
-import { USING_MOCK, fetchVerdict } from "@/lib/api";
+import { USING_MOCK } from "@/lib/api";
+import { normalize } from "@/lib/normalize";
 import { siteOrigin } from "@/lib/site";
 import { TURNSTILE_SITE_KEY, challengeRequired, readCheckCount } from "@/lib/turnstile";
-import { SAMPLES, getSample } from "@/mock";
+import { FIXTURES, SAMPLES, getSample } from "@/mock";
 import { analyzeAction } from "./actions";
 
 /**
@@ -17,7 +18,8 @@ import { analyzeAction } from "./actions";
  *
  * `?sample=<id>` renders a finished verdict card in the HTML response, so the
  * demo works before a single byte of JavaScript arrives, and works at all with
- * scripting disabled. The paste box hydrates on top of that.
+ * scripting disabled. Samples use saved fixtures and never spend a live API
+ * check. The paste box hydrates on top of that.
  *
  * This is the one page rendered per request: it reads `searchParams`, the
  * request origin for share links, and the session cookie that decides
@@ -40,7 +42,9 @@ export default async function HomePage({
 
   const messages = getMessages(locale);
   const { t } = messages;
-  const initial = sample ? await fetchVerdict({ text: sample.text, surface: "web" }) : null;
+  const initial = sample
+    ? { verdict: FIXTURES[sample.id], normalized_text: normalize(sample.text) }
+    : null;
   const origin = await siteOrigin();
   const turnstileSiteKey = challengeRequired(await readCheckCount()) ? TURNSTILE_SITE_KEY : undefined;
 
@@ -85,7 +89,14 @@ export default async function HomePage({
           },
         }}
         fallback={
-          initial ? <VerdictCard result={initial} messages={messages} origin={origin} /> : null
+          initial ? (
+            <>
+              <p className="mb-3 text-[0.8125rem] leading-relaxed text-muted">
+                {t("form.samples.result")}
+              </p>
+              <VerdictCard result={initial} messages={messages} origin={origin} />
+            </>
+          ) : null
         }
       />
 

@@ -16,6 +16,7 @@
   "form.turnstile.hint": "已连续核实多次，请完成人机验证后继续。",
   "form.samples.title": "或者看看示例",
   "form.samples.hint": "真实的诈骗话术，外加一条真正的银行通知。",
+  "form.samples.result": "这是预先准备的示例结果。提交上方的消息即可重新核实。",
 
   "form.image.label": "或上传截图",
   "form.image.hint": "把截图拖到这里，或选择文件。支持 PNG、JPEG、WebP，最大 5 MB。",
