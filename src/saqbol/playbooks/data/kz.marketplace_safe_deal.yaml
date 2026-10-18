@@ -7,9 +7,13 @@ family: marketplace_fraud
 
 name:
   ru: "«Безопасная сделка» на OLX или в Instagram"
+  kk: "OLX немесе Instagram-дағы «қауіпсіз мәміле»"
+  en: "\"Safe deal\" link on OLX or Instagram"
 
 summary:
   ru: "Покупатель или продавец уводит переписку в мессенджер и присылает ссылку «для безопасной сделки», на которой с карты не зачисляют, а списывают деньги."
+  kk: "Сатып алушы немесе сатушы хат алмасуды мессенджерге көшіріп, «қауіпсіз мәміле» сілтемесін жібереді. Ол бетте картаға ақша түспейді, керісінше шығып кетеді."
+  en: "A buyer or seller moves the chat to a messenger and sends a \"safe deal\" link. The page does not credit your card, it debits it."
 
 retrieval_phrases:
   - "покупатель просит перейти в whatsapp с олх"
@@ -46,22 +50,50 @@ expected_indicators:
   - A2.card_secrets
 
 stages:
-  contact:    { ru: "Отклик на объявление, после которого переписку сразу уводят в WhatsApp или Telegram." }
-  hook:       { ru: "«Я уже оплатил, получите деньги по этой ссылке» или «оформим доставку через сервис»." }
-  trust:      { ru: "Ссылка ведёт на копию сайта площадки с логотипом и вашим же объявлением." }
-  pressure:   { ru: "Собеседник торопит: уезжает, курьер уже выехал, ссылка действует недолго." }
-  extraction: { ru: "На поддельной странице просят номер карты, срок действия, CVV и код из СМС." }
-  cashout:    { ru: "Вместо зачисления с карты списывают деньги, иногда несколькими платежами подряд." }
+  contact:
+    ru: "Отклик на объявление, после которого переписку сразу уводят в WhatsApp или Telegram."
+    kk: "Хабарландыруға жауап келеді, содан кейін хат алмасуды бірден WhatsApp немесе Telegram-ға көшіреді."
+    en: "A reply to your listing, after which the chat is moved straight to WhatsApp or Telegram."
+  hook:
+    ru: "«Я уже оплатил, получите деньги по этой ссылке» или «оформим доставку через сервис»."
+    kk: "«Мен төлеп қойдым, ақшаны мына сілтеме арқылы алыңыз» немесе «жеткізуді сервис арқылы рәсімдейік»."
+    en: "\"I have already paid, collect the money through this link\" or \"let's arrange delivery through the service\"."
+  trust:
+    ru: "Ссылка ведёт на копию сайта площадки с логотипом и вашим же объявлением."
+    kk: "Сілтеме сайттың көшірмесіне апарады: логотипі де, сіздің хабарландыруыңыз да сонда тұр."
+    en: "The link leads to a copy of the marketplace site, with its logo and your own listing on it."
+  pressure:
+    ru: "Собеседник торопит: уезжает, курьер уже выехал, ссылка действует недолго."
+    kk: "Әңгімелесуші асықтырады: кетіп бара жатыр, курьер жолда, сілтеменің мерзімі аз."
+    en: "The other party rushes you: they are leaving town, the courier is on the way, the link expires soon."
+  extraction:
+    ru: "На поддельной странице просят номер карты, срок действия, CVV и код из СМС."
+    kk: "Жалған бетте карта нөмірін, жарамдылық мерзімін, CVV-ді және СМС-тегі кодты сұрайды."
+    en: "The fake page asks for the card number, expiry date, CVV and the SMS code."
+  cashout:
+    ru: "Вместо зачисления с карты списывают деньги, иногда несколькими платежами подряд."
+    kk: "Ақша түсудің орнына картадан шығып кетеді, кейде қатарынан бірнеше төлеммен."
+    en: "Instead of a credit, money is taken from the card, sometimes in several payments in a row."
 
 red_flags:
   ru:
     - "Чтобы получить деньги, номер карты и CVV не нужны никогда: эти данные нужны только для списания."
     - "Ни OLX, ни Kolesa не принимают оплату по ссылке из переписки — настоящая сделка идёт внутри площадки."
     - "Уход из чата площадки в мессенджер лишает вас и переписки, и поддержки, если что-то пойдёт не так."
+  kk:
+    - "Ақша алу үшін карта нөмірі мен CVV ешқашан керек емес: бұл деректер тек ақша шығару үшін қажет."
+    - "OLX та, Kolesa да хат алмасудағы сілтеме арқылы төлем қабылдамайды — нағыз мәміле платформаның ішінде жүреді."
+    - "Платформаның чатынан мессенджерге көшсеңіз, бірдеңе болып қалса, хат алмасу тарихынан да, қолдау қызметінен де айырыласыз."
+  en:
+    - "To receive money you never need to enter a card number and CVV: those details are only needed to take money out."
+    - "Neither OLX nor Kolesa (Kazakhstan's main classifieds sites) take payment through a link sent in chat; a real deal happens inside the platform."
+    - "Leaving the platform's chat for a messenger costs you both the record of the conversation and the platform's support if something goes wrong."
 
 action:
   key: action.stay_on_platform
   ru: "Не открывайте ссылку и вернитесь в чат площадки. Деньги за товар принимайте только внутри сервиса или наличными при встрече. Если данные карты уже введены, заблокируйте карту и обратитесь в полицию."
+  kk: "Сілтемені ашпаңыз және платформаның чатына қайта оралыңыз. Тауардың ақшасын тек сервистің ішінде немесе кездескенде қолма-қол алыңыз. Карта деректерін енгізіп қойған болсаңыз, картаны бұғаттап, полицияға хабарласыңыз."
+  en: "Do not open the link and go back to the platform's chat. Accept payment for the item only inside the service or in cash when you meet. If you already entered card details, block the card and contact the police."
 
 hotline: "102"
 hotlines:

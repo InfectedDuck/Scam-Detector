@@ -5,9 +5,13 @@ family: remote_access_takeover
 
 name:
   ru: "Удалённый доступ к телефону и заём на ваше имя"
+  kk: "Телефонға қашықтан кіру және атыңызға несие"
+  en: "Remote access to your phone and a loan in your name"
 
 summary:
   ru: "Просят установить AnyDesk, TeamViewer или RustDesk «для защиты счёта». После установки посторонний сам управляет вашим банком и оформляет заём."
+  kk: "«Шотты қорғау үшін» AnyDesk, TeamViewer немесе RustDesk орнатуды сұрайды. Орнатқан соң бөтен адам банк қосымшаңызды өзі басқарып, несие рәсімдейді."
+  en: "They ask you to install AnyDesk, TeamViewer or RustDesk \"to protect your account\". Once installed, a stranger drives your banking app and takes out a loan."
 
 # Phrases used ONLY for embedding/retrieval. Not shown to users.
 # Written the way a victim describes what happened, not the way the call sounds.
@@ -48,16 +52,28 @@ expected_indicators:
 stages:
   contact:
     ru: "Звонок «из банка» или «из полиции» — часто продолжение разговора о попытке списания."
+    kk: "«Банктен» немесе «полициядан» қоңырау — көбіне ақша шығару әрекеті туралы әңгіменің жалғасы."
+    en: "A call \"from the bank\" or \"from the police\", often continuing an earlier call about an attempted withdrawal."
   hook:
     ru: "Чтобы защитить счёт, нужно установить программу, «которой пользуется служба безопасности»."
+    kk: "Шотты қорғау үшін «қауіпсіздік қызметі пайдаланатын» бағдарламаны орнату керек дейді."
+    en: "To protect the account, you must install a program \"that the security service uses\"."
   trust:
     ru: "Собеседник спокоен, знает ваше имя, диктует шаги по порядку и остаётся на линии всю установку."
+    kk: "Әңгімелесуші сабырлы, атыңызды біледі, қадамдарды ретімен айтып отырады және орнату біткенше желіде қалады."
+    en: "The caller is calm, knows your name, dictates the steps in order and stays on the line through the whole installation."
   pressure:
     ru: "Не кладите трубку, никому не звоните, всё под контролем следствия."
+    kk: "Телефонды қоймаңыз, ешкімге қоңырау шалмаңыз, бәрі тергеудің бақылауында дейді."
+    en: "Do not hang up, do not call anyone, everything is under the investigation's control."
   extraction:
     ru: "Через программу оператор сам открывает банковское приложение, читает коды и подаёт заявку на заём."
+    kk: "Бағдарлама арқылы оператор банк қосымшасын өзі ашады, кодтарды оқиды және несиеге өтінім береді."
+    en: "Through the program, the operator opens the banking app themselves, reads the codes and submits a loan application."
   cashout:
     ru: "Деньги займа сразу уходят на чужие счета, а долг остаётся оформленным на вас."
+    kk: "Несие ақшасы бірден бөтен шоттарға кетеді, ал қарыз сіздің атыңызда қалады."
+    en: "The loan money goes straight to other people's accounts, and the debt stays registered in your name."
 
 red_flags:
   ru:
@@ -65,10 +81,23 @@ red_flags:
     - "Пока идёт «проверка», собеседник видит весь ваш экран — включая коды из СМС, которые вам даже не нужно называть вслух."
     - "«Не кладите трубку» существует ровно для того, чтобы вы не перезвонили в банк и не услышали правду."
     - "Заём, оформленный под диктовку, оформлен на вас. Поэтому важен каждый час до заявления в полицию и обращения в банк."
+  kk:
+    - "Банк те, полиция да қашықтан кіру бағдарламасын орнатуды ешқашан сұрамайды. Телефоныңыздағы AnyDesk, TeamViewer және RustDesk тек алаяққа керек."
+    - "«Тексеру» жүріп жатқанда әңгімелесуші бүкіл экраныңызды көреді — СМС-тегі кодтарды қоса, оларды тіпті дауыстап айтудың да қажеті жоқ."
+    - "«Телефонды қоймаңыз» деген сөз бір мақсатпен айтылады: банкке қайта қоңырау шалып, шындықты естімеуіңіз үшін."
+    - "Біреудің айтуымен рәсімделген несие — сіздің атыңыздағы несие. Сондықтан полицияға арыз беріп, банкке хабарласқанға дейінгі әр сағат маңызды."
+  en:
+    - "Neither a bank nor the police ever ask you to install a remote-access program. AnyDesk, TeamViewer and RustDesk on your phone serve only the scammer."
+    - "While the \"check\" is running, the caller sees your whole screen, including SMS codes you never even have to say out loud."
+    - "\"Do not hang up\" exists precisely so that you do not call the bank back and hear the truth."
+    - "A loan taken out under dictation is a loan in your name. That is why every hour before the police report and the call to the bank matters."
 
 action:
   key: action.cut_connection_and_report_loan
   ru: "Закройте программу, отключите интернет и удалите её. С другого телефона позвоните в банк и заблокируйте счета. Затем проверьте займы на своё имя на eGov или по номеру 1414 и включите там добровольный отказ от кредитов. Заявление в полицию по 102 подайте в тот же день."
+  # VERIFY-kk: same service name as in kz.egov_1414_code — «кредиттерден ерікті бас тарту» must match the eGov Kazakh menu wording
+  kk: "Бағдарламаны жабыңыз, интернетті өшіріңіз және бағдарламаны жойыңыз. Басқа телефоннан банкке қоңырау шалып, шоттарды бұғаттаңыз. Содан кейін атыңыздағы несиелерді eGov арқылы немесе 1414 нөмірімен тексеріп, сол жерде кредиттерден ерікті бас тартуды қосыңыз. 102 арқылы полицияға арызды сол күні беріңіз."
+  en: "Close the program, turn off the internet and uninstall it. From another phone, call the bank and block your accounts. Then check for loans in your name on eGov or by calling 1414 (the eGov state-services line) and switch on the voluntary loan refusal there. File a police report on 102 the same day."
 
 hotline: "1414"
 hotlines:

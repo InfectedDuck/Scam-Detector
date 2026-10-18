@@ -8,9 +8,13 @@ family: credential_phishing
 
 name:
   ru: "Выманивание кода eGov (1414)"
+  kk: "eGov (1414) кодын алдап алу"
+  en: "Phishing for the eGov (1414) code"
 
 summary:
   ru: "Приходит код от 1414, который вы не запрашивали, а следом звонок с просьбой его продиктовать. Этим кодом подписывают заявку от вашего имени."
+  kk: "1414 нөмірінен сіз сұрамаған код келеді, артынша оны айтып беруді сұрап қоңырау шалады. Осы кодпен сіздің атыңыздан өтінімге қол қояды."
+  en: "A code from 1414 (the eGov state-services line) arrives that you never requested, then a call asks you to read it out. That code signs an application in your name."
 
 retrieval_phrases:
   - "пришёл код от 1414, который я не запрашивал"
@@ -47,22 +51,52 @@ expected_indicators:
   - B1.urgency
 
 stages:
-  contact:    { ru: "Приходит СМС-код от 1414, которого вы не запрашивали." }
-  hook:       { ru: "Звонящий объясняет код чужой попыткой входа, истекающей ЭЦП или заявкой на кредит." }
-  trust:      { ru: "Представляется сотрудником eGov или контакт-центра 1414 и называет ваши данные." }
-  pressure:   { ru: "Требует продиктовать код немедленно, пока «заявку не подтвердили»." }
-  extraction: { ru: "Просит назвать код из СМС, которым подписывают документ или заявку от вашего имени." }
-  cashout:    { ru: "На ваше имя оформлен кредит, микрозайм или сделка с имуществом." }
+  contact:
+    ru: "Приходит СМС-код от 1414, которого вы не запрашивали."
+    kk: "1414 нөмірінен сіз сұрамаған СМС-код келеді."
+    en: "An SMS code from 1414 arrives that you did not request."
+  hook:
+    ru: "Звонящий объясняет код чужой попыткой входа, истекающей ЭЦП или заявкой на кредит."
+    # VERIFY-kk: ЭЦҚ is the Kazakh abbreviation for ЭЦП (электрондық цифрлық қолтаңба); confirm people say ЭЦҚ rather than the Russian ЭЦП in speech
+    kk: "Қоңырау шалған адам кодты біреудің кіру әрекетімен, мерзімі бітіп жатқан ЭЦҚ-мен немесе кредитке өтініммен түсіндіреді."
+    en: "The caller explains the code away as someone else's login attempt, an expiring digital signature (EDS), or a loan application."
+  trust:
+    ru: "Представляется сотрудником eGov или контакт-центра 1414 и называет ваши данные."
+    kk: "Өзін eGov немесе 1414 байланыс орталығының қызметкері деп таныстырып, деректеріңізді атайды."
+    en: "They introduce themselves as eGov or 1414 contact-centre staff and recite your personal details."
+  pressure:
+    ru: "Требует продиктовать код немедленно, пока «заявку не подтвердили»."
+    kk: "«Өтінім расталып кетпей тұрғанда» кодты дереу айтуды талап етеді."
+    en: "They demand the code immediately, \"before the application is confirmed\"."
+  extraction:
+    ru: "Просит назвать код из СМС, которым подписывают документ или заявку от вашего имени."
+    kk: "СМС-тегі кодты айтуды сұрайды — сол кодпен сіздің атыңыздан құжатқа немесе өтінімге қол қояды."
+    en: "They ask for the SMS code, which signs a document or an application in your name."
+  cashout:
+    ru: "На ваше имя оформлен кредит, микрозайм или сделка с имуществом."
+    kk: "Атыңызға кредит, микронесие немесе мүлікпен мәміле рәсімделеді."
+    en: "A loan, a microloan or a property transaction is registered in your name."
 
 red_flags:
   ru:
     - "Сотрудники eGov и контакт-центра 1414 никогда не просят по телефону назвать SMS-код, пароль или ключ ЭЦП."
     - "Код от 1414 приходит только в ответ на ваше собственное действие. Если вы ничего не делали, его запросил кто-то другой."
     - "Отмена чужой заявки никогда не требует, чтобы вы что-то диктовали: проверить заявки вы можете только сами, в eGov."
+  kk:
+    - "eGov және 1414 байланыс орталығының қызметкерлері телефон арқылы SMS-кодты, құпиясөзді немесе ЭЦҚ кілтін ешқашан сұрамайды."
+    - "1414 нөмірінен код тек өзіңіз жасаған әрекетке жауап ретінде келеді. Ештеңе жасамаған болсаңыз, оны басқа біреу сұратқан."
+    - "Бөтен өтінімді тоқтату үшін ешқашан бірдеңе айтып беру керек емес: өтінімдерді тек өзіңіз, eGov-та тексере аласыз."
+  en:
+    - "eGov and 1414 contact-centre staff never ask over the phone for an SMS code, a password or a digital-signature key."
+    - "A code from 1414 comes only in response to something you did yourself. If you did nothing, someone else requested it."
+    - "Cancelling someone else's application never requires you to read anything out: only you can check applications, inside eGov."
 
 action:
   key: action.never_share_egov_code
   ru: "Не называйте код никому и положите трубку. Затем сами зайдите в eGov Mobile: проверьте активные заявки и кредитный отчёт и оформите добровольный отказ от кредитов и микрокредитов."
+  # VERIFY-kk: the eGov service is called «Кредиттерден ерікті бас тарту» in the Kazakh interface as far as the author knows; match the exact menu name so the reader can find it
+  kk: "Кодты ешкімге айтпаңыз және телефонды қойыңыз. Содан кейін eGov Mobile-ға өзіңіз кіріңіз: белсенді өтінімдер мен несие есебін тексеріп, кредиттер мен микрокредиттерден ерікті бас тартуды рәсімдеңіз."
+  en: "Give the code to no one and hang up. Then open eGov Mobile yourself: check your active applications and your credit report, and switch on the voluntary refusal of loans and microloans (the self-ban on new credit)."
 
 hotline: "1414"
 hotlines:

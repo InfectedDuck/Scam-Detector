@@ -79,40 +79,42 @@ indicator:
   C6.courier_post: "Пошта, курьер немесе кеден деп таныстырады"
   C7.telecom: "Ұялы байланыс операторы деп таныстырады"
   D1.move_to_messenger: "Әңгімені WhatsApp немесе Telegram-ға көшіреді"
-  D2.leave_platform: null  # TODO-kk
+  D2.leave_platform: "«Мәмілені аяқтау үшін» платформадан шығуды ұсынады"
   D3.dont_hang_up: "Тұтқаны қоймауды және ешкіммен ақылдаспауды сұрайды"
   E1.safe_account: "«Қауіпсіз шот» — ондай шот бірде-бір банкте жоқ"
   E2.transfer_to_person: "Жеке адамның картасына аударуды сұрайды"
   E3.take_a_loan: "Несие рәсімдеуге итермелейді"
-  E4.crypto_address: null  # TODO-kk
+  E4.crypto_address: "Сұралмаған хабарламада криптоәмиян мекенжайы"
   E5.mule_recruitment: "Картаңызды немесе шотыңызды жалға беруді ұсынады"
-  E6.guarantee_deposit: null  # TODO-kk
+  # VERIFY-kk: «кепілақы» is the term chosen for залог across the cn.* playbooks; change both together
+  E6.guarantee_deposit: "Кепілақы немесе «кепілдік жарна» талап етеді"
   E7.upfront_fee: "Бірдеңе алу үшін алдын ала төлеуді сұрайды"
   F1.remote_access_app: "Қашықтан басқару бағдарламасын орнатуды сұрайды"
-  F2.apk_attachment: null  # TODO-kk
+  F2.apk_attachment: ".apk файлы немесе сілтемесі — қосымшалар дүкенін айналып өтіп орнату"
   F3.install_instruction: "Жіберілген сілтеме арқылы қосымша орнатуды сұрайды"
   F4.disable_protection: "Телефонның қорғанысын өшіруді сұрайды"
-  G1.lookalike_domain: null  # TODO-kk
-  G2.punycode_idn: null  # TODO-kk
-  G3.shortener: null  # TODO-kk
-  G4.long_redirect_chain: null  # TODO-kk
-  G5.brand_mismatch: null  # TODO-kk
-  G6.fresh_domain: null  # TODO-kk
-  G7.qr_payload_risk: null  # TODO-kk
-  G8.ip_url: null  # TODO-kk
+  G1.lookalike_domain: "Сайт мекенжайы белгілі брендке өте ұқсас"
+  G2.punycode_idn: "Мекенжайда алмастырылған таңбалар (punycode)"
+  G3.shortener: "Қысқа сілтеме нағыз мекенжайды жасырады"
+  # VERIFY-kk: «қайта бағыттау» for redirect is the term used in browser UI translations; confirm it reads naturally here
+  G4.long_redirect_chain: "Сілтеме қайта бағыттаулар тізбегі арқылы өтеді"
+  G5.brand_mismatch: "Мекенжайда бренд атауы бар, ал домен басқаға тиесілі"
+  G6.fresh_domain: "Домен жақында тіркелген"
+  G7.qr_payload_risk: "QR-кодтың ішінде қауіпті мазмұн"
+  G8.ip_url: "Сілтемеде домен орнына IP-мекенжай"
   H1.guaranteed_returns: "Кепілдендірілген табыс уәде етеді"
-  H2.celebrity_investment: null  # TODO-kk
+  H2.celebrity_investment: "Инвестициялық ұсыныстың қасында танымал есім"
   H3.unsolicited_prize: "Сұралмаған ұтыс, төлем немесе өтемақы"
   H4.easy_job: "Тәжірибесіз жеңіл табыс"
-  H5.romance_to_investment: null  # TODO-kk
+  H5.romance_to_investment: "Танысу инвестиция туралы әңгімеге ұласады"
   I1.foreign_number_local_claim: "Қазақстандық мекеме атынан шетелдік нөмірден жазады"
-  I2.spoofed_short_code: null  # TODO-kk
+  I2.spoofed_short_code: "Банктің қысқа нөмірі қолдан жасалған"
   I3.new_telegram_account: "Жаңа немесе атаусыз аккаунт жазып отыр"
   I4.relative_new_number: "«Туысы» бейтаныс нөмірден жазып отыр"
   J1.secrecy: "Ешкімге айтпауды сұрайды"
   J2.relative_in_trouble: "Жақын адаммен болған бақытсыздық туралы әңгіме"
   J3.hijacked_account_ask: "Таныс адам жедел ақша сұрайды"
-  J4.script_handoff: null  # TODO-kk
+  J4.script_handoff: "«Маманға» ауыстырады — әңгіме сценарий бойынша жүріп жатыр"
 
 action:
   generic:

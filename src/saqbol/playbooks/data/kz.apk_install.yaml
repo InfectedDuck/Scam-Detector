@@ -5,9 +5,13 @@ family: malware_install
 
 name:
   ru: "Установка apk-файла из переписки"
+  kk: "Чаттан келген apk-файлды орнату"
+  en: "Installing an apk file sent in chat"
 
 summary:
   ru: "В переписке присылают файл-приложение: «обновление банка», «документ из суда», «трекер посылки». После установки телефон и банковское приложение управляются чужим человеком."
+  kk: "Чатқа қосымша файлын жібереді: «банк жаңартуы», «сот құжаты», «сәлемдеме трекері». Орнатқан соң телефоныңыз бен банк қосымшаңызды бөтен адам басқарады."
+  en: "An app file arrives in chat: a \"bank update\", a \"court document\", a \"parcel tracker\". Once installed, your phone and banking app are controlled by a stranger."
 
 # Phrases used ONLY for embedding/retrieval. Not shown to users.
 # Written the way a victim describes what happened, not the way the message reads.
@@ -49,16 +53,28 @@ expected_indicators:
 stages:
   contact:
     ru: "Звонок или сообщение от «банка», «суда», «Казахтелекома» или курьерской службы."
+    kk: "«Банктен», «соттан», «Қазақтелекомнан» немесе курьерлік қызметтен қоңырау не хабарлама."
+    en: "A call or message from \"the bank\", \"the court\", \"Kazakhtelecom\" (the national telecom operator) or a courier service."
   hook:
     ru: "Нужно срочно обновить приложение, открыть документ или отследить посылку."
+    kk: "Қосымшаны шұғыл жаңарту, құжатты ашу немесе сәлемдемені бақылау керек дейді."
+    en: "You urgently need to update an app, open a document or track a parcel."
   trust:
     ru: "Ссылка ведёт на страницу, оформленную под Google Play или под сайт знакомой организации."
+    kk: "Сілтеме Google Play-ге немесе таныс ұйымның сайтына ұқсатып жасалған бетке апарады."
+    en: "The link leads to a page styled to look like Google Play or a familiar organisation's website."
   pressure:
     ru: "Торопят установить прямо сейчас и просят разрешить установку из неизвестных источников."
+    kk: "Дәл қазір орнатуға асықтырады және белгісіз көздерден орнатуға рұқсат беруді сұрайды."
+    en: "They rush you to install it right now and ask you to allow installation from unknown sources."
   extraction:
     ru: "Приложение запрашивает доступ к СМС, уведомлениям и экрану — и передаёт банковские коды."
+    kk: "Қосымша СМС-ке, хабарландыруларға және экранға қолжетімділік сұрайды — және банк кодтарын жіберіп отырады."
+    en: "The app asks for access to SMS, notifications and the screen, and passes on your banking codes."
   cashout:
     ru: "Со счетов списывают деньги или оформляют заём, пока телефон у вас в руках."
+    kk: "Телефон қолыңызда тұрғанда шоттарыңыздан ақша шығарылады немесе несие рәсімделеді."
+    en: "Money is taken from your accounts or a loan is taken out, while the phone is still in your hands."
 
 red_flags:
   ru:
@@ -66,10 +82,22 @@ red_flags:
     - "Файл с расширением .apk — это не документ и не посылка. Это программа, и после установки она видит ваш экран и ваши СМС."
     - "Просьба разрешить «установку из неизвестных источников» означает одно: отключите защиту телефона."
     - "Официальные уведомления о штрафах и взысканиях приходят с номера 1414 и никогда не содержат ссылок для оплаты."
+  kk:
+    - "Банк қосымшаларын мессенджер арқылы таратпайды. Олар тек Google Play, App Store және AppGallery-де болады, әзірлеушісі ретінде банктің өзі көрсетіледі."
+    - "Кеңейтімі .apk файл — құжат та, сәлемдеме де емес. Бұл — бағдарлама, орнатқан соң ол экраныңызды да, СМС-теріңізді де көреді."
+    - "«Белгісіз көздерден орнатуға» рұқсат беру өтініші бір-ақ нәрсені білдіреді: телефонның қорғанысын өшіріңіз."
+    - "Айыппұл мен өндіріп алу туралы ресми хабарламалар 1414 нөмірінен келеді және ешқашан төлем сілтемесін қамтымайды."
+  en:
+    - "Banking apps are not sent out through messengers. They exist only in Google Play, the App Store and AppGallery, with the bank itself listed as the developer."
+    - "A file ending in .apk is not a document and not a parcel. It is a program, and once installed it sees your screen and your SMS."
+    - "A request to allow \"installation from unknown sources\" means one thing: switch off your phone's protection."
+    - "Official notices about fines and debt collection come from 1414 (the eGov state-services number) and never contain payment links."
 
 action:
   key: action.do_not_install_apk
   ru: "Не устанавливайте файл и удалите его из переписки. Если приложение уже установлено — отключите Wi-Fi и мобильный интернет, удалите его, с другого телефона позвоните в банк и заблокируйте карты, затем подайте заявление в полицию по 102."
+  kk: "Файлды орнатпаңыз және оны чаттан өшіріңіз. Қосымша орнатылып қойған болса — Wi-Fi мен мобильді интернетті өшіріңіз, қосымшаны жойыңыз, басқа телефоннан банкке қоңырау шалып, карталарды бұғаттаңыз, содан кейін 102 арқылы полицияға арыз беріңіз."
+  en: "Do not install the file and delete it from the chat. If the app is already installed: turn off Wi-Fi and mobile data, uninstall it, call the bank from another phone and block your cards, then file a police report on 102."
 
 hotline: "102"
 hotlines:

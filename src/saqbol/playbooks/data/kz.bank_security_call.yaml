@@ -1,5 +1,6 @@
 # Fake bank security service call. Highest-volume script in Kazakhstan.
-# Kazakh, English and Chinese are translated in week 2 by the co-annotators.
+# Kazakh and English display text is written in-line below each Russian string.
+# Chinese is deliberately absent on the kz.* set: English serves the China case.
 id: kz.bank_security_call
 version: 1
 region: KZ
@@ -7,9 +8,13 @@ family: authority_impersonation
 
 name:
   ru: "Звонок «службы безопасности банка»"
+  kk: "«Банктің қауіпсіздік қызметінен» қоңырау"
+  en: "Call from the \"bank security service\""
 
 summary:
   ru: "Звонят якобы из банка, говорят, что с вашего счёта прямо сейчас снимают деньги, и выводят на код из СМС или перевод на «безопасный счёт»."
+  kk: "Банктен деп қоңырау шалып, шотыңыздан дәл қазір ақша шығып жатыр дейді де, СМС-тегі кодты сұрайды немесе «қауіпсіз шотқа» аудартады."
+  en: "A caller claiming to be your bank says money is leaving your account right now, then steers you to read out an SMS code or to transfer to a \"safe account\"."
 
 # Embedding only, never shown. Written the way a victim describes the call,
 # not the way the caller scripts it.
@@ -52,22 +57,50 @@ expected_indicators:
   - J1.secrecy
 
 stages:
-  contact:    { ru: "Неожиданный звонок или звонок в WhatsApp с незнакомого номера." }
-  hook:       { ru: "Говорят, что с вашего счёта прямо сейчас пытаются списать деньги." }
-  trust:      { ru: "Называют ваше ФИО, переключают на «следователя», присылают фото удостоверения." }
-  pressure:   { ru: "Требуют не класть трубку, называют разговор тайной следствия и просят никому не говорить." }
-  extraction: { ru: "Просят код из СМС, полные данные карты или перевод на «безопасный счёт»." }
-  cashout:    { ru: "Деньги уходят на чужие счета, либо на ваше имя оформляют кредит." }
+  contact:
+    ru: "Неожиданный звонок или звонок в WhatsApp с незнакомого номера."
+    kk: "Бейтаныс нөмірден күтпеген қоңырау немесе WhatsApp арқылы қоңырау."
+    en: "An unexpected call, or a WhatsApp call, from an unknown number."
+  hook:
+    ru: "Говорят, что с вашего счёта прямо сейчас пытаются списать деньги."
+    kk: "Шотыңыздан дәл қазір ақша шығарылып жатыр дейді."
+    en: "They say someone is trying to take money from your account right now."
+  trust:
+    ru: "Называют ваше ФИО, переключают на «следователя», присылают фото удостоверения."
+    kk: "Аты-жөніңізді атайды, «тергеушіге» қосады, куәліктің фотосын жібереді."
+    en: "They state your full name, transfer you to an \"investigator\", and send a photo of an ID card."
+  pressure:
+    ru: "Требуют не класть трубку, называют разговор тайной следствия и просят никому не говорить."
+    kk: "Телефонды қоймауды талап етеді, әңгімені «тергеу құпиясы» деп атайды және ешкімге айтпауды сұрайды."
+    en: "They insist you stay on the line, call the conversation a confidential investigation, and ask you to tell no one."
+  extraction:
+    ru: "Просят код из СМС, полные данные карты или перевод на «безопасный счёт»."
+    kk: "СМС-тегі кодты, картаның толық деректерін немесе «қауіпсіз шотқа» аударым жасауды сұрайды."
+    en: "They ask for the SMS code, full card details, or a transfer to a \"safe account\"."
+  cashout:
+    ru: "Деньги уходят на чужие счета, либо на ваше имя оформляют кредит."
+    kk: "Ақша бөтен шоттарға кетеді немесе атыңызға кредит рәсімделеді."
+    en: "The money goes to other people's accounts, or a loan is taken out in your name."
 
 red_flags:
   ru:
     - "Настоящий банк никогда не спрашивает код из СМС, ПИН или CVV: эти данные нужны только тому, кто хочет забрать ваши деньги."
     - "«Безопасного счёта» не существует ни в одном банке Казахстана. Перевод туда — это перевод мошеннику."
     - "Просьба не класть трубку и никому не рассказывать нужна лишь затем, чтобы вы не успели проверить звонок."
+  kk:
+    - "Нағыз банк СМС-тегі кодты, ПИН-ді немесе CVV-ді ешқашан сұрамайды: бұл деректер тек ақшаңызды алғысы келетін адамға керек."
+    - "Қазақстанның бірде-бір банкінде «қауіпсіз шот» деген жоқ. Оған аударым жасау — алаяққа аударым жасау."
+    - "«Телефонды қоймаңыз, ешкімге айтпаңыз» деген өтініш бір мақсатпен айтылады: қоңырауды тексеріп үлгермеуіңіз үшін."
+  en:
+    - "A real bank never asks for an SMS code, PIN or CVV: those details are only useful to someone who wants to take your money."
+    - "No bank in Kazakhstan has a \"safe account\". A transfer there is a transfer to the scammer."
+    - "\"Do not hang up, tell no one\" has one purpose: to stop you checking the call in time."
 
 action:
   key: action.hang_up_call_bank
   ru: "Положите трубку. Перезвоните в банк сами — по номеру на обороте карты или через приложение, а не по тому номеру, который вам назвали. Если вы уже назвали код или данные карты, заблокируйте карту и подайте заявление в полицию."
+  kk: "Телефонды қойыңыз. Банкке өзіңіз қоңырау шалыңыз — картаның артындағы нөмірге немесе қосымша арқылы, олар айтқан нөмірге емес. Кодты немесе карта деректерін айтып қойған болсаңыз, картаны бұғаттап, полицияға арыз жазыңыз."
+  en: "Hang up. Call the bank yourself, on the number printed on the back of your card or through the banking app, never the number the caller gave you. If you already read out the code or card details, block the card and file a report with the police."
 
 hotline: "1414"
 hotlines:

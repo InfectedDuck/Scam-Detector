@@ -5,9 +5,13 @@ family: contact_impersonation
 
 name:
   ru: "Просьба о деньгах со взломанного аккаунта близкого"
+  kk: "Жақын адамның бұзылған аккаунтынан ақша сұрау"
+  en: "Money request from a friend's or relative's hijacked account"
 
 summary:
   ru: "С аккаунта друга или родственника в WhatsApp или Telegram просят срочно перевести деньги. Пишет не он: доступ к переписке у постороннего человека."
+  kk: "Досыңыздың немесе туысыңыздың WhatsApp не Telegram аккаунтынан шұғыл ақша аударуды сұрайды. Жазып отырған ол емес: аккаунтқа бөтен адам кіріп алған."
+  en: "A friend's or relative's WhatsApp or Telegram account asks you to transfer money urgently. It is not them writing: a stranger has access to the chat."
 
 # Phrases used ONLY for embedding/retrieval. Not shown to users.
 # Written the way a victim describes what happened, not the way the message reads.
@@ -48,16 +52,28 @@ expected_indicators:
 stages:
   contact:
     ru: "Сообщение приходит от знакомого контакта в WhatsApp или Telegram, иногда с нового номера."
+    kk: "Хабарлама WhatsApp немесе Telegram-дағы таныс контактіден келеді, кейде жаңа нөмірден."
+    en: "A message arrives from a known contact on WhatsApp or Telegram, sometimes from a new number."
   hook:
     ru: "Срочно нужны деньги: беда, больница, задержали, «потом всё объясню»."
+    kk: "Шұғыл ақша керек: бақытсыздық, аурухана, ұстап қойды, «кейін бәрін түсіндіремін»."
+    en: "Money is needed urgently: an accident, a hospital, an arrest, \"I will explain later\"."
   trust:
     ru: "Аккаунт настоящий — то же имя, то же фото и вся ваша прошлая переписка выше, поэтому вопросов не возникает."
+    kk: "Аккаунт нағыз: сол аты, сол фотосы және жоғарыда бұрынғы бүкіл хат алмасуыңыз тұр, сондықтан күмән тумайды."
+    en: "The account is real: same name, same photo and all your past chat above, so no questions come to mind."
   pressure:
     ru: "Просят решить всё в чате и не звонить: «неудобно говорить», «телефон садится», «я на совещании»."
+    kk: "Бәрін чатта шешуді, қоңырау шалмауды сұрайды: «сөйлесуге ыңғайсыз», «зарядым бітіп барады», «жиналыстамын»."
+    en: "They ask to settle everything in the chat and not to call: \"can't talk now\", \"my battery is dying\", \"I'm in a meeting\"."
   extraction:
     ru: "Просят перевод на незнакомую карту или номер — «это карта коллеги, моя не работает»."
+    kk: "Бейтаныс картаға немесе нөмірге аударуды сұрайды — «бұл әріптесімнің картасы, менікі жұмыс істемей тұр»."
+    en: "They ask for a transfer to an unfamiliar card or number: \"it's a colleague's card, mine isn't working\"."
   cashout:
     ru: "Деньги уходят, а настоящий владелец аккаунта узнаёт о просьбе последним."
+    kk: "Ақша кетеді, ал аккаунттың нағыз иесі бұл өтініш туралы ең соңынан біледі."
+    en: "The money is gone, and the real account owner is the last to learn about the request."
 
 red_flags:
   ru:
@@ -65,10 +81,22 @@ red_flags:
     - "Реквизиты чужие. Близкий человек просит перевод на свою карту, а не на «карту коллеги»."
     - "«Не звони, неудобно говорить» — это не занятость. Это единственный способ не выдать чужой голос."
     - "Взлом WhatsApp почти всегда начинается с просьбы переслать код из СМС или нажать «подтвердить» по ссылке. Никому не пересылайте такие коды — даже знакомым."
+  kk:
+    - "Адамды сол чаттың ішінде тексерудің мәні жоқ: аккаунт бұзылған болса, сізге жауап беріп отырған ол емес."
+    - "Реквизиттер бөтен. Жақын адам ақшаны «әріптесінің картасына» емес, өз картасына сұрайды."
+    - "«Қоңырау шалма, сөйлесуге ыңғайсыз» деген сылтау бос емес болғандықтан емес: бөтен дауысты естіртпеудің жалғыз жолы осы."
+    - "WhatsApp-ты бұзу әрдайым дерлік СМС-тегі кодты жіберіп беру немесе сілтеме арқылы «растау» басу өтінішінен басталады. Мұндай кодтарды ешкімге жібермеңіз — тіпті таныстарға да."
+  en:
+    - "Checking the person inside the same chat is pointless: if the account is hijacked, it is not them answering you."
+    - "The payment details belong to someone else. A person close to you asks for money on their own card, not a \"colleague's card\"."
+    - "\"Don't call, I can't talk\" is not being busy. It is the only way to hide a stranger's voice."
+    - "A WhatsApp takeover almost always starts with a request to forward an SMS code or tap \"confirm\" on a link. Never forward such codes to anyone, not even people you know."
 
 action:
   key: action.call_the_person_directly
   ru: "Позвоните этому человеку по номеру, который записан у вас в контактах, или спросите в разговоре то, что знаете только вы двое. Пока не услышите его голос, не переводите ничего. Если деньги уже ушли — сразу звоните в банк и в полицию по 102."
+  kk: "Бұл адамға контактілеріңізде сақталған нөмір арқылы қоңырау шалыңыз немесе тек екеуіңіз білетін нәрсені сұраңыз. Оның дауысын естімейінше ештеңе аудармаңыз. Ақша кетіп қойған болса — бірден банкке және 102 арқылы полицияға қоңырау шалыңыз."
+  en: "Call the person on the number saved in your contacts, or ask them something only the two of you know. Until you hear their voice, transfer nothing. If the money is already gone, call the bank and the police on 102 at once."
 
 hotline: "102"
 hotlines:

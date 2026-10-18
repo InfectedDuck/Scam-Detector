@@ -6,9 +6,13 @@ family: phishing_link
 
 name:
   ru: "Фишинговая ссылка о посылке или доставке"
+  kk: "Сәлемдеме немесе жеткізу туралы фишингтік сілтеме"
+  en: "Phishing link about a parcel or delivery"
 
 summary:
   ru: "Сообщение о задержанной посылке с просьбой доплатить за доставку или таможню по ссылке, которая ведёт на поддельную страницу оплаты."
+  kk: "Сәлемдемеңіз ұсталды, жеткізу немесе кеден төлемін сілтеме арқылы төлеңіз деген хабарлама келеді. Сілтеме жалған төлем бетіне апарады."
+  en: "A message says your parcel is held and asks you to pay a delivery or customs fee through a link that leads to a fake payment page."
 
 retrieval_phrases:
   - "пришло смс, что посылка ждёт оплаты доставки"
@@ -46,21 +50,46 @@ expected_indicators:
   - E7.upfront_fee
 
 stages:
-  contact:    { ru: "СМС или сообщение в мессенджере якобы от почты, курьера или таможни." }
-  hook:       { ru: "Посылка не доставлена или задержана: нужно уточнить адрес либо доплатить." }
-  pressure:   { ru: "Срок хранения истекает, иначе посылку вернут отправителю." }
-  extraction: { ru: "По ссылке открывается копия сайта, где просят данные карты ради «небольшой» оплаты." }
-  cashout:    { ru: "С карты списывают всю доступную сумму, а данные используют для новых списаний." }
+  contact:
+    ru: "СМС или сообщение в мессенджере якобы от почты, курьера или таможни."
+    kk: "Пошта, курьер немесе кеден атынан СМС не мессенджерде хабарлама келеді."
+    en: "An SMS or messenger message supposedly from the post office, a courier or customs."
+  hook:
+    ru: "Посылка не доставлена или задержана: нужно уточнить адрес либо доплатить."
+    kk: "Сәлемдеме жеткізілмеді немесе ұсталды: мекенжайды растау немесе қосымша төлеу керек дейді."
+    en: "The parcel was not delivered or is being held: you need to confirm the address or pay an extra fee."
+  pressure:
+    ru: "Срок хранения истекает, иначе посылку вернут отправителю."
+    kk: "Сақтау мерзімі бітіп жатыр, әйтпесе сәлемдеме жіберушіге қайтарылады дейді."
+    en: "The storage period is running out; otherwise the parcel goes back to the sender."
+  extraction:
+    ru: "По ссылке открывается копия сайта, где просят данные карты ради «небольшой» оплаты."
+    kk: "Сілтеме сайттың көшірмесін ашады, онда «шағын» төлем үшін карта деректерін сұрайды."
+    en: "The link opens a copy of the real site, which asks for card details for a \"small\" payment."
+  cashout:
+    ru: "С карты списывают всю доступную сумму, а данные используют для новых списаний."
+    kk: "Картадан барлық қолжетімді соманы шығарады, ал деректерді жаңа төлемдерге пайдаланады."
+    en: "The whole available balance is taken from the card, and the details are reused for further charges."
 
 red_flags:
   ru:
     - "Настоящее уведомление о посылке никогда не требует вводить номер карты и CVV на странице из ссылки."
     - "Казпочта присылает уведомления только с короткого номера 1499, а статус посылки виден в приложении post.kz."
     - "Адрес поддельного сайта отличается от настоящего одной-двумя буквами или лишним словом в домене."
+  kk:
+    - "Сәлемдеме туралы нағыз хабарлама сілтемедегі бетке карта нөмірі мен CVV енгізуді ешқашан талап етпейді."
+    - "Қазпошта хабарламаны тек 1499 қысқа нөмірінен жібереді, ал сәлемдеменің статусы post.kz қосымшасында көрінеді."
+    - "Жалған сайттың мекенжайы нағызынан бір-екі әріппен немесе доменге қосылған артық сөзбен ғана ерекшеленеді."
+  en:
+    - "A genuine parcel notification never asks you to enter a card number and CVV on a page behind a link."
+    - "Kazpost (the national postal service) sends notifications only from the short number 1499, and parcel status is visible in the post.kz app."
+    - "A fake site's address differs from the real one by one or two letters or an extra word in the domain."
 
 action:
   key: action.check_tracking_on_official_site
   ru: "Не открывайте ссылку. Проверьте трек-номер на сайте или в приложении перевозчика, набрав адрес вручную. Если данные карты уже введены, немедленно заблокируйте карту и обратитесь в полицию."
+  kk: "Сілтемені ашпаңыз. Трек-нөмірді тасымалдаушының сайтында немесе қосымшасында тексеріңіз — мекенжайды өзіңіз қолмен теріп. Карта деректерін енгізіп қойған болсаңыз, картаны дереу бұғаттап, полицияға хабарласыңыз."
+  en: "Do not open the link. Check the tracking number on the carrier's own site or app, typing the address yourself. If you already entered card details, block the card at once and contact the police."
 
 hotline: "102"
 hotlines:

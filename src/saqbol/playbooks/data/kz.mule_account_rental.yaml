@@ -8,9 +8,14 @@ family: money_laundering_recruitment
 
 name:
   ru: "Аренда карты или счёта (дропперство)"
+  # VERIFY-kk: the Kazakh press term for дропперство: «дропперлік» is what the author has seen on fingramota.kz, but «дроппер болу» may be more common in speech
+  kk: "Картаны немесе шотты жалға беру (дропперлік)"
+  en: "Renting out your card or account (money mule)"
 
 summary:
   ru: "Предлагают заработок за то, что через вашу карту или счёт пройдут чужие переводы. С сентября 2025 года это уголовная статья, и отвечает владелец карты."
+  kk: "Картаңыз немесе шотыңыз арқылы бөтен аударымдар өтуі үшін ақша ұсынады. 2025 жылғы қыркүйектен бастап бұл — қылмыстық бап, ал жауап беретін — карта иесі."
+  en: "You are offered money for letting other people's transfers pass through your card or account. Since September 2025 this is a criminal offence, and the card holder is the one liable."
 
 retrieval_phrases:
   - "предложили сдать карту в аренду за деньги"
@@ -45,21 +50,47 @@ expected_indicators:
   - D1.move_to_messenger
 
 stages:
-  contact:    { ru: "Предложение подработки в Telegram, соцсети или в чате." }
-  hook:       { ru: "Обещают оплату за то, что через вашу карту пройдут чужие переводы." }
-  trust:      { ru: "Схему называют законной, показывают отзывы и делают первые небольшие выплаты." }
-  extraction: { ru: "Просят карту, доступ к мобильному банку либо снятие наличных и передачу курьеру." }
-  cashout:    { ru: "Через ваш счёт проходят похищенные деньги, счёт блокируют, а вопросы задают вам." }
+  contact:
+    ru: "Предложение подработки в Telegram, соцсети или в чате."
+    kk: "Telegram-да, әлеуметтік желіде немесе чатта қосымша табыс ұсынысы."
+    en: "A side-job offer on Telegram, on social media or in a chat."
+  hook:
+    ru: "Обещают оплату за то, что через вашу карту пройдут чужие переводы."
+    kk: "Картаңыз арқылы бөтен аударымдар өткені үшін ақы төлеуге уәде береді."
+    en: "They promise payment for letting other people's transfers pass through your card."
+  trust:
+    ru: "Схему называют законной, показывают отзывы и делают первые небольшие выплаты."
+    kk: "Схеманы заңды деп атайды, пікірлер көрсетеді және алғашқы шағын төлемдерді жасайды."
+    en: "They call the scheme legal, show reviews, and make the first small payouts."
+  extraction:
+    ru: "Просят карту, доступ к мобильному банку либо снятие наличных и передачу курьеру."
+    kk: "Картаны, мобильді банкке кіру рұқсатын немесе қолма-қол ақша шығарып курьерге беруді сұрайды."
+    en: "They ask for the card, access to your mobile banking, or for you to withdraw cash and hand it to a courier."
+  cashout:
+    ru: "Через ваш счёт проходят похищенные деньги, счёт блокируют, а вопросы задают вам."
+    kk: "Шотыңыз арқылы ұрланған ақша өтеді, шот бұғатталады, ал сұрақ сізге қойылады."
+    en: "Stolen money passes through your account, the account is blocked, and the questions are asked of you."
 
 red_flags:
   ru:
     - "С 16 сентября 2025 года передача карты, счёта или доступа к мобильному банку — уголовная статья 232-1 УК РК: от штрафа до 7 лет с конфискацией."
     - "Отвечает владелец счёта: в деле фигурирует ваша карта, а не человек, который вам написал."
     - "Счёт блокируют, дистанционное обслуживание отключают, а пострадавшие взыскивают ущерб через суд — с вас."
+  kk:
+    - "2025 жылғы 16 қыркүйектен бастап картаны, шотты немесе мобильді банкке кіру рұқсатын біреуге беру — ҚР ҚК 232-1 бабы бойынша қылмыс: айыппұлдан бастап мүлкін тәркілей отырып 7 жылға дейін."
+    - "Жауап беретін — шот иесі: істе сізге жазған адам емес, сіздің картаңыз тұрады."
+    - "Шотты бұғаттайды, қашықтан қызмет көрсетуді өшіреді, ал зардап шеккендер шығынды сот арқылы өндіреді — сізден."
+  en:
+    - "Since 16 September 2025, handing over a card, an account or mobile-banking access is a crime under Article 232-1 of the Criminal Code of Kazakhstan: from a fine up to 7 years in prison with confiscation of property."
+    - "The account holder is liable: the case names your card, not the person who messaged you."
+    - "The account is blocked, remote banking is switched off, and the victims recover their losses through the courts — from you."
 
 action:
   key: action.refuse_card_rental
   ru: "Откажитесь и прекратите переписку: карта, счёт и доступ к мобильному банку остаются только вашими. Если чужой перевод уже прошёл, сами обратитесь в банк и в полицию — явка с повинной и сотрудничество со следствием учитываются."
+  # VERIFY-kk: «кінәсін мойындап келу» is the Criminal Code term for явка с повинной (ҚК 65-бап); confirm the case ending reads naturally in this sentence
+  kk: "Бас тартыңыз және хат алмасуды тоқтатыңыз: карта, шот және мобильді банкке кіру рұқсаты тек сіздікі болып қалуы керек. Бөтен аударым өтіп қойған болса, банкке және полицияға өзіңіз хабарласыңыз — кінәсін мойындап келу мен тергеуге көмектесу ескеріледі."
+  en: "Refuse and end the conversation: your card, account and mobile-banking access stay yours alone. If someone else's transfer has already gone through, go to the bank and the police yourself; turning yourself in and cooperating with the investigation count in your favour."
 
 hotline: "102"
 hotlines:

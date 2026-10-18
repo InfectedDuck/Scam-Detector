@@ -5,9 +5,13 @@ family: investment_fraud
 
 name:
   ru: "Инвестиционная платформа с дипфейком"
+  kk: "Дипфейкпен жарнамаланған инвестициялық платформа"
+  en: "Investment platform advertised with a deepfake"
 
 summary:
   ru: "Реклама, где известный человек или банк как будто зовёт в «инвестиционную платформу». Дальше личный менеджер, растущий график и деньги, которые не выводятся."
+  kk: "Танымал адам немесе банк «инвестициялық платформаға» шақырып тұрғандай жарнама. Әрі қарай — жеке менеджер, өсіп тұрған график және шығарылмайтын ақша."
+  en: "An ad in which a well-known person or a bank appears to invite you to an \"investment platform\". Then a personal manager, a rising chart, and money you cannot withdraw."
 
 # Phrases used ONLY for embedding/retrieval. Not shown to users.
 # Written the way a victim describes what happened, not the way the ad reads.
@@ -49,16 +53,29 @@ expected_indicators:
 stages:
   contact:
     ru: "Реклама или видео в Instagram, TikTok, YouTube — либо сообщение от «аналитика» в мессенджере."
+    kk: "Instagram, TikTok, YouTube-тегі жарнама немесе видео — не мессенджерде «аналитиктен» хабарлама."
+    en: "An ad or video on Instagram, TikTok or YouTube, or a message from an \"analyst\" in a messenger."
   hook:
     ru: "Известный человек или логотип банка как будто рекомендует платформу и обещает доход без риска."
+    kk: "Танымал адам немесе банк логотипі платформаны ұсынып, тәуекелсіз табыс уәде еткендей көрінеді."
+    en: "A famous person or a bank logo appears to recommend the platform and promise income without risk."
   trust:
     ru: "К вам приставляют личного менеджера, показывают кабинет с растущей прибылью и дают вывести первую небольшую сумму."
+    kk: "Сізге жеке менеджер бекітеді, пайдасы өсіп тұрған кабинетті көрсетеді және алғашқы шағын соманы шығаруға мүмкіндік береді."
+    en: "You get a personal manager, a dashboard showing growing profit, and they let you withdraw a first small amount."
   pressure:
     ru: "Менеджер торопит: курс уходит, место в группе последнее, пополнить надо сегодня."
+    kk: "Менеджер асықтырады: бағам кетіп барады, топта соңғы орын қалды, шотты бүгін толтыру керек."
+    en: "The manager rushes you: the rate is moving, the last place in the group is left, you must top up today."
   extraction:
     ru: "Суммы пополнений растут, а перед выводом требуют оплатить «налог», «комиссию» или «страховку»."
+    kk: "Салым сомасы өсе береді, ал ақшаны шығарар алдында «салық», «комиссия» немесе «сақтандыру» төлеуді талап етеді."
+    en: "The deposits grow, and before any withdrawal they demand a \"tax\", a \"commission\" or \"insurance\"."
   cashout:
     ru: "Деньги уходят на карты третьих лиц или в криптокошелёк, кабинет и менеджер исчезают."
+    # VERIFY-kk: «криптоәмиян» for криптокошелёк; the Russian word is also used in Kazakh speech, keep whichever the corpus shows
+    kk: "Ақша бөтен адамдардың карталарына немесе криптоәмиянға кетеді, кабинет те, менеджер де жоғалады."
+    en: "The money goes to third-party cards or a crypto wallet; the dashboard and the manager disappear."
 
 red_flags:
   ru:
@@ -66,10 +83,22 @@ red_flags:
     - "«Доход без риска» и «гарантированные проценты» — это не описание инвестиций, а описание пирамиды."
     - "Настоящая площадка не берёт денег за то, чтобы отдать вам ваши же деньги. «Налог перед выводом» — это последний перевод, который у вас просят."
     - "Первая маленькая выплата — часть сценария. Её делают именно для того, чтобы вы занесли крупную сумму."
+  kk:
+    - "Бірде-бір танымал адам да, бірде-бір банк те инвесторларды лентадағы жарнама арқылы жинамайды. Мұндай видеоларды қазір жасанды интеллект жарты сағатта жасап береді."
+    - "«Тәуекелсіз табыс» пен «кепілдендірілген пайыз» — инвестицияның емес, пирамиданың сипаттамасы."
+    - "Нағыз платформа өз ақшаңызды өзіңізге қайтару үшін ақы алмайды. «Шығарар алдындағы салық» — сізден сұрайтын ең соңғы аударым."
+    - "Алғашқы шағын төлем — сценарийдің бір бөлігі. Оны сіз үлкен сома салуыңыз үшін әдейі жасайды."
+  en:
+    - "No famous person and no bank recruits investors through ads in your feed. Such videos are now made with AI in half an hour."
+    - "\"Income without risk\" and \"guaranteed returns\" do not describe an investment; they describe a pyramid scheme."
+    - "A real platform does not charge you to give you back your own money. The \"tax before withdrawal\" is the last transfer they will ask you for."
+    - "The first small payout is part of the script. It is made precisely so that you bring in a large sum."
 
 action:
   key: action.verify_license_and_stop_paying
   ru: "Ничего больше не переводите — особенно «налог» или «комиссию» за вывод. Проверьте лицензию компании на finreg.kz или по номеру 1459. Если деньги уже ушли, сохраните переписку и чеки и обратитесь в полицию по 102."
+  kk: "Енді ештеңе аудармаңыз — әсіресе шығару үшін «салық» немесе «комиссия». Компанияның лицензиясын finreg.kz сайтынан немесе 1459 нөмірі арқылы тексеріңіз. Ақша кетіп қойған болса, хат алмасу мен чектерді сақтап, 102 арқылы полицияға хабарласыңыз."
+  en: "Transfer nothing more, especially not a \"tax\" or \"commission\" for withdrawal. Check the company's licence on finreg.kz (the financial regulator's site) or by calling 1459. If the money is already gone, keep the chat history and receipts and report to the police on 102."
 
 hotline: "1459"
 hotlines:

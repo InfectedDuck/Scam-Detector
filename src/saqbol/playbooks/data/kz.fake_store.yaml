@@ -5,9 +5,13 @@ family: fake_merchant
 
 name:
   ru: "Фейковый магазин с предоплатой"
+  kk: "Алдын ала төлем сұрайтын жалған дүкен"
+  en: "Fake shop asking for prepayment"
 
 summary:
   ru: "Магазин в Instagram или сайт с ценой заметно ниже рынка берёт предоплату на карту физлица — и после перевода перестаёт отвечать."
+  kk: "Бағасы нарықтан әлдеқайда төмен Instagram-дүкен немесе сайт жеке тұлғаның картасына алдын ала төлем алады — ақша аударылған соң жауап беруді қояды."
+  en: "An Instagram shop or website with prices well below the market takes prepayment to a private person's card, and stops answering once the money is sent."
 
 # Phrases used ONLY for embedding/retrieval. Not shown to users.
 # Written the way a victim describes what happened, not the way the listing reads.
@@ -47,16 +51,28 @@ expected_indicators:
 stages:
   contact:
     ru: "Объявление, реклама в ленте или страница магазина в Instagram."
+    kk: "Хабарландыру, лентадағы жарнама немесе Instagram-дағы дүкен парақшасы."
+    en: "A listing, an ad in your feed, or a shop page on Instagram."
   hook:
     ru: "Товар есть в наличии и заметно дешевле, чем везде, но остался последний."
+    kk: "Тауар қолда бар және басқа жерден әлдеқайда арзан, бірақ соңғысы қалды."
+    en: "The item is in stock and much cheaper than anywhere else, but it is the last one."
   trust:
     ru: "Аккуратная витрина, комментарии довольных покупателей и обещание доставки по всему Казахстану."
+    kk: "Ұқыпты витрина, риза болған сатып алушылардың пікірлері және бүкіл Қазақстан бойынша жеткізу уәдесі."
+    en: "A tidy storefront, comments from happy customers, and a promise of delivery across Kazakhstan."
   pressure:
     ru: "Просят внести предоплату или бронь сегодня, иначе товар уйдёт другому."
+    kk: "Алдын ала төлемді немесе бронь ақшасын бүгін салуды сұрайды, әйтпесе тауар басқа біреуге кетеді."
+    en: "They ask for a prepayment or a booking deposit today, or the item goes to someone else."
   extraction:
     ru: "Перевод идёт на карту или номер физического лица, а не оплатой в магазине."
+    kk: "Ақша дүкеннің төлем жүйесі арқылы емес, жеке тұлғаның картасына немесе нөміріне аударылады."
+    en: "The transfer goes to a private person's card or phone number, not through a shop payment."
   cashout:
     ru: "Продавец перестаёт отвечать, страницу удаляют или вас блокируют."
+    kk: "Сатушы жауап беруді қояды, парақшаны өшіреді немесе сізді бұғаттайды."
+    en: "The seller stops answering, the page is deleted, or you are blocked."
 
 red_flags:
   ru:
@@ -64,10 +80,22 @@ red_flags:
     - "Цена сильно ниже рынка плюс «остался последний» — это приманка и таймер, а не удача."
     - "Домен, зарегистрированный пару недель назад, у работающего магазина не бывает: возраст сайта видно через whois."
     - "Комментарии под постами накручиваются, а неудобные удаляются. Ищите название магазина вместе со словом «обман» вне его собственной страницы."
+  kk:
+    - "Жеке тұлғаның картасына аударым — дүкенге төлем емес. Нағыз сатушының БСН-і, ЖШС немесе ЖК атауы және мекенжайы бар, оларды сұрағанда бірден көрсетеді."
+    - "Нарықтан әлдеқайда төмен баға және «соңғысы қалды» — бұл жем мен таймер, жолыңыздың болғаны емес."
+    - "Бірнеше апта бұрын тіркелген домен жұмыс істеп тұрған дүкенде болмайды: сайттың жасын whois арқылы көруге болады."
+    - "Посттардың астындағы пікірлер жасанды түрде көбейтіледі, ал қолайсыздары өшіріледі. Дүкеннің атауын «алаяқ» немесе «обман» сөзімен бірге оның өз парақшасынан тыс жерден іздеңіз."
+  en:
+    - "A transfer to a private person's card is not a payment to a shop. A real seller has a business ID (BIN), a registered company or sole-trader name and an address, and shows them without being pressed."
+    - "A price far below the market plus \"only one left\" is bait and a timer, not luck."
+    - "A working shop does not have a domain registered a couple of weeks ago: a site's age can be checked through whois."
+    - "Comments under posts are bought, and inconvenient ones are deleted. Search for the shop's name together with the word for \"scam\" outside its own page."
 
 action:
   key: action.pay_on_delivery_and_check_seller
   ru: "Не платите предоплату. Договоритесь об оплате при получении или покупайте внутри площадки, где есть защита сделки. Проверьте БИН и юридическое лицо продавца, а его имя поищите отдельно вместе со словом «обман». Если деньги уже переведены — сохраните переписку и чек и обратитесь в полицию по 102."
+  kk: "Алдын ала төлем жасамаңыз. Алған кезде төлеуге келісіңіз немесе мәмілені қорғайтын платформаның ішінен сатып алыңыз. Сатушының БСН-ін және заңды тұлғасын тексеріңіз, ал атауын «алаяқ» немесе «обман» сөзімен бірге бөлек іздеңіз. Ақша аударылып қойған болса — хат алмасу мен чекті сақтап, 102 арқылы полицияға хабарласыңыз."
+  en: "Do not prepay. Agree to pay on delivery, or buy inside a platform that protects the deal. Check the seller's business ID (BIN) and legal entity, and search their name separately together with the word for \"scam\". If the money has already been sent, keep the chat history and the receipt and report to the police on 102."
 
 hotline: "102"
 hotlines:
