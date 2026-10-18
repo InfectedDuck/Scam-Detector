@@ -1,5 +1,12 @@
 # Parallel lanes
 
+> Historical implementation prompts. Most lanes below are already implemented.
+> Choose remaining work from [the current roadmap](10_REMAINING_ROADMAP.md) and
+> [Codex mini-plans](11_CODEX_MINI_PLANS.md). Do not run the old lane prompts as a
+> fresh backlog. Use one task per session by default; if running concurrent
+> sessions, retain explicit file ownership and integrate serially. Do not stage
+> whole directories containing another session's changes.
+
 How to run many assistant sessions at once against this repo without them
 fighting each other. Companion to the original build plan, which
 assumes one session at a time.

@@ -47,7 +47,7 @@ This applies to contracts, not to everything. A bug fix, a faster implementation
 
 ### Pull requests
 
-- One task or one idea per pull request. The build plan in [docs/00_BUILD_PLAN.md](docs/00_BUILD_PLAN.md) is numbered (`T113`, `T602`, …); if your work matches a task, use that id in the commit subject.
+- One task or one idea per pull request. The roadmap in [docs/10_REMAINING_ROADMAP.md](docs/10_REMAINING_ROADMAP.md) refers to numbered tasks (`T113`, `T602`, …); if your work matches one, use that id in the commit subject.
 - New behaviour arrives with a test. New *detection* behaviour arrives with both a positive and a negative case — a rule that fires on nothing is useless, and a rule that fires on everything is worse than useless.
 - Run `ruff check src tests` before pushing.
 - Say in the description what a reviewer should be suspicious of. A pull request that claims to be perfect is slower to review than one that points at its own soft spot.
